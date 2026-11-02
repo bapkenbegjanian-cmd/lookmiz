@@ -100,7 +100,7 @@ a.cta[aria-disabled] { opacity: .5; pointer-events: none; }
 .hero { display: grid; gap: 18px; }
 .kicker { font-size: 12px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--pink); }
 .home h1 { font-size: clamp(52px, 15vw, 96px); line-height: .92; margin-top: 8px; }
-.stage { position: relative; border-radius: 30px; overflow: hidden; height: 520px; background: #222; box-shadow: 0 30px 60px rgba(59,91,255,.25); }
+.stage { position: relative; border-radius: 26px; overflow: hidden; height: 330px; background: #222; box-shadow: 0 30px 60px rgba(59,91,255,.25); }
 .first .stage { animation: pop .8s cubic-bezier(.2,.8,.2,1) both; }
 @keyframes pop { from { opacity: 0; transform: scale(.96); } }
 .slides img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transform: scale(1.12); transition: opacity 1.4s ease; }
@@ -109,7 +109,7 @@ a.cta[aria-disabled] { opacity: .5; pointer-events: none; }
 .veil { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(10,10,20,0) 35%, rgba(10,10,20,.78) 100%); }
 .stext { position: absolute; left: 22px; right: 22px; bottom: 24px; color: #fff; display: grid; gap: 8px; }
 .stext .kicker { color: #fff; opacity: .9; }
-.stext h1 { color: #fff; font-size: clamp(54px, 15vw, 96px); line-height: .9; }
+.stext h1 { color: #fff; font-size: clamp(40px, 11vw, 72px); line-height: .92; }
 .stext h1 .hl { background: linear-gradient(90deg, #ffd84d, #ff7ac6, #8fa2ff); -webkit-background-clip: text; background-clip: text; color: transparent; }
 .stext p { margin: 0; font-size: 16px; opacity: .92; max-width: 32ch; }
 .sdots { display: flex; gap: 6px; margin-top: 6px; }
@@ -133,12 +133,14 @@ a.cta[aria-disabled] { opacity: .5; pointer-events: none; }
 .choice .go { margin-top: 6px; font-weight: 800; font-size: 14px; background: #fff; color: var(--ink); padding: 10px 16px; border-radius: 99px; width: max-content; position: relative; overflow: hidden; }
 .choice .go::after { content: ""; position: absolute; top: 0; left: -60%; width: 40%; height: 100%; background: linear-gradient(90deg, transparent, rgba(59,91,255,.25), transparent); transform: skewX(-20deg); animation: shine 2.8s ease-in-out infinite; }
 @keyframes shine { 60%, 100% { left: 130%; } }
-  .choice.solo1 { height: 220px; }
+.choice.solo1 { height: auto; min-height: 230px; }
+.choice.solo1 .cbody { position: relative; top: auto; left: auto; transform: none; width: 70%; padding: 24px 22px; }
 @media (min-width: 900px) {
-  .stage { height: 600px; }
+  .stage { height: 420px; }
   .stext { left: 48px; bottom: 44px; }
   .choices { grid-template-columns: 1fr; }
   .choice { height: 260px; }
+  .choice.solo1 .cbody { width: 55%; padding: 36px 40px; }
 }
 @media (prefers-reduced-motion: reduce) { .slides img.on, .stage, .choice, .choice .go::after { animation: none; } }
 .vt .sub { margin-top: -8px; }
@@ -163,6 +165,14 @@ label.media .frame { max-width: 320px; margin: 0 auto; }
 .linkbox small b { color: var(--ink); }
 .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .actions .ghost { font-size: 14px; padding: 13px 10px; }
+.pwrap { position: relative; }
+.pover { position: absolute; top: 12px; right: 12px; display: flex; gap: 8px; z-index: 3; }
+.pbtn { display: inline-flex; align-items: center; gap: 4px; border: 0; cursor: pointer; font: 700 13px var(--body); color: var(--ink); background: rgba(255,255,255,.92); backdrop-filter: blur(8px); padding: 8px 12px; border-radius: 99px; box-shadow: 0 4px 14px rgba(0,0,0,.15); }
+.pbtn.sm { position: absolute; top: 8px; right: 8px; font-size: 11.5px; padding: 6px 9px; z-index: 2; }
+.duo figure { position: relative; }
+.vrow { display: flex; gap: 6px; margin-top: 4px; }
+.vbadge { font-size: 12.5px; font-weight: 800; padding: 5px 10px; border-radius: 8px; background: rgba(255,255,255,.22); color: #fff; }
+.vbadge.vinted { background: #fff; color: #09b1ba; font-family: Georgia, serif; font-style: italic; font-weight: 700; font-size: 14px; }
 .mephoto { display: grid; grid-template-columns: 54px 1fr; gap: 12px; align-items: center; background: var(--glass); backdrop-filter: blur(12px); border: 1px solid var(--line); border-radius: 18px; padding: 10px 12px; font-size: 14px; }
 .mephoto b { display: block; font: 800 15px var(--display); }
 .mephoto img { width: 54px; height: 70px; object-fit: cover; border-radius: 12px; }
@@ -495,22 +505,21 @@ const S = [
           <h1>Essaie tout.<br><span class="hl">Sur toi.</span></h1>
           <p>Mets ta photo et vois les vêtements portés par toi, en 20 secondes.</p>
           <div class="sdots">${AMB.slice(0, 6).map((_, i) => `<i class="${i ? '' : 'on'}"></i>`).join('')}</div></div>
-        <span class="scredit" id="scredit">Photo ${AMB[0].by} / Unsplash</span>
       </div>
       <div class="choices">
         ${[['shop', 7, 'Essayage virtuel', 'Importe une image de l\'habit ou colle un lien Vinted, et vois-le sur toi.', 'c1 solo1']].map(([k, i, t, d, c]) =>
-          `<button class="choice ${c}" type="button" data-start="${k}"><img src="${AMB[i].u}&w=700&h=700&q=75&fm=jpg&fit=crop&crop=faces" alt=""><span class="cbody"><b>${t}</b><small>${d}</small><span class="go">Commencer →</span></span></button>`).join('')}
+          `<button class="choice ${c}" type="button" data-start="${k}"><img src="${AMB[i].u}&w=700&h=700&q=75&fm=jpg&fit=crop&crop=faces" alt=""><span class="cbody"><b>${t}</b><small>${d}</small><span class="vrow"><span class="vbadge">🖼️ Image</span><span class="vbadge vinted">Vinted</span></span><span class="go">Commencer →</span></span></button>`).join('')}
       </div>
       ${account()}
     </section>`,
   () => `<section class="screen">
       <h2>D'abord, <span class="hl">ta photo</span></h2>
       <p class="sub">Elle sert seulement à t'analyser et t'habiller.</p>
-      <label class="media" for="photo" tabindex="0" style="cursor:pointer;display:block">${state.photo ? frame(state.photo) : `<div class="frame"><div class="empty"><span class="plus">+</span><b>Ajoute ta photo</b>En entier, de face, bras le long du corps : c'est ce qui donne le meilleur résultat</div></div>`}</label>
+      ${state.photo ? `<div class="media pwrap">${frame(state.photo)}<div class="pover"><label class="pbtn" for="photo" tabindex="0">📷 Changer</label><button class="pbtn" type="button" data-forget>🗑️ Effacer</button></div></div>`
+        : `<label class="media" for="photo" tabindex="0" style="cursor:pointer;display:block"><div class="frame"><div class="empty"><span class="plus">+</span><b>Ajoute ta photo</b>En entier, de face, bras le long du corps : c'est ce qui donne le meilleur résultat</div></div></label>`}
       <div class="tips"><span>🧍 Du haut de la tête aux pieds</span><span>🙆 Bras le long du corps</span><span>👕 Vêtements près du corps</span><span>💡 Bien éclairée</span></div>
       <button class="cta" type="button" data-go="${state.mode === 'shop' ? 5 : 2}" ${state.photo ? '' : 'disabled'}>${state.photo ? 'Utiliser cette photo' : 'Continuer'} <span>→</span></button>
-      ${state.photo && state.saved ? `<p class="note">📱 Ta photo est gardée sur ce téléphone uniquement. <button class="link" type="button" data-forget>L'effacer</button></p>` : ''}
-      ${state.photo ? `<label class="link" for="photo" tabindex="0">Changer de photo</label>` : ''}
+      ${state.photo ? `<p class="note">📱 Ta photo reste sur ce téléphone.</p>` : ''}
     </section>`,
   () => `<section class="screen solo"><h2>Pour quelle <span class="hl">occasion</span> ?</h2>
       <div class="options">${Object.entries(OCCS).map(([k, [e, t, d, col]], i) => `<button class="opt" type="button" data-occ="${k}" style="--c:${col};animation-delay:${i * 60}ms"><span class="e">${e}</span><b>${t}</b><small>${d}</small></button>`).join('')}</div></section>`,
@@ -549,9 +558,9 @@ const S = [
           <div class="lrow"><input id="glink" type="url" inputmode="url" placeholder="https://www.vinted.fr/items/…" aria-label="Lien de l'annonce Vinted"><button class="ghost" type="button" data-import>Importer</button></div>
           <p class="note" id="gmsg" role="status"></p></div>` : ''}
       <div class="duo">
-        <figure><img src="${state.photo}" alt="Ta photo"><figcaption>Toi · <label class="link" for="photo" tabindex="0">changer</label></figcaption></figure>
+        <figure class="pwrap"><img src="${state.photo}" alt="Ta photo"><label class="pbtn sm" for="photo" tabindex="0">📷 Changer</label><figcaption>Toi</figcaption></figure>
         <span class="plusx">+</span>
-        <figure class="${state.garment ? '' : 'empty'}">${state.garment ? `<img src="${state.garment}" alt="L'habit">` : '<span>👕</span>'}<figcaption>${state.garment ? 'L\'habit' : 'Aucun habit'}</figcaption></figure>
+        <figure class="${state.garment ? '' : 'empty'}">${state.garment ? `<img src="${state.garment}" alt="L'habit"><button class="pbtn sm" type="button" data-delg>🗑️ Retirer</button>` : '<span>👕</span>'}<figcaption>${state.garment ? 'L\'habit' : 'Aucun habit'}</figcaption></figure>
       </div>
       <button class="cta" type="button" data-shoptry ${state.garment ? '' : 'disabled'}>${state.garment ? '🪄 Me l\'essayer' : 'Choisis un habit ci-dessus'}</button>
       ${quotaPill()}
@@ -642,7 +651,7 @@ function startSlides() {
   clearInterval(slideT); const im = document.querySelectorAll('.slides img'), dots = document.querySelectorAll('.sdots i'); if (!im.length) return;
   let i = 0; slideT = setInterval(() => { if (!document.body.contains(im[0])) return clearInterval(slideT);
     im[i].classList.remove('on'); dots[i].classList.remove('on'); i = (i + 1) % im.length; im[i].classList.add('on'); dots[i].classList.add('on');
-    const c = $('#scredit'); if (c) c.textContent = 'Photo ' + AMB[i].by + ' / Unsplash'; }, 4500);
+  }, 4500);
 }
 const wide = matchMedia('(min-width: 900px)');
 wide.addEventListener('change', () => render(true));
@@ -725,6 +734,7 @@ document.addEventListener('click', e => {
   if (t.id === 'back') goUp();
   else if (t.dataset.tab) { state.mode = 'look'; state.step = 0; }
   else if ('restartLook' in t.dataset) { for (const k in tries) if (tries[k].st !== 'ok') delete tries[k]; state.step = 2; }
+  else if ('delg' in t.dataset) { state.garment = null; render(true); return; }
   else if (t.dataset.src) { state.src = t.dataset.src; render(true); return; }
   else if ('forget' in t.dataset) { try { localStorage.removeItem('cabine-photo'); } catch (_) {} state.photo = null; state.saved = false; }
   else if (t.dataset.mode) { state.mode = t.dataset.mode; state.step = 1; }
