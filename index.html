@@ -96,6 +96,26 @@ a.cta[aria-disabled] { opacity: .5; pointer-events: none; }
 .dlabel { font: 800 15px var(--display); }
 .phone { width: min(78%, 290px); aspect-ratio: 390 / 664; border-radius: 34px; padding: 8px; background: var(--ink); box-shadow: 0 24px 50px rgba(18,20,30,.28); }
 .phone video { width: 100%; height: 100%; display: block; border-radius: 27px; object-fit: cover; background: #eef1f5; }
+.home { max-width: 620px; margin: 0 auto; padding-top: 8px; }
+.home h1 { font-size: clamp(42px, 12vw, 64px); }
+.choices { display: grid; gap: 14px; margin-top: 6px; }
+.choice { display: grid; grid-template-columns: 58px minmax(0, 1fr) 28px; gap: 14px; align-items: center; text-align: left; padding: 20px 18px; border-radius: 24px; border: 1px solid rgba(255,255,255,.8); background: var(--glass); backdrop-filter: blur(14px); box-shadow: 0 12px 30px rgba(18,20,30,.08); cursor: pointer; color: var(--ink); transition: transform .15s, box-shadow .2s; }
+.choice:hover { box-shadow: 0 16px 36px rgba(47,107,255,.18); transform: translateY(-2px); }
+.choice:active { transform: scale(.98); }
+.choice .ce { width: 58px; height: 58px; border-radius: 18px; display: grid; place-items: center; font-size: 30px; background: #fff; }
+.choice b { display: block; font: 800 22px var(--display); margin-bottom: 4px; }
+.choice small { color: var(--muted); font-size: 14px; line-height: 1.4; }
+.choice .go { font-size: 22px; color: var(--pink); font-weight: 800; }
+.choice:first-child { background: var(--grad); color: #fff; border: 0; }
+.choice:first-child small, .choice:first-child .go { color: rgba(255,255,255,.88); }
+details.demo { text-align: center; }
+details.demo summary { cursor: pointer; font-weight: 800; color: var(--pink); list-style: none; padding: 8px; }
+details.demo summary::-webkit-details-marker { display: none; }
+details.demo .phone { margin: 10px auto 0; }
+.seg { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 6px; border-radius: 18px; background: var(--glass); border: 1px solid var(--line); }
+.seg button { border: 0; background: none; padding: 13px; border-radius: 13px; font-weight: 800; font-size: 15px; color: var(--muted); cursor: pointer; }
+.seg button[aria-selected="true"] { background: var(--ink); color: #fff; }
+.linkbox small b { color: var(--ink); }
 .mephoto { display: grid; grid-template-columns: 54px 1fr; gap: 12px; align-items: center; background: var(--glass); backdrop-filter: blur(12px); border: 1px solid var(--line); border-radius: 18px; padding: 10px 12px; font-size: 14px; }
 .mephoto b { display: block; font: 800 15px var(--display); }
 .mephoto img { width: 54px; height: 70px; object-fit: cover; border-radius: 12px; }
@@ -103,7 +123,7 @@ a.cta[aria-disabled] { opacity: .5; pointer-events: none; }
   background: rgba(18,20,30,.92); backdrop-filter: blur(14px); box-shadow: 0 14px 34px rgba(18,20,30,.3); }
 .tabbar button { border: 0; background: none; color: rgba(255,255,255,.65); font-weight: 800; font-size: 14px; padding: 11px 18px; border-radius: 15px; cursor: pointer; white-space: nowrap; }
 .tabbar button[aria-pressed="true"] { background: #fff; color: var(--ink); }
-.app { padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 96px) !important; }
+
 .steps3 { display: grid; gap: 10px; }
 .steps3 div { display: grid; grid-template-columns: 46px 1fr; gap: 12px; align-items: center; background: var(--glass); backdrop-filter: blur(12px); border: 1px solid var(--line); border-radius: 18px; padding: 12px 14px; font-size: 14.5px; }
 .steps3 span { width: 46px; height: 46px; border-radius: 14px; display: grid; place-items: center; font-size: 22px; background: #fff; }
@@ -208,7 +228,6 @@ a.cta[aria-disabled] { opacity: .5; pointer-events: none; }
 <div class="app">
   <div class="top"><button class="back" type="button" id="back" aria-label="Retour" hidden>←</button><div class="logo">look<span>miz</span></div></div>
   <main id="app"></main>
-  <nav class="tabbar" aria-label="Espaces"><button type="button" data-tab="look" aria-pressed="true">✨ Mes looks</button><button type="button" data-tab="shop" aria-pressed="false">🛍️ En magasin</button></nav>
   <input id="photo" type="file" accept="image/*" hidden>
   <input id="garment" type="file" accept="image/*" capture="environment" hidden>
   <input id="garment2" type="file" accept="image/*" hidden>
@@ -417,18 +436,14 @@ function shrink(file) {
 const frame = (src, extra = '') => `<div class="frame ${extra}"><div class="blur" style="background-image:url('${src}')"></div><img src="${src}" alt="Ta photo"></div>`;
 const showIds = ['91', '30', '192'];
 const S = [
-  () => `<section class="screen">
-      <span class="pill"><i></i>Essayage virtuel, en 20 secondes</span>
+  () => `<section class="screen solo home">
       <h1>Essaie tout. <span class="hl">Sur toi.</span></h1>
-      <p class="sub">Une photo suffit. Lookmiz lit ta silhouette, choisit les pièces qui te vont et te les fait porter.</p>
-      <div class="showcase media">${showIds.map((id, i) => `<div class="card c${i}"><img src="${pic(DATA.g[id], 500)}" alt="${DATA.g[id].n}"></div>`).join('')}
-        <span class="float a">✨ Analyse de silhouette</span><span class="float b">👔 3 looks pour toi</span><span class="float c">🪞 Sur ta propre photo</span></div>
-      <button class="cta" type="button" data-start="look">✨ Trouver mon look</button>
-      <button class="ghost" type="button" data-tab="shop">🛍️ En boutique ? Essaie sans cabine</button>
-      <div class="demo"><span class="dlabel">▶ Regarde comment ça marche</span>
-        <div class="phone"><video src="demo.mp4" poster="demo.jpg" autoplay muted loop playsinline preload="metadata" aria-label="Démonstration : photo, analyse de la silhouette, puis les 3 looks portés"></video></div></div>
-      <div class="marquee" aria-hidden="true"><div>${Array(2).fill('Soirée <b>✦</b> Mariage <b>✦</b> Travail <b>✦</b> Rendez-vous <b>✦</b> Sport <b>✦</b> Week-end <b>✦</b>').join(' ')}</div></div>
-      <div class="how"><div><span>📸</span>Ta photo</div><div><span>🧠</span>Ta silhouette lue</div><div><span>🪄</span>Tu te vois habillé·e</div></div>
+      <p class="sub">Mets ta photo, et vois les vêtements portés par toi, en 20 secondes.</p>
+      <div class="choices">
+        <button class="choice" type="button" data-start="look"><span class="ce">✨</span><span><b>Mes looks</b><small>Lookmiz lit ta silhouette et te montre 3 tenues qui te vont, pour l'occasion de ton choix.</small></span><span class="go">→</span></button>
+        <button class="choice" type="button" data-start="shop"><span class="ce">🪞</span><span><b>Essayage virtuel</b><small>Tu as repéré un habit ? Importe sa photo ou colle son lien, et vois-le sur toi.</small></span><span class="go">→</span></button>
+      </div>
+      <details class="demo"><summary>▶ Voir la démo (45 s)</summary><div class="phone"><video src="demo.mp4" poster="demo.jpg" muted loop playsinline controls preload="none" aria-label="Démonstration de Lookmiz"></video></div></details>
       ${account()}
     </section>`,
   () => `<section class="screen">
@@ -468,15 +483,19 @@ const S = [
     </section>`;
   },
   () => `<section class="screen">
-      <h2>Photographie <span class="hl">l'habit</span></h2>
-      <p class="sub">En boutique, sur le cintre ou le mannequin. Tu le vois sur ta photo.</p>
-      <label class="media" for="garment" tabindex="0" style="cursor:pointer;display:block">${state.garment ? frame(state.garment) : `<div class="frame"><div class="empty"><span class="plus">📷</span><b>Prendre l'habit en photo</b>Bien à plat ou sur un cintre, en entier</div></div>`}</label>
-      <div class="tips"><span>👕 L'habit en entier</span><span>💡 Bonne lumière</span><span>🧺 Fond simple</span></div>
-      <div class="row"><label class="ghost" for="garment" tabindex="0">📷 Prendre une photo</label><label class="ghost" for="garment2" tabindex="0">🖼️ Capture d'écran</label></div>
-      <div class="linkbox"><b>🔗 Ou colle le lien d'un habit</b><small>Vinted, Zara, Shein, Asos… la photo de l'article est récupérée.</small>
-        <div class="lrow"><input id="glink" type="url" inputmode="url" placeholder="https://…" aria-label="Lien de l'habit"><button class="ghost" type="button" data-import>Importer</button></div>
-        <p class="note" id="gmsg" role="status"></p></div>
-      <button class="cta" type="button" data-shoptry ${state.garment ? '' : 'disabled'}>${state.garment ? '🪄 Me l\'essayer' : '👆 Choisis d\'abord un habit'}</button>
+      <h2>Essayage <span class="hl">virtuel</span></h2>
+      ${state.photo ? `<div class="mephoto"><img src="${state.photo}" alt="Ta photo"><p style="margin:0"><b>✅ Ta photo</b><label class="link" for="photo" tabindex="0">Changer</label></p></div>` : ''}
+      <div class="seg" role="tablist"><button type="button" role="tab" data-src="img" aria-selected="${state.src !== 'link'}">📷 Image</button><button type="button" role="tab" data-src="link" aria-selected="${state.src === 'link'}">🔗 Lien</button></div>
+      ${state.src === 'link' ? `<div class="linkbox"><b>Colle le lien de l'article</b>
+          <div class="lrow"><input id="glink" type="url" inputmode="url" placeholder="https://…" aria-label="Lien de l'habit"><button class="ghost" type="button" data-import>Importer</button></div>
+          <p class="note" id="gmsg" role="status"></p>
+          <small>✅ Marche avec : <b>Vinted, Shein, Zalando, Amazon, Nike, Jules, Primark</b>.</small>
+          <small>❌ Ne marche pas avec : Zara, H&amp;M, Mango, Bershka, Kiabi, Decathlon, La Redoute, Celio, Lacoste, Adidas, Asos, Uniqlo. Pour eux, fais une capture d'écran et choisis « Image ».</small></div>
+        ${state.garment ? frame(state.garment) : ''}`
+      : `<label class="media" for="garment2" tabindex="0" style="cursor:pointer;display:block">${state.garment ? frame(state.garment) : `<div class="frame"><div class="empty"><span class="plus">👕</span><b>Ajoute l'habit</b>Photo prise en boutique ou capture d'écran d'un site</div></div>`}</label>
+        <div class="row"><label class="ghost" for="garment" tabindex="0">📷 Prendre une photo</label><label class="ghost" for="garment2" tabindex="0">🖼️ Choisir une image</label></div>
+        <p class="note">L'habit en entier, bien éclairé, sur un fond simple.</p>`}
+      <button class="cta" type="button" data-shoptry ${state.garment ? '' : 'disabled'}>${state.garment ? '🪄 Me l\'essayer' : '👆 Ajoute d\'abord un habit'}</button>
       ${quotaPill()}
     </section>`,
   () => {
@@ -488,7 +507,7 @@ const S = [
       ${t.st === 'err' ? `<p class="note">Ça n'a pas marché (${t.why}). Reprends l'habit en entier, bien éclairé. <button class="link" type="button" data-shoptry>Réessayer</button></p>` : ''}
       <div class="piece"><div class="ph"><img src="${state.garment}" alt="L'habit photographié"></div><div><b>L'habit de la boutique</b><small>Tu peux l'essayer avec une autre photo de toi, ou essayer un autre habit.</small></div></div>
       <div class="row"><button class="ghost" type="button" data-go="5" data-newg="1">Autre habit</button><label class="cta" for="photo" tabindex="0">Autre photo de moi</label></div>
-      <button class="link" type="button" data-tab="shop">Retour au magasin</button>
+      <button class="link" type="button" data-tab="look">Accueil</button>
     </section>`;
   },
   () => `<section class="screen">
@@ -560,7 +579,7 @@ function render(soft) {
   }
   if (soft) { const sc = $('#app .screen'); if (sc) sc.style.animation = 'none'; scrollTo(0, y); } else scrollTo(0, 0);
   $('#back').hidden = state.step === 0;
-  document.querySelectorAll('[data-tab]').forEach(b => b.closest('.tabbar') && b.setAttribute('aria-pressed', b.dataset.tab === state.mode));
+
 
 }
 
@@ -614,11 +633,12 @@ function onTryDone() {
 
 document.addEventListener('click', e => {
   const t = e.target.closest('button'); if (!t) return;
-  if (t.id === 'back') { state.step = state.step === 7 ? 0 : state.step === 8 ? (state.mode === 'shop' ? 7 : 0) : state.step === 9 ? (state.prev ?? 0) : state.step === 4 ? 2 : state.step === 5 ? 7 : state.step === 6 ? 5 : state.step === 1 && state.mode === 'shop' ? 7 : Math.max(0, state.step - 1); }
-  else if (t.dataset.tab) { if (t.closest('.tabbar') || state.step !== 7) state.mode = t.dataset.tab; state.step = t.dataset.tab === 'shop' ? 7 : 0; if (t.dataset.tab === 'look') state.mode = 'look'; }
+  if (t.id === 'back') { state.step = state.step === 7 ? 0 : state.step === 8 ? 0 : state.step === 9 ? (state.prev ?? 0) : state.step === 4 ? 2 : state.step === 5 ? 0 : state.step === 6 ? 5 : state.step === 1 ? 0 : Math.max(0, state.step - 1); }
+  else if (t.dataset.tab) { state.mode = 'look'; state.step = 0; }
+  else if (t.dataset.src) { state.src = t.dataset.src; render(true); return; }
   else if ('forget' in t.dataset) { try { localStorage.removeItem('cabine-photo'); } catch (_) {} state.photo = null; state.saved = false; }
   else if (t.dataset.mode) { state.mode = t.dataset.mode; state.step = 1; }
-  else if (t.dataset.start) { state.mode = t.dataset.start; if (sb && !session) { try { localStorage.setItem('cabine-next', state.mode); } catch (_) {} state.step = 8; } else state.step = state.mode === 'shop' && state.photo ? 5 : 1; }
+  else if (t.dataset.start) { state.mode = t.dataset.start; if (sb && !session) { try { localStorage.setItem('cabine-next', state.mode); } catch (_) {} state.step = 8; } else state.step = !state.photo ? 1 : state.mode === 'shop' ? 5 : 2; }
   else if ('switch' in t.dataset) { state.signup = !state.signup; }
   else if ('plus' in t.dataset) { state.prev = state.step === 9 ? state.prev : state.step; state.step = 9; }
   else if (t.dataset.plan) { state.plan = t.dataset.plan; render(true); return; }
