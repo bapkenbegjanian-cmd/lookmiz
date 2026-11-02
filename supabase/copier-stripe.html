@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="fr" translate="no" class="notranslate">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="google" content="notranslate"><meta name="robots" content="noindex">
+<title>Code de la fonction Stripe</title>
+<style>body{margin:0;font:16px system-ui,sans-serif;background:#f3f5f8;color:#121417;padding:16px}button{width:100%;padding:20px;font:800 20px system-ui;border:0;border-radius:16px;background:#2f6bff;color:#fff}p{margin:12px 0}textarea{width:100%;height:50vh;font:12px ui-monospace,monospace;border-radius:12px;border:1px solid #ccc;padding:8px;box-sizing:border-box}</style></head>
+<body>
+<button id="b" type="button">📋 Copier le code</button>
+<p id="m">Touche le bouton, puis colle dans la nouvelle fonction stripe-webhook (onglet Code), et clique sur Déployer.</p>
+<textarea id="t" readonly spellcheck="false" translate="no">// Fonction Supabase « stripe-webhook » de Cabine.
+// Stripe l&#x27;appelle après chaque paiement, renouvellement ou résiliation : on met à jour la table « abonnes ».
+import Stripe from &#x27;npm:stripe@14.25.0&#x27;;
+import { createClient } from &#x27;npm:@supabase/supabase-js@2&#x27;;
+
+const stripe = new Stripe(&#x27;sk_inutilise&#x27;, { apiVersion: &#x27;2024-04-10&#x27; });
+const admin = createClient(Deno.env.get(&#x27;SUPABASE_URL&#x27;)!, Deno.env.get(&#x27;SUPABASE_SERVICE_ROLE_KEY&#x27;)!);
+const secret = Deno.env.get(&#x27;STRIPE_WEBHOOK_SECRET&#x27;)!;
+
+Deno.serve(async (req) =&gt; {
+  const sig = req.headers.get(&#x27;stripe-signature&#x27;) || &#x27;&#x27;;
+  const raw = await req.text();
+  let event;
+  try { event = await stripe.webhooks.constructEventAsync(raw, sig, secret); }
+  catch { return new Response(&#x27;signature invalide&#x27;, { status: 400 }); }
+  const o: any = event.data.object;
+
+  // Premier paiement : on relie le compte Cabine (client_reference_id) à l&#x27;abonnement Stripe
+  if (event.type === &#x27;checkout.session.completed&#x27; &amp;&amp; o.client_reference_id) {
+    await admin.from(&#x27;abonnes&#x27;).upsert({ user_id: o.client_reference_id, stripe_customer: o.customer, stripe_sub: o.subscription,
+      // durée payée : un an pour la formule annuelle (79,99 €), sinon un mois ; Stripe la précise ensuite à chaque renouvellement
+      fin: new Date(Date.now() + ((o.amount_total ?? 0) &gt;= 5000 ? 367 : 32) * 86400000).toISOString() });
+  }
+  // Renouvellement, changement ou résiliation : la date de fin suit celle de Stripe
+  if (event.type.startsWith(&#x27;customer.subscription.&#x27;)) {
+    const fin = event.type === &#x27;customer.subscription.deleted&#x27; || o.status === &#x27;canceled&#x27; || o.status === &#x27;unpaid&#x27;
+      ? new Date().toISOString()
+      // selon la version de l&#x27;API Stripe, la fin de période est sur l&#x27;abonnement ou sur sa première ligne
+      : new Date(((o.current_period_end ?? o.items?.data?.[0]?.current_period_end) || Date.now() / 1000 + 32 * 86400) * 1000).toISOString();
+    await admin.from(&#x27;abonnes&#x27;).update({ fin, stripe_sub: o.id }).eq(&#x27;stripe_customer&#x27;, o.customer);
+  }
+  return new Response(&#x27;ok&#x27;);
+});
+</textarea>
+<script>
+document.getElementById('b').onclick = async () => {
+  const t = document.getElementById('t'), m = document.getElementById('m');
+  try { await navigator.clipboard.writeText(t.value); } catch (_) { t.focus(); t.select(); document.execCommand('copy'); }
+  m.textContent = '✅ Code copié ! Va dans Supabase, efface tout, colle, puis Déployer.';
+};
+</script>
+</body></html>

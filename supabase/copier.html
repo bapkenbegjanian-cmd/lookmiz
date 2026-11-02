@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="fr" translate="no" class="notranslate">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="google" content="notranslate"><meta name="robots" content="noindex">
+<title>Code de la fonction Cabine</title>
+<style>body{margin:0;font:16px system-ui,sans-serif;background:#f3f5f8;color:#121417;padding:16px}button{width:100%;padding:20px;font:800 20px system-ui;border:0;border-radius:16px;background:#2f6bff;color:#fff}p{margin:12px 0}textarea{width:100%;height:50vh;font:12px ui-monospace,monospace;border-radius:12px;border:1px solid #ccc;padding:8px;box-sizing:border-box}</style></head>
+<body>
+<button id="b" type="button">📋 Copier le code</button>
+<p id="m">Touche le bouton, puis colle dans Supabase (onglet Code), et clique sur Déployer.</p>
+<textarea id="t" readonly spellcheck="false" translate="no">// Fonction Supabase « bright-endpoint » de Cabine.
+// Elle garde la clé FASHN côté serveur, vérifie que la personne est connectée,
+// compte ses essais gratuits (1 essai « looks » de 3 images + 1 essai « magasin »)
+// et lit la photo d&#x27;un habit à partir d&#x27;un lien.
+import { createClient } from &#x27;npm:@supabase/supabase-js@2&#x27;;
+
+const CORS = { &#x27;Access-Control-Allow-Origin&#x27;: &#x27;*&#x27;, &#x27;Access-Control-Allow-Headers&#x27;: &#x27;*&#x27;, &#x27;Access-Control-Allow-Methods&#x27;: &#x27;POST, OPTIONS&#x27; };
+const FREE = { look: 1, shop: 1 }, PER_TRY = 3;
+const kind = (g: string) =&gt; g.startsWith(&#x27;shop&#x27;) ? &#x27;shop&#x27; : &#x27;look&#x27;;
+const json = (d: unknown, status = 200) =&gt; new Response(JSON.stringify(d), { status, headers: { ...CORS, &#x27;Content-Type&#x27;: &#x27;application/json&#x27; } });
+const admin = createClient(Deno.env.get(&#x27;SUPABASE_URL&#x27;)!, Deno.env.get(&#x27;SUPABASE_SERVICE_ROLE_KEY&#x27;)!);
+const fashnKey = Deno.env.get(&#x27;FASHN_KEY&#x27;) ?? Deno.env.get(&#x27;KEY&#x27;) ?? Deno.env.get(&#x27;key&#x27;);
+
+async function quota(uid: string) {
+  const { data: rows } = await admin.from(&#x27;essais&#x27;).select(&#x27;id, groupe&#x27;).eq(&#x27;user_id&#x27;, uid);
+  const groups = new Map&lt;string, number&gt;();
+  for (const r of rows ?? []) { const g = r.groupe ?? &#x27;x&#x27; + r.id; groups.set(g, (groups.get(g) ?? 0) + 1); }
+  const { data: ab } = await admin.from(&#x27;abonnes&#x27;).select(&#x27;fin&#x27;).eq(&#x27;user_id&#x27;, uid).maybeSingle();
+  const pro = !!(ab &amp;&amp; (!ab.fin || new Date(ab.fin) &gt; new Date()));
+  const used = { look: 0, shop: 0 };
+  for (const g of groups.keys()) used[kind(g)]++;
+  return { used, free: FREE, pro, groups };
+}
+
+// Contenu d&#x27;une balise &lt;meta property=&quot;...&quot;&gt; (écrit sans expressions régulières à guillemets, pour survivre aux copier-coller)
+function metaContent(html: string, name: string) {
+  const low = html.toLowerCase();
+  let i = 0;
+  while ((i = low.indexOf(&#x27;&lt;meta&#x27;, i)) !== -1) {
+    const end = low.indexOf(&#x27;&gt;&#x27;, i);
+    if (end === -1) break;
+    const tag = html.slice(i, end), tl = low.slice(i, end);
+    const hit = [&#x27;property=&#x27;, &#x27;name=&#x27;].some(k =&gt; [String.fromCharCode(34), String.fromCharCode(39)].some(q =&gt; tl.includes(k + q + name + q)));
+    const c = tl.indexOf(&#x27;content=&#x27;);
+    if (hit &amp;&amp; c !== -1) {
+      const q = tag.charAt(c + 8), stop = tag.indexOf(q, c + 9);
+      if (stop !== -1) return tag.slice(c + 9, stop);
+    }
+    i = end;
+  }
+  return &#x27;&#x27;;
+}
+
+// Lit la photo d&#x27;aperçu (og:image) d&#x27;une page produit, comme le font les messageries pour les liens partagés
+async function preview(link: string) {
+  let u: URL;
+  try { u = new URL(link); } catch { return { error: &#x27;lien invalide&#x27; }; }
+  if (!/^https?:$/.test(u.protocol) || /^(localhost|127\.|10\.|192\.168\.|169\.254\.|0\.|\[)/.test(u.hostname) || /^172\.(1[6-9]|2\d|3[01])\./.test(u.hostname)) return { error: &#x27;lien refusé&#x27; };
+  const c = new AbortController(), to = setTimeout(() =&gt; c.abort(), 8000);
+  try {
+    const r = await fetch(u, { signal: c.signal, redirect: &#x27;follow&#x27;, headers: { &#x27;User-Agent&#x27;: &#x27;Mozilla/5.0 (compatible; CabineBot/1.0; aperçu de lien)&#x27;, &#x27;Accept-Language&#x27;: &#x27;fr,en&#x27; } });
+    if (!r.ok) return { error: &#x27;site inaccessible (&#x27; + r.status + &#x27;)&#x27; };
+    const html = (await r.text()).slice(0, 600000);
+    const meta = (p: string) =&gt; metaContent(html, p);
+    const img = meta(&#x27;og:image&#x27;) || meta(&#x27;og:image:url&#x27;) || meta(&#x27;twitter:image&#x27;);
+    if (!img) return { error: &#x27;pas de photo trouvée sur cette page&#x27; };
+    return { image: new URL(img.replace(/&amp;amp;/g, &#x27;&amp;&#x27;), u).href, title: (meta(&#x27;og:title&#x27;) || &#x27;&#x27;).replace(/&amp;amp;/g, &#x27;&amp;&#x27;).slice(0, 120) };
+  } catch { return { error: &#x27;le site ne répond pas&#x27; }; } finally { clearTimeout(to); }
+}
+
+Deno.serve(async (req) =&gt; {
+  if (req.method === &#x27;OPTIONS&#x27;) return new Response(&#x27;ok&#x27;, { headers: CORS });
+  const jwt = (req.headers.get(&#x27;Authorization&#x27;) || &#x27;&#x27;).replace(/^Bearer\s+/i, &#x27;&#x27;);
+  const { data } = jwt ? await admin.auth.getUser(jwt) : { data: { user: null } };
+  const user = data?.user;
+  if (!user) return json({ error: &#x27;connexion&#x27; }, 401);
+  const { action, body, id, link, group } = await req.json().catch(() =&gt; ({}));
+
+  if (action === &#x27;quota&#x27;) { const { groups, ...q } = await quota(user.id); return json(q); }
+  if (action === &#x27;preview&#x27;) return json(await preview(String(link || &#x27;&#x27;)));
+
+  const auth = { Authorization: &#x27;Bearer &#x27; + fashnKey, &#x27;Content-Type&#x27;: &#x27;application/json&#x27; };
+  if (action === &#x27;run&#x27;) {
+    const { groups, ...q } = await quota(user.id), g = /^[\w-]{4,60}$/.test(group || &#x27;&#x27;) ? group : null;
+    const inGroup = g ? groups.get(g) ?? 0 : 0;
+    if (inGroup &gt;= PER_TRY) return json({ error: &#x27;limite par essai&#x27; }, 429);
+    const k = kind(g ?? &#x27;look&#x27;);
+    if (!q.pro &amp;&amp; !inGroup &amp;&amp; q.used[k] &gt;= FREE[k]) return json({ error: &#x27;quota&#x27;, kind: k, used: q.used, free: FREE }, 402);
+    const r = await fetch(&#x27;https://api.fashn.ai/v1/run&#x27;, { method: &#x27;POST&#x27;, headers: auth, body: JSON.stringify(body) });
+    const out = await r.json().catch(() =&gt; ({}));
+    if (out.id) await admin.from(&#x27;essais&#x27;).insert({ user_id: user.id, prediction: out.id, groupe: g });
+    return json(out, r.status);
+  }
+  if (action === &#x27;status&#x27; &amp;&amp; /^[\w-]+$/.test(id || &#x27;&#x27;)) {
+    const r = await fetch(&#x27;https://api.fashn.ai/v1/status/&#x27; + id, { headers: auth });
+    return json(await r.json().catch(() =&gt; ({})), r.status);
+  }
+  return json({ error: &#x27;demande invalide&#x27; }, 400);
+});
+</textarea>
+<script>
+document.getElementById('b').onclick = async () => {
+  const t = document.getElementById('t'), m = document.getElementById('m');
+  try { await navigator.clipboard.writeText(t.value); } catch (_) { t.focus(); t.select(); document.execCommand('copy'); }
+  m.textContent = '✅ Code copié ! Va dans Supabase, efface tout, colle, puis Déployer.';
+};
+</script>
+</body></html>

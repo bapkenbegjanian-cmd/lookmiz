@@ -1,0 +1,695 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Lookmiz — essaie les looks sur ta photo</title>
+<meta name="description" content="Mets ta photo : Lookmiz lit ta silhouette et t'habille avec les looks qui te vont.">
+<meta name="theme-color" content="#f3f5f8">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://images.unsplash.com"><link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+<style>
+:root {
+  --ink: #1d1530; --muted: #6f6688; --line: rgba(29,21,48,.1); --glass: rgba(255,255,255,.62);
+  --pink: #2f6bff; --violet: #12b3a6; --peach: #ffc857; --mint: #2fd18b;
+  --grad: linear-gradient(120deg, var(--pink), var(--violet));
+  --display: "Syne", "Arial Black", sans-serif; --body: "Plus Jakarta Sans", system-ui, sans-serif;
+  color-scheme: light;
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; color: var(--ink); font: 16px/1.5 var(--body); background: #f3f5f8; }
+button { font: inherit; color: inherit; }
+img { display: block; max-width: 100%; }
+
+/* Fond animé : dégradé vivant */
+.bg { position: fixed; inset: 0; z-index: 0; overflow: hidden; background: linear-gradient(160deg, #f6f8fb, #eef4f6 55%, #f7f5f0); }
+.bg i { position: absolute; border-radius: 50%; filter: blur(60px); opacity: .7; animation: blob 16s ease-in-out infinite alternate; }
+.bg i:nth-child(1) { width: 380px; height: 380px; background: #cddcff; top: -120px; left: -100px; }
+.bg i:nth-child(2) { width: 340px; height: 340px; background: #c6efe7; top: 30%; right: -140px; animation-delay: -6s; }
+.bg i:nth-child(3) { width: 300px; height: 300px; background: #ebe4d6; bottom: -100px; left: 10%; animation-delay: -11s; }
+@keyframes blob { 50% { transform: translate(60px, 50px) scale(1.15); } 100% { transform: translate(-30px, 80px) scale(.95); } }
+
+.app { position: relative; z-index: 1; max-width: 520px; margin: 0 auto; min-height: 100vh; min-height: 100dvh;
+  padding: calc(env(safe-area-inset-top, 0px) + 12px) max(18px, env(safe-area-inset-right, 0px)) calc(env(safe-area-inset-bottom, 0px) + 32px) max(18px, env(safe-area-inset-left, 0px)); }
+.top { display: grid; grid-template-columns: 44px 1fr 44px; align-items: center; margin-bottom: 14px; }
+.logo { grid-column: 2; text-align: center; font: 800 26px/1 var(--display); letter-spacing: -.02em; }
+.logo span { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.back { width: 44px; height: 44px; border-radius: 14px; border: 1px solid var(--line); background: var(--glass); backdrop-filter: blur(12px); cursor: pointer; font-size: 18px; }
+
+.screen { display: grid; gap: 18px; animation: screenin .6s cubic-bezier(.2,.8,.2,1) both; }
+@keyframes screenin { from { opacity: 0; transform: translateY(16px) scale(.99); } }
+h1, h2 { font-family: var(--display); font-weight: 800; margin: 0; letter-spacing: -.03em; text-wrap: balance; }
+h1 { font-size: clamp(40px, 11.5vw, 60px); line-height: .95; }
+h2 { font-size: clamp(30px, 8.5vw, 40px); line-height: 1; }
+.hl { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.sub { color: var(--muted); margin: 0; max-width: 36ch; }
+.pill { display: inline-flex; align-items: center; gap: 8px; width: max-content; font-size: 13px; font-weight: 700; padding: 7px 12px; border-radius: 99px; background: var(--glass); border: 1px solid var(--line); backdrop-filter: blur(12px); }
+.pill i { width: 8px; height: 8px; border-radius: 50%; background: var(--mint); box-shadow: 0 0 0 4px rgba(61,214,181,.2); animation: pulse 1.6s infinite; }
+@keyframes pulse { 50% { box-shadow: 0 0 0 8px rgba(61,214,181,0); } }
+
+.cta { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; border: 0; border-radius: 18px; padding: 18px 24px; cursor: pointer; font-weight: 800; font-size: 17px; text-decoration: none;
+  color: #fff; background: var(--grad); background-size: 200% 100%; box-shadow: 0 14px 30px rgba(47,107,255,.28); animation: gradmove 5s ease infinite; transition: transform .15s; }
+@keyframes gradmove { 50% { background-position: 100% 0; } }
+.cta:active { transform: scale(.97); }
+.cta[disabled] { opacity: .4; pointer-events: none; }
+.ghost { display: flex; align-items: center; justify-content: center; width: 100%; border: 1px solid var(--line); border-radius: 18px; padding: 16px 20px; background: var(--glass); backdrop-filter: blur(12px); cursor: pointer; font-weight: 700; text-align: center; text-decoration: none; color: var(--ink); }
+button:focus-visible, a:focus-visible, label:focus-visible { outline: 3px solid var(--violet); outline-offset: 3px; }
+
+/* Accueil */
+.showcase { position: relative; height: 380px; margin: 6px 0; }
+.showcase .card { position: absolute; width: 58%; aspect-ratio: 3 / 4; border-radius: 26px; overflow: hidden; box-shadow: 0 24px 50px rgba(29,21,48,.18); border: 4px solid #fff; background: #fff; transition: all .9s cubic-bezier(.2,.8,.2,1); }
+.showcase .card img { width: 100%; height: 100%; object-fit: cover; }
+.showcase .c0 { left: 21%; top: 0; z-index: 3; transform: rotate(0); }
+.showcase .c1 { left: 0; top: 40px; z-index: 2; transform: rotate(-9deg) scale(.86); opacity: .9; }
+.showcase .c2 { left: 42%; top: 40px; z-index: 1; transform: rotate(9deg) scale(.86); opacity: .9; }
+.float { position: absolute; z-index: 5; font-size: 13px; font-weight: 800; padding: 9px 13px; border-radius: 14px; background: #fff; box-shadow: 0 10px 24px rgba(29,21,48,.14); animation: bob 4s ease-in-out infinite; white-space: nowrap; }
+.float.a { left: -4px; top: 18px; } .float.b { right: -4px; top: 170px; animation-delay: -1.3s; } .float.c { left: 8px; bottom: 6px; animation-delay: -2.6s; }
+@keyframes bob { 50% { transform: translateY(-10px); } }
+.marquee { overflow: hidden; margin: 0 -18px; padding: 12px 0; background: var(--ink); color: #fff; transform: rotate(-2deg); }
+.marquee div { display: flex; gap: 28px; width: max-content; animation: slide 22s linear infinite; font: 800 15px var(--display); letter-spacing: .04em; text-transform: uppercase; }
+.marquee b { color: var(--peach); }
+@keyframes slide { to { transform: translateX(-50%); } }
+.how { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.linkbox { display: grid; gap: 6px; background: var(--glass); backdrop-filter: blur(12px); border: 1px solid var(--line); border-radius: 18px; padding: 14px; }
+.linkbox small { color: var(--muted); }
+.lrow { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
+.lrow input, .loginbox input { font: inherit; padding: 14px; border-radius: 14px; border: 1px solid var(--line); background: #fff; color: var(--ink); min-width: 0; }
+.lrow .ghost { width: auto; padding: 12px 16px; }
+.loginbox { display: grid; gap: 10px; }
+.plans { display: grid; gap: 10px; }
+.plan { display: grid; grid-template-columns: 26px minmax(0, 1fr) auto; gap: 12px; align-items: center; width: 100%; text-align: left; padding: 16px; border-radius: 20px; background: var(--glass); backdrop-filter: blur(12px); border: 2px solid var(--line); color: var(--ink); cursor: pointer; transition: border-color .2s, box-shadow .2s, background .2s; }
+.plan .dot { width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--line); background: #fff; transition: all .2s; }
+.plan.on { border-color: var(--pink); background: #fff; box-shadow: 0 10px 26px rgba(47,107,255,.15); }
+.plan.on .dot { border: 7px solid var(--pink); }
+.plan .pinfo { display: grid; gap: 2px; min-width: 0; }
+.plan .pinfo b { font: 800 18px var(--display); }
+.plan small { color: var(--muted); font-size: 13px; }
+.plan em { font-style: normal; font-size: 12px; font-weight: 800; color: #fff; background: var(--grad); padding: 3px 9px; border-radius: 99px; width: max-content; margin-top: 4px; }
+.plan .pprice { text-align: right; display: grid; }
+.plan .pprice b { font: 800 22px var(--display); white-space: nowrap; }
+.recap { background: var(--glass); border: 1px dashed var(--line); border-radius: 16px; padding: 12px 14px; font-size: 14px; color: var(--muted); }
+.recap b { color: var(--ink); }
+a.cta[aria-disabled] { opacity: .5; pointer-events: none; }
+.plan[aria-disabled] { opacity: .55; pointer-events: none; }
+.demo { display: grid; justify-items: center; gap: 10px; margin: 6px 0; }
+.dlabel { font: 800 15px var(--display); }
+.phone { width: min(78%, 290px); aspect-ratio: 390 / 664; border-radius: 34px; padding: 8px; background: var(--ink); box-shadow: 0 24px 50px rgba(18,20,30,.28); }
+.phone video { width: 100%; height: 100%; display: block; border-radius: 27px; object-fit: cover; background: #eef1f5; }
+.mephoto { display: grid; grid-template-columns: 54px 1fr; gap: 12px; align-items: center; background: var(--glass); backdrop-filter: blur(12px); border: 1px solid var(--line); border-radius: 18px; padding: 10px 12px; font-size: 14px; }
+.mephoto b { display: block; font: 800 15px var(--display); }
+.mephoto img { width: 54px; height: 70px; object-fit: cover; border-radius: 12px; }
+.tabbar { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(env(safe-area-inset-bottom, 0px) + 12px); z-index: 20; display: flex; gap: 4px; padding: 5px; border-radius: 20px;
+  background: rgba(18,20,30,.92); backdrop-filter: blur(14px); box-shadow: 0 14px 34px rgba(18,20,30,.3); }
+.tabbar button { border: 0; background: none; color: rgba(255,255,255,.65); font-weight: 800; font-size: 14px; padding: 11px 18px; border-radius: 15px; cursor: pointer; white-space: nowrap; }
+.tabbar button[aria-pressed="true"] { background: #fff; color: var(--ink); }
+.app { padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 96px) !important; }
+.steps3 { display: grid; gap: 10px; }
+.steps3 div { display: grid; grid-template-columns: 46px 1fr; gap: 12px; align-items: center; background: var(--glass); backdrop-filter: blur(12px); border: 1px solid var(--line); border-radius: 18px; padding: 12px 14px; font-size: 14.5px; }
+.steps3 span { width: 46px; height: 46px; border-radius: 14px; display: grid; place-items: center; font-size: 22px; background: #fff; }
+.steps3 b { display: block; font: 800 16px var(--display); }
+.shophero { position: relative; border-radius: 28px; overflow: hidden; background: var(--ink); color: #fff; padding: 22px 20px; display: grid; gap: 8px; }
+.shophero::after { content: "🛍️"; position: absolute; right: -6px; bottom: -14px; font-size: 96px; opacity: .25; transform: rotate(-12deg); }
+.shophero h2 { color: #fff; }
+.shopcard { background: var(--ink); color: #fff; border-radius: 22px; padding: 16px 18px; font-size: 14px; display: grid; gap: 4px; }
+.shopcard b { font: 800 17px var(--display); }
+.how div { background: var(--glass); backdrop-filter: blur(12px); border: 1px solid var(--line); border-radius: 18px; padding: 12px 10px; text-align: center; font-size: 12.5px; font-weight: 700; }
+.how span { display: block; font-size: 24px; margin-bottom: 4px; }
+
+/* Cadre photo : la photo entière, jamais coupée */
+.frame { position: relative; width: 100%; aspect-ratio: 3 / 4; border-radius: 28px; overflow: hidden; background: #fff; box-shadow: 0 24px 50px rgba(29,21,48,.16); border: 4px solid #fff; }
+.frame .blur { position: absolute; inset: -20px; background-size: cover; background-position: center; filter: blur(24px) saturate(1.2); opacity: .55; }
+.frame > img, .frame canvas { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+.frame .empty { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: 10px; text-align: center; padding: 24px; color: var(--muted); font-size: 14px;
+  background: repeating-linear-gradient(135deg, rgba(47,107,255,.04) 0 12px, transparent 12px 24px); border: 2px dashed rgba(47,107,255,.35); border-radius: 24px; }
+.frame .empty b { font: 800 22px var(--display); color: var(--ink); }
+.frame .plus { width: 72px; height: 72px; border-radius: 22px; background: var(--grad); color: #fff; display: grid; place-items: center; font-size: 34px; box-shadow: 0 12px 26px rgba(47,107,255,.3); }
+.frame .badge { position: absolute; left: 12px; top: 12px; z-index: 3; font-size: 12.5px; font-weight: 800; padding: 7px 11px; border-radius: 12px; background: rgba(255,255,255,.9); }
+.frame.scan::after { content: ""; position: absolute; left: 0; right: 0; height: 3px; top: 0; background: var(--grad); box-shadow: 0 0 22px 6px rgba(47,107,255,.4); animation: scanline 2.2s ease-in-out infinite alternate; z-index: 2; }
+@keyframes scanline { to { top: 100%; } }
+.reveal { animation: reveal 1.3s cubic-bezier(.2,.8,.2,1) both; }
+@keyframes reveal { from { clip-path: inset(0 0 100% 0); filter: blur(12px); } to { clip-path: inset(0); filter: none; } }
+.tips { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
+.tips span { font-size: 13px; font-weight: 600; background: var(--glass); border: 1px solid var(--line); border-radius: 99px; padding: 6px 12px; }
+
+/* Choix de l'occasion */
+.options { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.opt { position: relative; overflow: hidden; background: var(--glass); backdrop-filter: blur(14px); border: 1px solid rgba(255,255,255,.8); border-radius: 22px; padding: 18px 14px; display: grid; gap: 4px; cursor: pointer; text-align: left;
+  box-shadow: 0 8px 22px rgba(29,21,48,.07); opacity: 0; transform: translateY(14px); animation: up .55s cubic-bezier(.2,.8,.2,1) forwards; transition: transform .2s, box-shadow .2s; }
+.opt::before { content: ""; position: absolute; width: 90px; height: 90px; border-radius: 50%; right: -30px; top: -30px; background: var(--c); opacity: .35; filter: blur(4px); }
+.opt:hover { box-shadow: 0 14px 30px rgba(47,107,255,.18); }
+.opt:active { transform: scale(.97); }
+.opt .e { font-size: 32px; line-height: 1.1; }
+.opt b { font: 800 19px var(--display); }
+.opt small { color: var(--muted); font-size: 12.5px; }
+@keyframes up { to { opacity: 1; transform: none; } }
+
+/* Analyse IA */
+.log { display: grid; gap: 8px; background: rgba(29,21,48,.92); color: #fff; border-radius: 22px; padding: 16px 18px; font-size: 14px; min-height: 120px; box-shadow: 0 18px 40px rgba(29,21,48,.25); }
+.log p { margin: 0; position: relative; padding-left: 24px; animation: logline .4s ease both; }
+.log p::before { content: "✓"; position: absolute; left: 0; color: var(--mint); font-weight: 800; }
+.log p.wait::before { content: "•"; color: var(--peach); animation: blink 1s infinite; }
+.log p b { color: var(--peach); font-weight: 700; }
+@keyframes logline { from { opacity: 0; transform: translateX(-8px); } }
+@keyframes blink { 50% { opacity: .2; } }
+.log .choice { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
+.log .choice button { border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.08); color: #fff; border-radius: 12px; padding: 8px 12px; cursor: pointer; font-weight: 700; font-size: 13px; }
+
+/* Résultat */
+.tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; padding: 6px; border-radius: 18px; background: var(--glass); backdrop-filter: blur(12px); border: 1px solid var(--line); }
+.tabs button { border: 0; background: none; padding: 11px 4px; border-radius: 13px; cursor: pointer; color: var(--muted); font-weight: 800; font-size: 14px; transition: all .3s; }
+.tabs button[aria-pressed="true"] { background: var(--ink); color: #fff; }
+.tabs .ld { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--pink); margin-left: 6px; vertical-align: middle; animation: blink 1s infinite; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chips span { font-size: 12.5px; font-weight: 700; padding: 6px 10px; border-radius: 10px; background: #fff; border: 1px solid var(--line); }
+.piece { display: grid; grid-template-columns: 86px minmax(0, 1fr); gap: 14px; align-items: center; background: var(--glass); backdrop-filter: blur(14px); border: 1px solid rgba(255,255,255,.8); border-radius: 22px; padding: 12px; box-shadow: 0 10px 26px rgba(29,21,48,.08); }
+.piece .ph { width: 86px; aspect-ratio: 3 / 4; border-radius: 14px; overflow: hidden; background: #fff; }
+.piece .ph img { width: 100%; height: 100%; object-fit: cover; }
+.piece b { font: 800 18px/1.15 var(--display); display: block; }
+.piece .price { font-weight: 800; background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; font-variant-numeric: tabular-nums; }
+.piece small { color: var(--muted); display: block; font-size: 13px; margin-top: 3px; }
+.why { margin: 0; font-size: 14.5px; color: var(--muted); }
+.why b { color: var(--ink); }
+.row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.note { font-size: 13px; color: var(--muted); text-align: center; margin: 0; }
+.credit { font-size: 11px; color: var(--muted); text-align: center; }
+.credit a { color: inherit; }
+.link { background: none; border: 0; color: var(--muted); text-decoration: underline; cursor: pointer; justify-self: center; font-size: 14px; font-weight: 600; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01s !important; animation-iteration-count: 1 !important; transition: none !important; } .opt { opacity: 1; transform: none; } }
+
+/* Ordinateur : deux colonnes, visuel à gauche, contenu à droite */
+.col { display: grid; gap: 18px; min-width: 0; align-content: start; }
+@media (min-width: 900px) {
+  .app { max-width: 1140px; padding-left: 40px; padding-right: 40px; }
+  .top { grid-template-columns: 44px auto 1fr; gap: 16px; margin-bottom: 26px; }
+  .logo { grid-column: 2; text-align: left; font-size: 30px; }
+  .tabbar { top: 18px; bottom: auto; left: auto; right: max(24px, calc((100vw - 1140px) / 2 + 40px)); transform: none; }
+  .app { padding-bottom: 48px !important; }
+  .screen.split { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: 64px; align-items: start; }
+  .screen.split > .media { position: sticky; top: 24px; width: 100%; max-width: 500px; justify-self: center; }
+  .screen.split > .showcase { height: 520px; max-width: 520px; }
+  .screen.split .col { padding-top: 10px; }
+  .screen.solo { max-width: 760px; margin: 0 auto; width: 100%; }
+  .screen.solo .options { grid-template-columns: repeat(3, 1fr); }
+  h1 { font-size: 68px; }
+  h2 { font-size: 46px; }
+  .sub { font-size: 18px; }
+  .cta, .ghost { max-width: 460px; }
+  .row .cta, .row .ghost { max-width: none; }
+  .marquee { margin: 6px 0; border-radius: 14px; }
+  .opt { padding: 24px 18px; }
+  .opt:hover { transform: translateY(-3px); }
+}
+</style>
+</head>
+<body>
+<div class="bg"><i></i><i></i><i></i></div>
+<div class="app">
+  <div class="top"><button class="back" type="button" id="back" aria-label="Retour" hidden>←</button><div class="logo">look<span>miz</span></div></div>
+  <main id="app"></main>
+  <nav class="tabbar" aria-label="Espaces"><button type="button" data-tab="look" aria-pressed="true">✨ Mes looks</button><button type="button" data-tab="shop" aria-pressed="false">🛍️ En magasin</button></nav>
+  <input id="photo" type="file" accept="image/*" hidden>
+  <input id="garment" type="file" accept="image/*" capture="environment" hidden>
+  <input id="garment2" type="file" accept="image/*" hidden>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script type="module">
+const $ = s => document.querySelector(s);
+const DATA = {"g": {"30": {"u": "https://images.unsplash.com/photo-1772571157276-a76fa80f2a1a?ixid=M3wxMTE2NDI3fDB8MXxzZWFyY2h8N3x8cmVkJTIwZHJlc3MlMjBoYW5nZXJ8ZW58MXx8fHwxNzkzMjE4MDg1fDA&ixlib=rb-4.1.0", "by": "atelierbyvineeth ...", "user": "https://unsplash.com/@atelierbyvineeth", "n": "Robe rouge cintrée", "p": 89, "m": "XAH", "a": "Escarpins nude et pochette dorée"}, "40": {"u": "https://images.unsplash.com/photo-1687380330652-7badcb8f44c3?ixid=M3wxMTE2NDI3fDB8MXxzZWFyY2h8NXx8YmxhY2slMjBkcmVzcyUyMGhhbmdlcnxlbnwxfHx8fDE3OTMyMTgwODZ8MA&ixlib=rb-4.1.0", "by": "Jason Leung", "user": "https://unsplash.com/@ninjason", "n": "Robe portefeuille noire", "p": 79, "m": "XOAH", "a": "Talons fins et bijoux dorés"}, "14": {"u": "https://images.unsplash.com/photo-1604531825858-a8e24ed6b43d?ixid=M3wxMTE2NDI3fDB8MXxzZWFyY2h8M3x8ZXZlbmluZyUyMGdvd24lMjBoYW5nZXJ8ZW58MXx8fHwxNzkzMjE4MDg1fDA&ixlib=rb-4.1.0", "by": "Nathan Walker", "user": "https://unsplash.com/@nwphoto", "n": "Robe en dentelle blanche", "p": 95, "m": "AVHX", "a": "Ballerines et petit sac"}, "69": {"u": "https://images.unsplash.com/photo-1721824299322-6b77921d8c14?ixid=M3wxMTE2NDI3fDB8MXxzZWFyY2h8MTB8fGZsb3JhbCUyMGRyZXNzJTIwaGFuZ2VyfGVufDF8fHx8MTc5MzIxODA4Nnww&ixlib=rb-4.1.0", "by": "Lisa Anna", "user": "https://unsplash.com/@lisaanna195", "n": "Robe fleurie manches longues", "p": 69, "m": "AVHO", "a": "Bottines et veste en jean"}, "11": {"u": "https://images.unsplash.com/photo-1578747522731-9e5a179b02f7?ixid=M3wxMTE2NDI3fDB8MXxzZWFyY2h8MTJ8fGRyZXNzJTIwb24lMjBoYW5nZXJ8ZW58MXx8fHwxNzkzMjE4MDg1fDA&ixlib=rb-4.1.0", "by": "Content Pixie", "user": "https://unsplash.com/@contentpixie", "n": "Top blanc sans manches", "p": 29, "m": "AHVX", "a": "Pantalon taille haute et mocassins"}, "175": {"u": "https://images.unsplash.com/photo-1761499101317-e32c4ed50b2f?ixid=M3wxMTE2NDI3fDB8MXxzZWFyY2h8OHx8bWVuJTIwYmxhemVyJTIwaGFuZ2VyfGVufDF8fHx8MTc5MzIxODA4OHww&ixlib=rb-4.1.0", "by": "Rodrigo Rodrigues | WOLF Λ R T", "user": "https://unsplash.com/@wolfart32", "n": "Blazer clair", "p": 99, "m": "AHOX", "a": "Chemise blanche et pantalon droit"}, "117": {"u": "https://images.unsplash.com/photo-1548606704-5eadbed74bd9?ixid=M3wxMTE2NDI3fDB8MXxzZWFyY2h8MTB8fHNwb3J0c3dlYXIlMjBmbGF0JTIwbGF5fGVufDF8fHx8MTc5MzIxODA4N3ww&ixlib=rb-4.1.0", "by": "Sincerely Media", "user": "https://unsplash.com/@sincerelymedia", "n": "Brassière et legging", "p": 59, "m": "AVHXO", "a": "Baskets de running et casquette"}, "110": {"u": "https://images.unsplash.com/photo-1548606703-580672e56c26?ixid=M3wxMTE2NDI3fDB8MXxzZWFyY2h8M3x8c3BvcnRzd2VhciUyMGZsYXQlMjBsYXl8ZW58MXx8fHwxNzkzMjE4MDg3fDA&ixlib=rb-4.1.0", "by": "Sincerely Media", "user": "https://unsplash.com/@sincerelymedia", "n": "Ensemble sport noir", "p": 55, "m": "AVHXO", "a": "Baskets et gourde"}, "192": {"u": "https://images.unsplash.com/photo-1620799140188-3b2a02fd9a77?ixid=M3wxMTE2NDI3fDB8MXxzZWFyY2h8MXx8aG9vZGllJTIwZmxhdCUyMGxheXxlbnwxfHx8fDE3OTMyMTgwODh8MA&ixlib=rb-4.1.0", "by": "Mediamodifier", "user": "https://unsplash.com/@mediamodifier", "n": "Sweat à capuche blanc", "p": 45, "m": "AVHXO", "a": "Jean clair et baskets blanches"}, "129": {"u": "https://images.unsplash.com/photo-1586084611164-a9accaeab607?ixid=M3wxMTE2NDI3fDB8MXxzZWFyY2h8MTB8fGplYW5zJTIwYW5kJTIwc2hpcnQlMjBmbGF0JTIwbGF5fGVufDF8fHx8MTc5MzIxODA4N3ww&ixlib=rb-4.1.0", "by": "Sincerely Media", "user": "https://unsplash.com/@sincerelymedia", "n": "Marinière et jean", "p": 65, "m": "VHXA", "a": "Baskets blanches ou espadrilles"}, "165": {"u": "https://images.unsplash.com/photo-1564584217132-2271feaeb3c5?ixid=M3wxMTE2NDI3fDB8MXxzZWFyY2h8MTB8fG1lbiUyMHNoaXJ0JTIwb24lMjBoYW5nZXJ8ZW58MXx8fHwxNzkzMjE4MDg3fDA&ixlib=rb-4.1.0", "by": "Cristofer Maximilian", "user": "https://unsplash.com/@cristofer", "n": "T-shirt gris chiné", "p": 19, "m": "VHXAO", "a": "Jean droit et baskets"}, "91": {"u": "https://images.unsplash.com/photo-1667283831517-5b747b3c17c8?ixid=M3wxMTE2NDI3fDB8MXxzZWFyY2h8OHx8YmxhemVyJTIwb24lMjBoYW5nZXJ8ZW58MXx8fHwxNzkzMjE4MDg2fDA&ixlib=rb-4.1.0", "by": "Vetrivel Viswanathar", "user": "https://unsplash.com/@vetrivikashviswanathar", "n": "Costume bleu marine", "p": 189, "m": "VHXAO", "a": "Chemise blanche et derbies"}, "89": {"u": "https://images.unsplash.com/photo-1667284152861-36e03571486a?ixid=M3wxMTE2NDI3fDB8MXxzZWFyY2h8Nnx8YmxhemVyJTIwb24lMjBoYW5nZXJ8ZW58MXx8fHwxNzkzMjE4MDg2fDA&ixlib=rb-4.1.0", "by": "Vetrivel Viswanathar", "user": "https://unsplash.com/@vetrivikashviswanathar", "n": "Veste bordeaux", "p": 149, "m": "VHX", "a": "Col roulé noir et mocassins"}, "85": {"u": "https://images.unsplash.com/photo-1598808503746-f34c53b9323e?ixid=M3wxMTE2NDI3fDB8MXxzZWFyY2h8Mnx8YmxhemVyJTIwb24lMjBoYW5nZXJ8ZW58MXx8fHwxNzkzMjE4MDg2fDA&ixlib=rb-4.1.0", "by": "LOGAN WEAVER | @LGNWVR", "user": "https://unsplash.com/@lgnwvr", "n": "Costume noir", "p": 199, "m": "VHXA", "a": "Cravate fine et souliers noirs"}, "95": {"u": "https://images.unsplash.com/photo-1784749615306-10675f31bae2?ixid=M3wxMTE2NDI3fDB8MXxzZWFyY2h8MTJ8fGJsYXplciUyMG9uJTIwaGFuZ2VyfGVufDF8fHx8MTc5MzIxODA4Nnww&ixlib=rb-4.1.0", "by": "Alexander Mass", "user": "https://unsplash.com/@alexandermassph", "n": "Veste camel", "p": 129, "m": "HOAVX", "a": "Chemise ouverte et chino"}, "159": {"u": "https://images.unsplash.com/photo-1611312449412-6cefac5dc3e4?ixid=M3wxMTE2NDI3fDB8MXxzZWFyY2h8NHx8bWVuJTIwc2hpcnQlMjBvbiUyMGhhbmdlcnxlbnwxfHx8fDE3OTMyMTgwODd8MA&ixlib=rb-4.1.0", "by": "Caio Coelho", "user": "https://unsplash.com/@smokthebikini", "n": "Chemise à carreaux", "p": 39, "m": "VHXAO", "a": "Jean brut et bottines"}, "182": {"u": "https://images.unsplash.com/photo-1625910513413-c23b8bb81cba?ixid=M3wxMTE2NDI3fDB8MXxzZWFyY2h8M3x8cG9sbyUyMHNoaXJ0fGVufDF8fHx8MTc5MzIxODA4OHww&ixlib=rb-4.1.0", "by": "Clément Vatte", "user": "https://unsplash.com/@clement_vatte", "n": "Polo noir", "p": 35, "m": "VHXA", "a": "Chino beige et baskets"}, "84": {"u": "https://images.unsplash.com/photo-1592343516109-362f7bd871aa?ixid=M3wxMTE2NDI3fDB8MXxzZWFyY2h8MXx8YmxhemVyJTIwb24lMjBoYW5nZXJ8ZW58MXx8fHwxNzkzMjE4MDg2fDA&ixlib=rb-4.1.0", "by": "Victoria Priessnitz", "user": "https://unsplash.com/@victoriapriessnitz", "n": "Veste de costume noire", "p": 119, "m": "VHXAO", "a": "Chemise blanche et pantalon gris"}, "83": {"u": "https://images.unsplash.com/photo-1621773881532-fe65715b5137?ixid=M3wxMTE2NDI3fDB8MXxzZWFyY2h8MTJ8fGJsb3VzZSUyMG9uJTIwaGFuZ2VyfGVufDF8fHx8MTc5MzIxODA4Nnww&ixlib=rb-4.1.0", "by": "Lisanto 李奕良", "user": "https://unsplash.com/@lisanto_", "n": "Chemise blanche", "p": 39, "m": "VHXAO", "a": "Pantalon fuselé et ceinture cuir"}, "180": {"u": "https://images.unsplash.com/photo-1581655353564-df123a1eb820?ixid=M3wxMTE2NDI3fDB8MXxzZWFyY2h8MXx8cG9sbyUyMHNoaXJ0fGVufDF8fHx8MTc5MzIxODA4OHww&ixlib=rb-4.1.0", "by": "Haryo Setyadi", "user": "https://unsplash.com/@uyk", "n": "T-shirt blanc", "p": 19, "m": "VHXAO", "a": "Jogging et baskets"}, "196": {"u": "https://images.unsplash.com/photo-1739384994765-d44f7af12029?ixid=M3wxMTE2NDI3fDB8MXxzZWFyY2h8NXx8aG9vZGllJTIwZmxhdCUyMGxheXxlbnwxfHx8fDE3OTMyMTgwODh8MA&ixlib=rb-4.1.0", "by": "philippe wehrli", "user": "https://unsplash.com/@philippewehrli", "n": "Sweat bleu et jean", "p": 69, "m": "VHXAO", "a": "Baskets de course"}, "125": {"u": "https://images.unsplash.com/photo-1739384879592-79903b12b2a6?ixid=M3wxMTE2NDI3fDB8MXxzZWFyY2h8Nnx8amVhbnMlMjBhbmQlMjBzaGlydCUyMGZsYXQlMjBsYXl8ZW58MXx8fHwxNzkzMjE4MDg3fDA&ixlib=rb-4.1.0", "by": "philippe wehrli", "user": "https://unsplash.com/@philippewehrli", "n": "Veste beige et jean", "p": 99, "m": "VHXAO", "a": "Baskets blanches"}, "183": {"u": "https://images.unsplash.com/photo-1671438118097-479e63198629?ixid=M3wxMTE2NDI3fDB8MXxzZWFyY2h8NHx8cG9sbyUyMHNoaXJ0fGVufDF8fHx8MTc5MzIxODA4OHww&ixlib=rb-4.1.0", "by": "Mediamodifier", "user": "https://unsplash.com/@mediamodifier", "n": "Polo blanc", "p": 35, "m": "VHXAO", "a": "Short chino et sneakers"}}, "L": {"f_soiree": [30, 40, 14], "f_rdv": [14, 30, 69], "f_travail": [175, 11, 69], "f_mariage": [69, 14, 30], "f_sport": [117, 110, 192], "f_casual": [129, 165, 192], "h_soiree": [91, 89, 85], "h_rdv": [95, 159, 182], "h_travail": [84, 83, 175], "h_mariage": [91, 175, 85], "h_sport": [180, 192, 196], "h_casual": [125, 196, 183]}};
+const UTM = '?utm_source=lookmiz&utm_medium=referral';
+const pic = (g, w = 700) => `${g.u}&w=${w}&q=75&fm=jpg&fit=crop&crop=entropy`;
+const credit = g => `Photo de la pièce : <a href="${g.user}${UTM}" target="_blank" rel="noopener">${g.by}</a> / <a href="https://unsplash.com/${UTM}" target="_blank" rel="noopener">Unsplash</a>`;
+const wait = ms => new Promise(r => setTimeout(r, ms));
+
+const MORPHS = {
+  X: { n: 'Sablier', d: 'taille marquée, épaules et hanches équilibrées', t: 'On suit ta taille sans cacher tes courbes.' },
+  A: { n: 'Triangle', d: 'hanches un peu plus larges que les épaules', t: 'On attire le regard vers le haut.' },
+  V: { n: 'Triangle inversé', d: 'épaules plus larges que les hanches', t: 'On équilibre avec du volume en bas.' },
+  H: { n: 'Rectangle', d: 'épaules, taille et hanches alignées', t: 'On crée une taille avec des coupes structurées.' },
+  O: { n: 'Ronde', d: 'volume au centre', t: 'On allonge avec des lignes verticales.' }
+};
+const OCCS = { soiree: ['🥂', 'Soirée', 'Chic et lumineux', '#2f6bff'], rdv: ['🌹', 'Rendez-vous', 'Séduisant, pas trop', '#ff8a5c'], travail: ['💼', 'Travail', 'Net et assuré', '#7b5cff'],
+  mariage: ['💍', 'Mariage', 'Élégant', '#ffb37a'], sport: ['⚡', 'Sport', 'Beau et confortable', '#3dd6b5'], casual: ['☀️', 'Week-end', 'Facile et stylé', '#ffd23f'] };
+const state = { plan: 'an', signup: true, quota: null, step: 0, photo: null, o: null, g: null, m: null, info: [], pick: 0, mode: 'look', garment: null, gid: 0, saved: false };
+try { const p = localStorage.getItem('cabine-photo'); if (p) { state.photo = p; state.saved = true; } } catch (_) {}
+const tries = {};
+const looks = () => DATA.L[state.g + '_' + state.o].map(id => ({ id, ...DATA.g[id] })).map(x => ({ ...x, fit: x.m.includes(state.m) ? 1 : 0 })).sort((a, b) => b.fit - a.fit);
+
+/* ---------- Vision dans le navigateur : la photo ne quitte pas le téléphone pour l'analyse ---------- */
+let poseP, segP, faceP, visionP;
+const vision = () => visionP ||= (async () => {
+  const V = await import('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs');
+  return { V, fs: await V.FilesetResolver.forVisionTasks('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm') };
+})();
+function loadPose() {
+  return poseP ||= vision().then(({ V, fs }) => V.PoseLandmarker.createFromOptions(fs, {
+    baseOptions: { modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task' }, runningMode: 'IMAGE', numPoses: 1 }));
+}
+function loadSeg() {
+  return segP ||= vision().then(({ V, fs }) => V.ImageSegmenter.createFromOptions(fs, {
+    baseOptions: { modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_segmenter/float16/latest/selfie_segmenter.tflite' },
+    runningMode: 'IMAGE', outputCategoryMask: true, outputConfidenceMasks: false }));
+}
+function loadFace() {
+  return faceP ||= (async () => {
+    const fa = await import('https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.13/dist/face-api.esm.js');
+    try { await fa.tf.setBackend('webgl'); } catch (_) { await fa.tf.setBackend('cpu'); }
+    await fa.tf.ready();
+    const M = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.13/model/';
+    await fa.nets.tinyFaceDetector.loadFromUri(M); await fa.nets.ageGenderNet.loadFromUri(M);
+    return fa;
+  })();
+}
+const imgOf = src => new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = src; });
+
+// Largeur de la silhouette sur une ligne de l'image (masque de segmentation), autour du centre du corps
+function rowWidth(mask, W, H, y, cx) {
+  y = Math.max(0, Math.min(H - 1, Math.round(y))); cx = Math.round(cx);
+  let l = cx, r = cx; const on = x => mask[y * W + x] > .5;
+  if (!on(cx)) return 0;
+  while (l > 0 && on(l - 1)) l--; while (r < W - 1 && on(r + 1)) r++;
+  return r - l + 1;
+}
+async function analyse(img) {
+  const out = { ok: false };
+  try {
+    const pl = await loadPose(), res = pl.detect(img), lm = res.landmarks && res.landmarks[0];
+    if (lm) {
+      out.ok = true; out.lm = lm;
+      const W = img.naturalWidth, H = img.naturalHeight, P = i => ({ x: lm[i].x * W, y: lm[i].y * H, v: lm[i].visibility ?? 1 });
+      const sL = P(11), sR = P(12), hL = P(23), hR = P(24), aL = P(27), aR = P(28);
+      const shY = (sL.y + sR.y) / 2, hpY = (hL.y + hR.y) / 2, cx = (hL.x + hR.x + sL.x + sR.x) / 4, torso = Math.max(1, hpY - shY);
+      let S = Math.hypot(sL.x - sR.x, sL.y - sR.y) * 1.18, Wa = 0, Hi = 0;
+      try {
+        const seg = await loadSeg(), sr = seg.segment(img), mk = sr.categoryMask;
+        const raw = mk.getAsUint8Array(), mw = mk.width, mh = mk.height, sx = mw / W, sy = mh / H;
+        const body = raw[Math.round((shY + torso * .5) * sy) * mw + Math.round(cx * sx)];   // valeur du masque au centre du corps
+        const m = Array.from(raw, v => v === body ? 1 : 0);
+        Wa = rowWidth(m, mw, mh, (shY + torso * .62) * sy, cx * sx) / sx;
+        Hi = rowWidth(m, mw, mh, (hpY + torso * .08) * sy, cx * sx) / sx;
+        if (sr.close) sr.close();
+      } catch (_) {}
+      if (!Hi) Hi = Math.hypot(hL.x - hR.x, hL.y - hR.y) * 1.9;
+      if (!Wa) Wa = (S + Hi) / 2 * .85;
+      const big = Math.max(S, Hi);
+      out.ratio = S / Hi;
+      out.m = Wa / big < .78 && Math.abs(S - Hi) / big < .12 ? 'X' : S > Hi * 1.1 ? 'V' : Hi > S * 1.07 ? 'A' : Wa / big > .97 ? 'O' : 'H';
+      const bw = Wa / torso; out.build = bw < .62 ? 'élancée' : bw < .85 ? 'équilibrée' : 'pleine';
+      out.legs = (aL.v > .5 || aR.v > .5) ? ((Math.max(aL.y, aR.y) - hpY) / torso > 1.55 ? 'jambes longues' : (Math.max(aL.y, aR.y) - hpY) / torso < 1.3 ? 'buste long' : 'proportions équilibrées') : null;
+      out.geo = { shY, hpY, waY: shY + torso * .62, hiY: hpY + torso * .08, cx, S, Wa, Hi, W, H };
+    }
+  } catch (e) { out.err = String(e); }
+  try {
+    const fa = await loadFace(), f = await fa.detectSingleFace(img, new fa.TinyFaceDetectorOptions({ inputSize: 416 })).withAgeAndGender();
+    console.warn('profil', f ? f.gender + ' ' + f.genderProbability.toFixed(2) : 'aucun visage');
+    if (f && f.genderProbability > .7) out.g = f.gender === 'female' ? 'f' : 'h';
+  } catch (e) { console.warn('profil erreur', e && e.message); }
+  return out;
+}
+
+// Dessin animé des points du corps et des mesures, par-dessus la photo (même cadrage que l'image)
+const BONES = [[11, 12], [11, 13], [13, 15], [12, 14], [14, 16], [11, 23], [12, 24], [23, 24], [23, 25], [25, 27], [24, 26], [26, 28]];
+async function drawScan(cv, img, a) {
+  const r = cv.getBoundingClientRect(), dpr = devicePixelRatio || 1;
+  cv.width = r.width * dpr; cv.height = r.height * dpr;
+  const c = cv.getContext('2d'); c.scale(dpr, dpr);
+  const sc = Math.min(r.width / img.naturalWidth, r.height / img.naturalHeight), ox = (r.width - img.naturalWidth * sc) / 2, oy = (r.height - img.naturalHeight * sc) / 2;
+  const X = x => ox + x * sc, Y = y => oy + y * sc, L = i => ({ x: X(a.lm[i].x * img.naturalWidth), y: Y(a.lm[i].y * img.naturalHeight) });
+  const pts = [0, 11, 12, 13, 14, 15, 16, 23, 24, 25, 26, 27, 28];
+  const grad = c.createLinearGradient(0, 0, r.width, r.height); grad.addColorStop(0, '#2f6bff'); grad.addColorStop(1, '#12b3a6');
+  for (let k = 1; k <= 30; k++) {          // les os se dessinent progressivement
+    c.clearRect(0, 0, r.width, r.height);
+    c.strokeStyle = grad; c.lineWidth = 3; c.lineCap = 'round'; c.shadowColor = 'rgba(47,107,255,.6)'; c.shadowBlur = 10;
+    BONES.forEach(([p, q]) => { const A = L(p), B = L(q), t = Math.min(1, k / 30); c.beginPath(); c.moveTo(A.x, A.y); c.lineTo(A.x + (B.x - A.x) * t, A.y + (B.y - A.y) * t); c.stroke(); });
+    pts.forEach((i, n) => { if (n / pts.length > k / 30) return; const P = L(i); c.beginPath(); c.fillStyle = '#fff'; c.arc(P.x, P.y, 5, 0, 7); c.fill(); c.lineWidth = 2; c.stroke(); });
+    await wait(28);
+  }
+  return { c, X, Y, r, grad };
+}
+async function drawMeasure(ctx, a, label, y, w, color) {
+  const { c, X, Y } = ctx, g = a.geo, yy = Y(y), x1 = X(g.cx - w / 2), x2 = X(g.cx + w / 2);
+  for (let k = 1; k <= 14; k++) {
+    const t = k / 14, m = (x1 + x2) / 2;
+    c.save(); c.shadowBlur = 0; c.strokeStyle = color; c.lineWidth = 2; c.setLineDash([5, 4]);
+    c.beginPath(); c.moveTo(m - (m - x1) * t, yy); c.lineTo(m + (x2 - m) * t, yy); c.stroke(); c.restore();
+    await wait(20);
+  }
+  c.save(); c.font = '800 12px "Plus Jakarta Sans", sans-serif'; const tw = c.measureText(label).width + 14;
+  c.fillStyle = color; c.beginPath(); c.roundRect(x2 + 6, yy - 11, tw, 22, 8); c.fill(); c.fillStyle = '#fff'; c.fillText(label, x2 + 13, yy + 4); c.restore();
+}
+
+/* ---------- Essayage (FASHN via la fonction Supabase : la clé reste côté serveur) ---------- */
+const SBURL = 'https://ctgjnpxdaqdnrcxjwnkp.supabase.co', SBKEY = 'sb_publishable_mz--wiLicR1GMDd2b3Fd2g_ewLTbr9h';
+const FN = SBURL + '/functions/v1/bright-endpoint';
+const sb = window.supabase ? window.supabase.createClient(SBURL, SBKEY) : null;
+let session = null;
+const api = (d, ms) => { const c = new AbortController(), to = setTimeout(() => c.abort(), ms);
+  return fetch(FN, { method: 'POST', signal: c.signal, headers: { 'Content-Type': 'application/json', apikey: SBKEY, Authorization: 'Bearer ' + (session ? session.access_token : SBKEY) }, body: JSON.stringify(d) })
+    .then(async r => ({ ...(await r.json().catch(() => ({}))), _s: r.status })).finally(() => clearTimeout(to)); };
+async function refreshQuota() {
+  if (!session) { state.quota = null; return; }
+  const q = await api({ action: 'quota' }, 15000).catch(() => null);
+  if (q && q._s === 200) state.quota = q;
+}
+// Essais gratuits : 1 pour « Mes looks » (les 3 looks), 1 pour « En magasin »
+const kindOf = g => String(g).startsWith('shop') ? 'shop' : 'look';
+const left = (k = state.mode === 'shop' ? 'shop' : 'look') => { const q = state.quota; if (!q) return 0; if (q.pro) return Infinity;
+  const used = typeof q.used === 'object' ? q.used[k] : q.used, free = typeof q.free === 'object' ? q.free[k] : q.free; return Math.max(0, free - used); };
+const quotaPill = () => state.quota && !state.quota.pro ? `<span class="pill"><i></i>${left() ? `${left()} essai gratuit ${state.mode === 'shop' ? 'en magasin' : 'de looks'}` : `Essai gratuit ${state.mode === 'shop' ? 'en magasin' : 'de looks'} utilisé`}</span>` : '';
+const tkey = l => state.g + state.o + l.id;
+let queue = Promise.resolve();
+function runTry(k, garment, group) {
+  if (tries[k] && tries[k].st !== 'err') return;
+  group = group || 'g' + Date.now() + Math.random().toString(36).slice(2, 8);
+  if (state.quota && left(kindOf(group)) <= 0 && !usedGroups.has(group)) {
+    tries[k] = { st: 'quota' }; waitingTry = false;
+    if (state.step === 3 || state.step === 4 || state.step === 6) setTimeout(() => { state.step = 9; render(); }, 600);
+    return;
+  }
+  tries[k] = { st: 'run' };
+  queue = queue.then(async () => {
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const t0 = Date.now(); let started = false;
+      try {
+        const r = await api({ action: 'run', group, body: { model_name: 'tryon-v1.6', inputs: { model_image: state.photo, garment_image: garment } } }, 45000);
+        if (r._s === 402) { tries[k] = { st: 'quota' }; break; }
+        if (r._s === 401) { tries[k] = { st: 'err', why: 'connexion expirée, reconnecte-toi' }; break; }
+        if (!r.id) throw new Error(r.message || r.error || 'refusé');
+        started = true;
+        if (state.quota && !usedGroups.has(group)) { const q = state.quota, kk = kindOf(group); if (typeof q.used === 'object') q.used[kk]++; else q.used++; }
+        usedGroups.add(group);
+        while (Date.now() - t0 < 120000) {
+          await wait(2500);
+          const s = await api({ action: 'status', id: r.id }, 20000).catch(() => ({}));
+          if (s.status === 'completed' && s.output) { tries[k] = { st: 'ok', url: s.output[0] }; break; }
+          if (s.status === 'failed') throw new Error((s.error && (s.error.message || s.error.name)) || 'échec');
+        }
+        if (tries[k].st === 'ok') break;
+        throw new Error('trop long');
+      } catch (e) { const why = e.name === 'AbortError' ? 'pas de réponse' : e.message;
+        // un essai déjà lancé compte dans le quota : on ne relance pas tout seul
+        if (started || attempt) { tries[k] = { st: 'err', why }; break; } await wait(1500); }
+    }
+    if (tries[k].st === 'quota' && (state.step === 3 || state.step === 4 || state.step === 6)) { state.step = 9; render(); return; }
+    if (state.step === 4 || state.step === 6) render(true);
+    if (state.step === 3) onTryDone();
+  });
+}
+const usedGroups = new Set();
+let lookGroup = null;   // les 3 looks d'une même analyse comptent pour un seul essai
+const tryOn = l => runTry(tkey(l), pic(l, 768), lookGroup);
+
+function shrink(file) {
+  const raw = () => new Promise(res => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = () => res(null); r.readAsDataURL(file); });
+  return new Promise(res => {
+    const im = new Image(), url = URL.createObjectURL(file), done = v => { clearTimeout(to); URL.revokeObjectURL(url); res(v); };
+    const to = setTimeout(() => raw().then(done), 8000);
+    im.onload = () => { try {
+      const sc = Math.min(1, 1024 / Math.max(im.naturalWidth, im.naturalHeight)), c = document.createElement('canvas');
+      c.width = Math.round(im.naturalWidth * sc); c.height = Math.round(im.naturalHeight * sc); c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
+      done(c.toDataURL('image/jpeg', .88)); } catch (_) { raw().then(done); } };
+    im.onerror = () => raw().then(done); im.src = url;
+  });
+}
+
+/* ---------- Écrans ---------- */
+const frame = (src, extra = '') => `<div class="frame ${extra}"><div class="blur" style="background-image:url('${src}')"></div><img src="${src}" alt="Ta photo"></div>`;
+const showIds = ['91', '30', '192'];
+const S = [
+  () => `<section class="screen">
+      <span class="pill"><i></i>Essayage virtuel, en 20 secondes</span>
+      <h1>Essaie tout. <span class="hl">Sur toi.</span></h1>
+      <p class="sub">Une photo suffit. Lookmiz lit ta silhouette, choisit les pièces qui te vont et te les fait porter.</p>
+      <div class="showcase media">${showIds.map((id, i) => `<div class="card c${i}"><img src="${pic(DATA.g[id], 500)}" alt="${DATA.g[id].n}"></div>`).join('')}
+        <span class="float a">✨ Analyse de silhouette</span><span class="float b">👔 3 looks pour toi</span><span class="float c">🪞 Sur ta propre photo</span></div>
+      <button class="cta" type="button" data-start="look">✨ Trouver mon look</button>
+      <button class="ghost" type="button" data-tab="shop">🛍️ En boutique ? Essaie sans cabine</button>
+      <div class="demo"><span class="dlabel">▶ Regarde comment ça marche</span>
+        <div class="phone"><video src="demo.mp4" poster="demo.jpg" autoplay muted loop playsinline preload="metadata" aria-label="Démonstration : photo, analyse de la silhouette, puis les 3 looks portés"></video></div></div>
+      <div class="marquee" aria-hidden="true"><div>${Array(2).fill('Soirée <b>✦</b> Mariage <b>✦</b> Travail <b>✦</b> Rendez-vous <b>✦</b> Sport <b>✦</b> Week-end <b>✦</b>').join(' ')}</div></div>
+      <div class="how"><div><span>📸</span>Ta photo</div><div><span>🧠</span>Ta silhouette lue</div><div><span>🪄</span>Tu te vois habillé·e</div></div>
+      ${account()}
+    </section>`,
+  () => `<section class="screen">
+      <h2>D'abord, <span class="hl">ta photo</span></h2>
+      <p class="sub">Elle sert seulement à t'analyser et t'habiller.</p>
+      <label class="media" for="photo" tabindex="0" style="cursor:pointer;display:block">${state.photo ? frame(state.photo) : `<div class="frame"><div class="empty"><span class="plus">+</span><b>Ajoute ta photo</b>Touche ici pour choisir une photo</div></div>`}</label>
+      <div class="tips"><span>🧍 En entier</span><span>👀 De face</span><span>💡 Bien éclairée</span></div>
+      <button class="cta" type="button" data-go="${state.mode === 'shop' ? 5 : 2}" ${state.photo ? '' : 'disabled'}>Continuer <span>→</span></button>
+      ${state.photo && state.saved ? `<p class="note">📱 Ta photo est gardée sur ce téléphone uniquement. <button class="link" type="button" data-forget>L'effacer</button></p>` : ''}
+      ${state.photo ? `<label class="link" for="photo" tabindex="0">Changer de photo</label>` : ''}
+    </section>`,
+  () => `<section class="screen solo"><h2>Pour quelle <span class="hl">occasion</span> ?</h2>
+      <div class="options">${Object.entries(OCCS).map(([k, [e, t, d, col]], i) => `<button class="opt" type="button" data-occ="${k}" style="--c:${col};animation-delay:${i * 60}ms"><span class="e">${e}</span><b>${t}</b><small>${d}</small></button>`).join('')}</div></section>`,
+  () => `<section class="screen">
+      <h2>Analyse de <span class="hl">ta silhouette</span></h2>
+      <div class="frame scan media" id="sframe"><div class="blur" style="background-image:url('${state.photo}')"></div><img src="${state.photo}" alt="Ta photo" id="simg"><canvas id="cv"></canvas></div>
+      <div class="log" id="log"><p class="wait">Lecture de ta photo…</p></div>
+    </section>`,
+  () => {
+    const L = looks(), l = L[state.pick], t = tries[tkey(l)] || {};
+    const src = t.st === 'ok' ? t.url : state.photo;
+    return `<section class="screen">
+      <h2>Tes 3 <span class="hl">looks</span></h2>
+      <div class="chips">${state.info.map(x => `<span>${x}</span>`).join('')}</div>
+      <div class="tabs">${L.map((x, i) => { const s = tries[tkey(x)] || {}; return `<button type="button" data-pick="${i}" aria-pressed="${i === state.pick}">Look ${i + 1}${s.st === 'run' ? '<span class="ld"></span>' : ''}</button>`; }).join('')}</div>
+      <div class="frame media ${t.st === 'run' ? 'scan' : ''}"><div class="blur" style="background-image:url('${src}')"></div><img src="${src}" alt="${t.st === 'ok' ? 'Toi avec ' + l.n : 'Ta photo'}" class="${t.st === 'ok' ? 'reveal' : ''}">
+        <span class="badge">${t.st === 'run' ? '🪄 Essayage en cours…' : t.st === 'ok' ? `✨ Toi · Look ${state.pick + 1}` : t.st === 'err' ? 'Essayage impossible' : '👗 Pas encore essayé'}</span></div>
+      ${!t.st ? `<button class="cta" type="button" data-trylook>✨ Me voir avec ce look</button>` : ''}
+      ${quotaPill()}
+      ${t.st === 'err' ? `<p class="note">Ça n'a pas marché (${t.why}). <button class="link" type="button" data-retry>Réessayer</button></p>` : ''}
+      <p class="why"><b>${l.fit ? 'Idéal pour ta silhouette.' : 'Va bien avec ta silhouette.'}</b> ${MORPHS[state.m].t}</p>
+      <div class="piece"><div class="ph"><img src="${pic(l, 300)}" alt="${l.n}"></div><div><b>${l.n}</b><span class="price">≈ ${l.p} €</span><small>À porter avec : ${l.a}</small></div></div>
+      <div class="row"><label class="ghost" for="photo" tabindex="0">Autre photo</label>
+        <a class="cta" href="https://www.vinted.fr/catalog?search_text=${encodeURIComponent(l.n)}" target="_blank" rel="noopener">Sur Vinted</a></div>
+      <span class="credit">${credit(l)}</span>
+      <button class="link" type="button" data-restart>Changer d'occasion</button>
+    </section>`;
+  },
+  () => `<section class="screen">
+      <h2>Photographie <span class="hl">l'habit</span></h2>
+      <p class="sub">En boutique, sur le cintre ou le mannequin. Tu le vois sur ta photo.</p>
+      <label class="media" for="garment" tabindex="0" style="cursor:pointer;display:block">${state.garment ? frame(state.garment) : `<div class="frame"><div class="empty"><span class="plus">📷</span><b>Prendre l'habit en photo</b>Bien à plat ou sur un cintre, en entier</div></div>`}</label>
+      <div class="tips"><span>👕 L'habit en entier</span><span>💡 Bonne lumière</span><span>🧺 Fond simple</span></div>
+      <button class="cta" type="button" data-shoptry ${state.garment ? '' : 'disabled'}>🪄 Me l'essayer</button>
+      <div class="row"><label class="ghost" for="garment" tabindex="0">📷 Prendre une photo</label><label class="ghost" for="garment2" tabindex="0">🖼️ Capture d'écran</label></div>
+      <div class="linkbox"><b>🔗 Ou colle le lien d'un habit</b><small>Vinted, Zara, Shein, Asos… la photo de l'article est récupérée.</small>
+        <div class="lrow"><input id="glink" type="url" inputmode="url" placeholder="https://…" aria-label="Lien de l'habit"><button class="ghost" type="button" data-import>Importer</button></div>
+        <p class="note" id="gmsg" role="status"></p></div>
+      ${quotaPill()}
+    </section>`,
+  () => {
+    const t = tries['shop' + state.gid] || {}, src = t.st === 'ok' ? t.url : state.photo;
+    return `<section class="screen">
+      <h2>${t.st === 'ok' ? 'Et voilà, <span class="hl">sur toi</span>' : 'Essayage <span class="hl">en cours</span>'}</h2>
+      <div class="frame media ${t.st === 'run' ? 'scan' : ''}"><div class="blur" style="background-image:url('${src}')"></div><img src="${src}" alt="${t.st === 'ok' ? 'Toi avec l\'habit' : 'Ta photo'}" class="${t.st === 'ok' ? 'reveal' : ''}">
+        <span class="badge">${t.st === 'run' ? '🪄 Essayage en cours… environ 15 s' : t.st === 'ok' ? '✨ Toi avec cet habit' : 'Essayage impossible'}</span></div>
+      ${t.st === 'err' ? `<p class="note">Ça n'a pas marché (${t.why}). Reprends l'habit en entier, bien éclairé. <button class="link" type="button" data-shoptry>Réessayer</button></p>` : ''}
+      <div class="piece"><div class="ph"><img src="${state.garment}" alt="L'habit photographié"></div><div><b>L'habit de la boutique</b><small>Tu peux l'essayer avec une autre photo de toi, ou essayer un autre habit.</small></div></div>
+      <div class="row"><button class="ghost" type="button" data-go="5" data-newg="1">Autre habit</button><label class="cta" for="photo" tabindex="0">Autre photo de moi</label></div>
+      <button class="link" type="button" data-tab="shop">Retour au magasin</button>
+    </section>`;
+  },
+  () => `<section class="screen">
+      <span class="pill"><i></i>En boutique ou en ligne</span>
+      <h1>Essaie sans <span class="hl">cabine.</span></h1>
+      <p class="sub">Un habit te plaît en magasin ou sur un site ? Prends-le en photo, fais une capture ou colle son lien : tu le vois sur toi en 15 secondes.</p>
+      <div class="showcase media">${['95', '14', '183'].map((id, i) => `<div class="card c${i}"><img src="${pic(DATA.g[id], 500)}" alt="${DATA.g[id].n}"></div>`).join('')}
+        <span class="float a">📷 Photo de l'habit</span><span class="float b">🔗 Ou son lien</span><span class="float c">🪞 Sur ta propre photo</span></div>
+      <button class="cta" type="button" data-start="shop">👕 Choisir un habit</button>
+      ${state.photo ? `<div class="mephoto"><img src="${state.photo}" alt="Ta photo"><p style="margin:0"><b>✅ Ta photo est prête</b>Elle reste sur ton téléphone. <label class="link" for="photo" tabindex="0">Changer</label></p></div>`
+        : `<label class="ghost" for="photo" tabindex="0">🧍 Ajouter ma photo d'abord</label>`}
+      <div class="marquee" aria-hidden="true"><div>${Array(2).fill('Zara <b>✦</b> Vinted <b>✦</b> Shein <b>✦</b> H&amp;M <b>✦</b> Zalando <b>✦</b> En boutique <b>✦</b>').join(' ')}</div></div>
+      <div class="how"><div><span>🧍</span>Ta photo</div><div><span>📷</span>L'habit</div><div><span>🪞</span>Sur toi</div></div>
+      ${account()}
+    </section>`,
+  () => `<section class="screen solo">
+      <h2>${state.signup ? 'Crée ton compte' : 'Connecte-toi'} <span class="hl">${state.signup ? 'gratuit' : ''}</span></h2>
+      <p class="sub">${state.signup ? 'Un e-mail et un mot de passe, c\'est tout. <b>1 essai de looks et 1 essai en magasin offerts.</b>' : 'Avec l\'e-mail et le mot de passe de ton compte.'}</p>
+      ${session ? `<button class="cta" type="button" data-go="1">Tu es connecté, continuer →</button>` : ''}
+      <form id="login" class="loginbox">
+        <input id="email" type="email" required autocomplete="email" placeholder="ton@email.com" aria-label="Adresse e-mail">
+        <input id="pass" type="password" required minlength="6" autocomplete="${state.signup ? 'new-password' : 'current-password'}" placeholder="${state.signup ? 'Choisis un mot de passe (6 caractères min.)' : 'Ton mot de passe'}" aria-label="Mot de passe">
+        <button class="cta" type="submit">${state.signup ? 'Créer mon compte' : 'Se connecter'}</button><p class="note" id="lmsg" role="status"></p></form>
+      <button class="link" type="button" data-switch>${state.signup ? 'J\'ai déjà un compte' : 'Pas encore de compte ? Crée-le'}</button>
+      <p class="note">Ton e-mail sert seulement à ton compte. Ta photo reste sur ton téléphone, sauf au moment de l'essayage.</p>
+    </section>`,
+  () => `<section class="screen solo">
+      <div class="shophero"><span class="pill" style="background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.2);color:#fff"><i></i>Lookmiz+</span>
+        <h2>${state.quota && state.quota.pro ? 'Tu es <span class="hl">Lookmiz+</span>' : 'Passe à <span class="hl">Lookmiz+</span>'}</h2>
+        <p class="sub" style="color:#c9cdd8">${state.quota && state.quota.pro ? 'Essais illimités activés. Merci pour ton soutien !' : (state.quota && left() === 0 ? 'Ton essai gratuit est utilisé. ' : '') + 'Essaie autant d\'habits que tu veux, en looks comme en magasin.'}</p></div>
+      <div class="steps3"><div><span>♾️</span><p style="margin:0"><b>Essais illimités</b>Les 3 looks, autant de fois que tu veux.</p></div>
+        <div><span>🛍️</span><p style="margin:0"><b>Mode magasin sans limite</b>Photo, capture d'écran ou lien.</p></div>
+        <div><span>🔓</span><p style="margin:0"><b>Sans engagement</b>Résiliable à tout moment, en un clic.</p></div></div>
+      ${state.quota && state.quota.pro ? '' : `<div class="plans" role="radiogroup" aria-label="Choisis ta formule">
+        ${[['an', 'Annuel', '79,99 €', 'par an', 'Soit 6,67 € par mois', 'Le plus avantageux · −33 %'], ['mois', 'Mensuel', '9,99 €', 'par mois', 'Sans engagement', '']].map(([k, n, p, per, sub, tag]) =>
+          `<button type="button" class="plan ${state.plan === k ? 'on' : ''}" role="radio" aria-checked="${state.plan === k}" data-plan="${k}">
+            <span class="dot"></span><span class="pinfo"><b>${n}</b><small>${sub}</small>${tag ? `<em>${tag}</em>` : ''}</span><span class="pprice"><b>${p}</b><small>${per}</small></span></button>`).join('')}
+        </div>
+        <div class="recap">${state.plan === 'an' ? 'Aujourd\'hui : <b>79,99 €</b>, puis renouvelé chaque année.' : 'Aujourd\'hui : <b>9,99 €</b>, puis renouvelé chaque mois.'}<br>Résiliable à tout moment depuis « Gérer mon abonnement », sans frais.</div>
+        <a class="cta" ${payHref(state.plan)}>🔒 Continuer vers le paiement</a>
+        <p class="note">Paiement sécurisé par Stripe. L'abonnement s'arrête à la fin de la période payée si tu le résilies. En continuant, tu acceptes les <a href="cgv.html">conditions générales de vente</a>.</p>`}
+      ${PAY.portail && session ? `<a class="ghost" href="${PAY.portail}?prefilled_email=${encodeURIComponent(session.user.email)}" target="_blank" rel="noopener">Gérer mon abonnement</a>` : ''}
+      <button class="link" type="button" data-tab="look">Retour à l'accueil</button>
+    </section>`
+];
+// Liens de paiement Stripe (Payment Links) et espace client pour résilier
+const PAY = { mois: 'https://buy.stripe.com/dRm4gzbGU6tybcw1FO0sU00', an: 'https://buy.stripe.com/aFadR9h1eg48dkE2JS0sU01', portail: 'https://billing.stripe.com/p/login/dRm4gzbGU6tybcw1FO0sU00' };
+function payHref(k) {
+  if (!PAY[k]) return 'aria-disabled="true" title="Bientôt disponible"';
+  if (!session) return 'href="#" data-start="look"';
+  return `href="${PAY[k]}?client_reference_id=${session.user.id}&prefilled_email=${encodeURIComponent(session.user.email)}"`;
+}
+function account() {
+  if (!sb) return `<p class="note"><button class="link" type="button" data-plus>Lookmiz+ : essais illimités dès 6,67 €/mois</button></p>`;
+  return session ? `<p class="note">Connecté : ${session.user.email.replace(/[<>&"]/g, '')} · <button class="link" type="button" data-plus>${state.quota && state.quota.pro ? 'Mon abonnement' : 'Lookmiz+'}</button> · <button class="link" type="button" data-logout>Se déconnecter</button></p>`
+    : `<p class="note"><button class="link" type="button" data-plus>Lookmiz+ : essais illimités dès 6,67 €/mois</button></p>`;
+}
+
+const wide = matchMedia('(min-width: 900px)');
+wide.addEventListener('change', () => render(true));
+function render(soft) {
+  const y = scrollY;
+  $('#app').innerHTML = S[state.step]();
+  const sc = $('#app .screen'), m = sc && sc.querySelector(':scope > .media');
+  if (wide.matches && m && !sc.classList.contains('solo')) {
+    const col = document.createElement('div'); col.className = 'col';
+    [...sc.children].filter(c => c !== m).forEach(c => col.appendChild(c));
+    sc.appendChild(col); sc.classList.add('split');
+  }
+  if (soft) { const sc = $('#app .screen'); if (sc) sc.style.animation = 'none'; scrollTo(0, y); } else scrollTo(0, 0);
+  $('#back').hidden = state.step === 0;
+  document.querySelectorAll('[data-tab]').forEach(b => b.closest('.tabbar') && b.setAttribute('aria-pressed', b.dataset.tab === state.mode));
+
+}
+
+/* Analyse animée, puis lancement des essayages */
+let waitingTry = false;
+function say(html, cls = '') { const p = document.createElement('p'); p.className = cls; p.innerHTML = html; $('#log').appendChild(p); return p; }
+async function runAnalysis() {
+  const log = $('#log'), img = await imgOf(state.photo);
+  await new Promise(r => $('#simg').complete ? r() : $('#simg').onload = r);
+  const a = await Promise.race([analyse(img), wait(25000).then(() => ({ ok: false, slow: true }))]);
+  if (state.step !== 3) return;
+  log.innerHTML = '';
+  if (!a.ok) {
+    say('Je ne vois pas bien ta silhouette. Pas grave, dis-moi :');
+    return askManual(a.g);
+  }
+  $('#sframe').classList.remove('scan');
+  const ctx = await drawScan($('#cv'), img, a);
+  say('Silhouette détectée'); await wait(450);
+  await drawMeasure(ctx, a, 'Épaules', a.geo.shY + (a.geo.hpY - a.geo.shY) * .06, a.geo.S, '#2f6bff');
+  await drawMeasure(ctx, a, 'Taille', a.geo.waY, a.geo.Wa, '#12b3a6');
+  await drawMeasure(ctx, a, 'Hanches', a.geo.hiY, a.geo.Hi, '#e8a23a');
+  say(`Épaules / hanches : <b>${a.ratio.toFixed(2).replace('.', ',')}</b>`); await wait(500);
+  say(`Silhouette : <b>${MORPHS[a.m].n}</b>, ${MORPHS[a.m].d}`); await wait(600);
+  say(`Allure : <b>${a.build}</b>${a.legs ? ` · ${a.legs}` : ''}`); await wait(600);
+  state.m = a.m; state.info = [MORPHS[a.m].n, 'Allure ' + a.build, ...(a.legs ? [a.legs] : [])];
+  if (!a.g) return askGender();
+  say(`Profil : <b>${a.g === 'f' ? 'Femme' : 'Homme'}</b> <button class="link" type="button" data-fix style="color:#bbb;font-size:12px">corriger</button>`);
+  state.g = a.g; await wait(500); startTries();
+}
+function askGender() {
+  const p = say('Ce look est pour… <span class="choice"><button type="button" data-gender="f">Femme</button><button type="button" data-gender="h">Homme</button></span>', 'wait');
+  p.dataset.ask = 1;
+}
+function askManual(g) {
+  say(`<span class="choice">${Object.entries(MORPHS).map(([k, v]) => `<button type="button" data-morph="${k}">${v.n}</button>`).join('')}</span>`, 'wait');
+  state.g = g || null;
+}
+function startTries() {
+  const L = looks();
+  say(`3 pièces choisies : <b>${L.map(x => x.n).join(', ')}</b>`);
+  say('Essayage des 3 looks sur ta photo… (environ 15 s par look)', 'wait');
+  lookGroup = 'look' + Date.now() + Math.random().toString(36).slice(2, 8);
+  waitingTry = true; L.forEach(tryOn);
+}
+function onTryDone() {
+  if (!waitingTry) return;
+  const st = looks().map(x => (tries[tkey(x)] || {}).st);
+  if (st.some(x => x && x !== 'run')) { waitingTry = false; state.step = 4; state.pick = Math.max(0, st.indexOf('ok')); render(); }
+}
+
+document.addEventListener('click', e => {
+  const t = e.target.closest('button'); if (!t) return;
+  if (t.id === 'back') { state.step = state.step === 7 ? 0 : state.step === 8 ? (state.mode === 'shop' ? 7 : 0) : state.step === 9 ? (state.prev ?? 0) : state.step === 4 ? 2 : state.step === 5 ? 7 : state.step === 6 ? 5 : state.step === 1 && state.mode === 'shop' ? 7 : Math.max(0, state.step - 1); }
+  else if (t.dataset.tab) { if (t.closest('.tabbar') || state.step !== 7) state.mode = t.dataset.tab; state.step = t.dataset.tab === 'shop' ? 7 : 0; if (t.dataset.tab === 'look') state.mode = 'look'; }
+  else if ('forget' in t.dataset) { try { localStorage.removeItem('cabine-photo'); } catch (_) {} state.photo = null; state.saved = false; }
+  else if (t.dataset.mode) { state.mode = t.dataset.mode; state.step = 1; }
+  else if (t.dataset.start) { state.mode = t.dataset.start; if (sb && !session) { try { localStorage.setItem('cabine-next', state.mode); } catch (_) {} state.step = 8; } else state.step = state.mode === 'shop' && state.photo ? 5 : 1; }
+  else if ('switch' in t.dataset) { state.signup = !state.signup; }
+  else if ('plus' in t.dataset) { state.prev = state.step === 9 ? state.prev : state.step; state.step = 9; }
+  else if (t.dataset.plan) { state.plan = t.dataset.plan; render(true); return; }
+  else if ('logout' in t.dataset) { sb.auth.signOut(); session = null; state.quota = null; }
+  else if ('trylook' in t.dataset) { const l = looks()[state.pick]; tryOn(l); if ((tries[tkey(l)] || {}).st === 'quota') { state.step = 9; render(); } else render(true); return; }
+  else if ('import' in t.dataset) { importLink(); return; }
+  else if ('shoptry' in t.dataset) { const k = 'shop' + state.gid; delete tries[k]; runTry(k, state.garment, 'shop' + Date.now() + state.gid); state.step = tries[k].st === 'quota' ? 9 : 6; }
+  else if (t.dataset.go) { state.step = +t.dataset.go; if (t.dataset.newg) state.garment = null; if (state.step === 2) { loadPose().catch(() => {}); loadSeg().catch(() => {}); loadFace().catch(() => {}); } }
+  else if (t.dataset.occ) { state.o = t.dataset.occ; state.step = 3; render(); runAnalysis(); return; }
+  else if (t.dataset.gender) { state.g = t.dataset.gender; t.closest('p').remove(); say(`Profil : <b>${state.g === 'f' ? 'Femme' : 'Homme'}</b>`); if (!state.m) state.m = 'H'; startTries(); return; }
+  else if (t.dataset.morph) { state.m = t.dataset.morph; state.info = [MORPHS[state.m].n]; t.closest('p').remove(); say(`Silhouette : <b>${MORPHS[state.m].n}</b>`); if (state.g) { say(`Profil : <b>${state.g === 'f' ? 'Femme' : 'Homme'}</b>`); startTries(); } else askGender(); return; }
+  else if ('fix' in t.dataset) { state.g = state.g === 'f' ? 'h' : 'f'; for (const k in tries) delete tries[k]; waitingTry = false; t.closest('p').innerHTML = `Profil : <b>${state.g === 'f' ? 'Femme' : 'Homme'}</b>`; startTries(); return; }
+  else if (t.dataset.pick) { state.pick = +t.dataset.pick; render(true); return; }
+  else if ('retry' in t.dataset) { tryOn(looks()[state.pick]); render(true); return; }
+  else if ('restart' in t.dataset) { state.step = 2; }
+  else return;
+  render();
+});
+document.addEventListener('keydown', e => { if (e.target.matches('label[for=photo]') && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); $('#photo').click(); } });
+$('#photo').addEventListener('change', e => {
+  const f = e.target.files[0]; if (!f) return;
+  shrink(f).then(d => { e.target.value = ''; if (!d) return;
+    state.photo = d; state.g = state.m = null; for (const k in tries) delete tries[k];
+    try { localStorage.setItem('cabine-photo', d); state.saved = true; } catch (_) {}
+    if (state.step === 6) { runTry('shop' + state.gid, state.garment, 'shop' + Date.now() + state.gid); render(); return; }
+    loadPose().catch(() => {}); loadSeg().catch(() => {}); loadFace().catch(() => {});
+    if (state.step === 4) { state.step = 3; render(); runAnalysis(); } else render(); });
+});
+['#garment', '#garment2'].forEach(id => $(id).addEventListener('change', e => {
+  const f = e.target.files[0]; if (!f) return;
+  shrink(f).then(d => { e.target.value = ''; if (!d) return; state.garment = d; state.gid++; render(); });
+}));
+async function importLink() {
+  const v = $('#glink').value.trim(), m = $('#gmsg'); if (!v) return;
+  if (sb && !session) { state.step = 8; render(); return; }
+  m.textContent = 'Recherche de la photo…';
+  const r = await api({ action: 'preview', link: v }, 20000).catch(() => ({ error: 'pas de réponse' }));
+  if (!r.image) { m.textContent = r.error && /403|401/.test(r.error) ? 'Ce site bloque la lecture de ses pages. Fais une capture d\'écran de l\'article et touche « 🖼️ Capture d\'écran ».' : `Impossible : ${r.error || 'erreur'}. Fais une capture d'écran de l'article et touche « 🖼️ Capture d'écran ».`; return; }
+  state.garment = r.image; state.gid++; render();
+}
+document.addEventListener('submit', async e => {
+  if (e.target.id !== 'login') return; e.preventDefault();
+  const m = $('#lmsg'), b = e.target.querySelector('button'); b.disabled = true;
+  const email = $('#email').value.trim(), password = $('#pass').value;
+  if (state.signup) {
+    const { data, error } = await sb.auth.signUp({ email, password });
+    m.textContent = error ? (/registered|already/i.test(error.message) ? 'Ce compte existe déjà : connecte-toi.' : /password/i.test(error.message) ? 'Mot de passe trop court (6 caractères minimum).' : 'Création impossible : ' + error.message)
+      : data.session ? '✅ Compte créé !' : 'Compte créé, mais il doit être confirmé par e-mail.';
+  } else {
+    const { error } = await sb.auth.signInWithPassword({ email, password });
+    m.textContent = error ? 'E-mail ou mot de passe incorrect.' : '✅ Connecté !';
+  }
+  b.disabled = false;
+});
+// Après le lien reçu par e-mail : on reprend là où la personne en était (ou au début du parcours)
+function afterLogin() {
+  let next = null; try { next = localStorage.getItem('cabine-next'); localStorage.removeItem('cabine-next'); } catch (_) {}
+  if (next || state.step === 8) { state.mode = next || state.mode || 'look'; state.step = state.mode === 'shop' && state.photo ? 5 : 1; render(); }
+  else render(true);
+}
+if (/[?&]paye=1/.test(location.search)) { state.step = 9; history.replaceState(null, '', location.pathname); setTimeout(() => refreshQuota().then(() => render(true)), 2500); }
+const authErr = new URLSearchParams(location.hash.slice(1)).get('error_description') || new URLSearchParams(location.search).get('error_description');
+if (sb) {
+  sb.auth.onAuthStateChange((ev, s) => {
+    const was = !!session; session = s;
+    if (s && !was) setTimeout(() => { afterLogin(); refreshQuota().then(() => render(true)); }, 0);
+    if (!s && was) render(true);
+  });
+  if (authErr) { state.step = 8; setTimeout(() => { const m = $('#lmsg'); if (m) m.textContent = 'Le lien n\'a pas marché (' + authErr + '). Redemande un lien.'; }, 50); }
+}
+document.addEventListener('keydown', e => { const l = e.target.closest && e.target.closest('label[for^=garment]'); if (l && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); $('#' + l.htmlFor).click(); } });
+render();
+</script>
+</body>
+</html>
