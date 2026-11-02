@@ -143,7 +143,7 @@ a.cta[aria-disabled] { opacity: .5; pointer-events: none; }
 .vt .sub { margin-top: -8px; }
 label.media .frame { max-width: 320px; margin: 0 auto; }
 @media (min-width: 900px) { .vt .duo { max-width: 520px; margin: 0 auto; width: 100%; } }
-.pick3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.pick2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .tile { display: grid; justify-items: center; gap: 2px; padding: 16px 6px; border-radius: 20px; background: #fff; border: 1px solid var(--line); cursor: pointer; text-align: center; color: var(--ink); font: inherit; box-shadow: 0 8px 20px rgba(15,15,18,.06); transition: transform .15s, border-color .2s; }
 .tile:active { transform: scale(.96); }
 .tile.on { border: 2px solid var(--pink); }
@@ -498,7 +498,7 @@ const S = [
       </div>
       <div class="choices">
         ${[['look', 6, 'Trouver mon look', 'Ta silhouette est analysée et 3 tenues qui te vont te sont montrées.', 'c1'],
-           ['shop', 7, 'Essayage virtuel', 'Un habit repéré en boutique ou en ligne ? Importe sa photo ou son lien.', 'c2']].map(([k, i, t, d, c]) =>
+           ['shop', 7, 'Essayage virtuel', 'Importe une image de l\'habit ou colle un lien Vinted, et vois-le sur toi.', 'c2']].map(([k, i, t, d, c]) =>
           `<button class="choice ${c}" type="button" data-start="${k}"><img src="${AMB[i].u}&w=700&h=700&q=75&fm=jpg&fit=crop&crop=faces" alt=""><span class="cbody"><b>${t}</b><small>${d}</small><span class="go">Commencer →</span></span></button>`).join('')}
       </div>
       ${account()}
@@ -541,16 +541,13 @@ const S = [
   () => `<section class="screen solo vt">
       <h2>Essayage <span class="hl">virtuel</span></h2>
       <p class="sub">Choisis l'habit à essayer sur ta photo.</p>
-      <div class="pick3">
-        <label class="tile" for="garment" tabindex="0"><span>📷</span><b>Photo</b><small>En boutique</small></label>
-        <label class="tile" for="garment2" tabindex="0"><span>🖼️</span><b>Image</b><small>Capture d'écran</small></label>
-        <button class="tile ${state.src === 'link' ? 'on' : ''}" type="button" data-src="${state.src === 'link' ? 'img' : 'link'}"><span>🔗</span><b>Lien</b><small>D'un site</small></button>
+      <div class="pick2">
+        <label class="tile" for="garment2" tabindex="0"><span>🖼️</span><b>Image</b><small>Photo ou capture de l'habit</small></label>
+        <button class="tile ${state.src === 'link' ? 'on' : ''}" type="button" data-src="${state.src === 'link' ? 'img' : 'link'}"><span>🔗</span><b>Lien Vinted</b><small>Colle le lien de l'annonce</small></button>
       </div>
       ${state.src === 'link' ? `<div class="linkbox">
-          <div class="lrow"><input id="glink" type="url" inputmode="url" placeholder="Colle le lien de l'article" aria-label="Lien de l'habit"><button class="ghost" type="button" data-import>Importer</button></div>
-          <p class="note" id="gmsg" role="status"></p>
-          <small>✅ Testé : <b>Nike</b> · ⚠️ Selon l'article : Vinted, Shein, Zalando, Amazon, Jules, Primark.</small>
-          <small>❌ Bloqués : Zara, H&amp;M, Mango, Asos… Pour eux, fais une capture d'écran et choisis « Image ».</small></div>` : ''}
+          <div class="lrow"><input id="glink" type="url" inputmode="url" placeholder="https://www.vinted.fr/items/…" aria-label="Lien de l'annonce Vinted"><button class="ghost" type="button" data-import>Importer</button></div>
+          <p class="note" id="gmsg" role="status"></p></div>` : ''}
       <div class="duo">
         <figure><img src="${state.photo}" alt="Ta photo"><figcaption>Toi · <label class="link" for="photo" tabindex="0">changer</label></figcaption></figure>
         <span class="plusx">+</span>
@@ -600,7 +597,7 @@ const S = [
         <h2>${state.quota && state.quota.pro ? 'Tu es <span class="hl">Lookmiz+</span>' : 'Passe à <span class="hl">Lookmiz+</span>'}</h2>
         <p class="sub" style="color:#c9cdd8">${state.quota && state.quota.pro ? 'Essais illimités activés. Merci pour ton soutien !' : (state.quota && left() === 0 ? 'Ton essai gratuit est utilisé. ' : '') + 'Essaie autant d\'habits que tu veux, en looks comme en magasin.'}</p></div>
       <div class="steps3"><div><span>♾️</span><p style="margin:0"><b>Essais illimités</b>Les 3 looks, autant de fois que tu veux.</p></div>
-        <div><span>🛍️</span><p style="margin:0"><b>Mode magasin sans limite</b>Photo, capture d'écran ou lien.</p></div>
+        <div><span>🛍️</span><p style="margin:0"><b>Essayage virtuel sans limite</b>Image ou lien Vinted.</p></div>
         <div><span>🔓</span><p style="margin:0"><b>Sans engagement</b>Résiliable à tout moment, en un clic.</p></div></div>
       ${state.quota && state.quota.pro ? '' : `<div class="plans" role="radiogroup" aria-label="Choisis ta formule">
         ${[['an', 'Annuel', '79,99 €', 'par an', 'Soit 6,67 € par mois', 'Le plus avantageux · −33 %'], ['mois', 'Mensuel', '9,99 €', 'par mois', 'Sans engagement', '']].map(([k, n, p, per, sub, tag]) =>
@@ -627,19 +624,18 @@ function account() {
     : `<p class="note"><button class="link" type="button" data-plus>Lookmiz+ : essais illimités dès 6,67 €/mois</button></p>`;
 }
 
-// Chaque écran est une étape de l'historique : le retour du téléphone revient à l'écran précédent
-let lastStep = 0, popping = false;
-history.replaceState({ step: 0 }, '');
+// Retour du téléphone : une entrée d'historique « sentinelle » ; chaque retour remonte à l'écran parent, jamais en avant
+let skipPop = false;
+const parentOf = st => st === 7 || st === 8 || st === 1 || st === 5 ? 0 : st === 9 ? (state.prev ?? 0) : st === 4 || st === 3 ? 2 : st === 6 ? 5 : Math.max(0, st - 1);
+function goUp() { state.step = parentOf(state.step); if (state.step === 8 && session) state.step = 0; }
 function syncHistory() {
-  if (popping || state.step === lastStep) return;
-  history.pushState({ step: state.step }, ''); lastStep = state.step;
+  const has = history.state && history.state.lk;
+  if (state.step !== 0 && !has) history.pushState({ lk: 1 }, '');
+  else if (state.step === 0 && has) { skipPop = true; history.back(); }   // de retour à l'accueil : on retire la sentinelle
 }
-addEventListener('popstate', e => {
-  let st = e.state && typeof e.state.step === 'number' ? e.state.step : 0;
-  if (st === 3) st = 2;            // l'analyse ne se rejoue pas : retour au choix de l'occasion
-  if (st === 6) st = 5;            // résultat en magasin : retour au choix de l'habit
-  if (st === 8 && session) st = 0; // déjà connecté : pas de retour sur la connexion
-  popping = true; state.step = st; lastStep = st; render(); popping = false;
+addEventListener('popstate', () => {
+  if (skipPop) { skipPop = false; return; }
+  if (state.step !== 0) { goUp(); render(); }
 });
 let slideT;
 function startSlides() {
@@ -726,8 +722,7 @@ function onTryDone() {
 
 document.addEventListener('click', e => {
   const t = e.target.closest('button'); if (!t) return;
-  if (t.id === 'back' && history.state && history.state.step === state.step && state.step !== 0) { history.back(); return; }
-  if (t.id === 'back') { state.step = state.step === 7 ? 0 : state.step === 8 ? 0 : state.step === 9 ? (state.prev ?? 0) : state.step === 4 ? 2 : state.step === 5 ? 0 : state.step === 6 ? 5 : state.step === 1 ? 0 : Math.max(0, state.step - 1); }
+  if (t.id === 'back') goUp();
   else if (t.dataset.tab) { state.mode = 'look'; state.step = 0; }
   else if ('restartLook' in t.dataset) { for (const k in tries) if (tries[k].st !== 'ok') delete tries[k]; state.step = 2; }
   else if (t.dataset.src) { state.src = t.dataset.src; render(true); return; }
@@ -768,10 +763,11 @@ $('#photo').addEventListener('change', e => {
 }));
 async function importLink() {
   const v = $('#glink').value.trim(), m = $('#gmsg'); if (!v) return;
+  if (!/(^|\.)vinted\.[a-z.]+\//i.test(v.replace(/^https?:\/\//, ''))) { m.textContent = 'Colle un lien d\'annonce Vinted. Pour un autre site, fais une capture de l\'habit et choisis « Image ».'; return; }
   if (sb && !session) { state.step = 8; render(); return; }
   m.textContent = 'Recherche de la photo…';
   const r = await api({ action: 'preview', link: v }, 20000).catch(() => ({ error: 'pas de réponse' }));
-  if (!r.image) { m.textContent = r.error && /403|401/.test(r.error) ? 'Ce site bloque la lecture de ses pages. Fais une capture d\'écran de l\'article et touche « 🖼️ Capture d\'écran ».' : `Impossible : ${r.error || 'erreur'}. Fais une capture d'écran de l'article et touche « 🖼️ Capture d'écran ».`; return; }
+  if (!r.image) { m.textContent = `Impossible de lire cette annonce (${r.error || 'erreur'}). Fais une capture de l'habit et choisis « Image ».`; return; }
   state.garment = r.image; state.gid++; render();
 }
 document.addEventListener('submit', async e => {
