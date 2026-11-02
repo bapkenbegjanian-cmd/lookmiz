@@ -471,11 +471,11 @@ const S = [
       <p class="sub">En boutique, sur le cintre ou le mannequin. Tu le vois sur ta photo.</p>
       <label class="media" for="garment" tabindex="0" style="cursor:pointer;display:block">${state.garment ? frame(state.garment) : `<div class="frame"><div class="empty"><span class="plus">📷</span><b>Prendre l'habit en photo</b>Bien à plat ou sur un cintre, en entier</div></div>`}</label>
       <div class="tips"><span>👕 L'habit en entier</span><span>💡 Bonne lumière</span><span>🧺 Fond simple</span></div>
-      <button class="cta" type="button" data-shoptry ${state.garment ? '' : 'disabled'}>🪄 Me l'essayer</button>
       <div class="row"><label class="ghost" for="garment" tabindex="0">📷 Prendre une photo</label><label class="ghost" for="garment2" tabindex="0">🖼️ Capture d'écran</label></div>
       <div class="linkbox"><b>🔗 Ou colle le lien d'un habit</b><small>Vinted, Zara, Shein, Asos… la photo de l'article est récupérée.</small>
         <div class="lrow"><input id="glink" type="url" inputmode="url" placeholder="https://…" aria-label="Lien de l'habit"><button class="ghost" type="button" data-import>Importer</button></div>
         <p class="note" id="gmsg" role="status"></p></div>
+      <button class="cta" type="button" data-shoptry ${state.garment ? '' : 'disabled'}>${state.garment ? '🪄 Me l\'essayer' : '👆 Choisis d\'abord un habit'}</button>
       ${quotaPill()}
     </section>`,
   () => {
@@ -585,7 +585,7 @@ async function runAnalysis() {
   say(`Épaules / hanches : <b>${a.ratio.toFixed(2).replace('.', ',')}</b>`); await wait(500);
   say(`Silhouette : <b>${MORPHS[a.m].n}</b>, ${MORPHS[a.m].d}`); await wait(600);
   say(`Allure : <b>${a.build}</b>${a.legs ? ` · ${a.legs}` : ''}`); await wait(600);
-  state.m = a.m; state.info = [MORPHS[a.m].n, 'Allure ' + a.build, ...(a.legs ? [a.legs] : [])];
+  state.m = a.m; state.info = [MORPHS[a.m].n, 'Allure ' + a.build, ...(a.legs ? [a.legs.charAt(0).toUpperCase() + a.legs.slice(1)] : [])];
   if (!a.g) return askGender();
   say(`Profil : <b>${a.g === 'f' ? 'Femme' : 'Homme'}</b> <button class="link" type="button" data-fix style="color:#bbb;font-size:12px">corriger</button>`);
   state.g = a.g; await wait(500); startTries();
