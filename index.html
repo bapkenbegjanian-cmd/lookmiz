@@ -144,6 +144,8 @@ a.cta[aria-disabled] { opacity: .5; pointer-events: none; }
 .seg button { border: 0; background: none; padding: 13px; border-radius: 13px; font-weight: 800; font-size: 15px; color: var(--muted); cursor: pointer; }
 .seg button[aria-selected="true"] { background: var(--ink); color: #fff; }
 .linkbox small b { color: var(--ink); }
+.actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.actions .ghost { font-size: 14px; padding: 13px 10px; }
 .mephoto { display: grid; grid-template-columns: 54px 1fr; gap: 12px; align-items: center; background: var(--glass); backdrop-filter: blur(12px); border: 1px solid var(--line); border-radius: 18px; padding: 10px 12px; font-size: 14px; }
 .mephoto b { display: block; font: 800 15px var(--display); }
 .mephoto img { width: 54px; height: 70px; object-fit: cover; border-radius: 12px; }
@@ -279,7 +281,7 @@ const MORPHS = {
 };
 const OCCS = { soiree: ['🥂', 'Soirée', 'Chic et lumineux', '#2f6bff'], rdv: ['🌹', 'Rendez-vous', 'Séduisant, pas trop', '#ff8a5c'], travail: ['💼', 'Travail', 'Net et assuré', '#7b5cff'],
   mariage: ['💍', 'Mariage', 'Élégant', '#ffb37a'], sport: ['⚡', 'Sport', 'Beau et confortable', '#3dd6b5'], casual: ['☀️', 'Week-end', 'Facile et stylé', '#ffd23f'] };
-const state = { plan: 'an', signup: true, quota: null, step: 0, photo: null, o: null, g: null, m: null, info: [], pick: 0, mode: 'look', garment: null, gid: 0, saved: false };
+const state = { pv: 1, plan: 'an', signup: true, quota: null, step: 0, photo: null, o: null, g: null, m: null, info: [], pick: 0, mode: 'look', garment: null, gid: 0, saved: false };
 try { const p = localStorage.getItem('cabine-photo'); if (p) { state.photo = p; state.saved = true; } } catch (_) {}
 const tries = {};
 const looks = () => DATA.L[state.g + '_' + state.o].map(id => ({ id, ...DATA.g[id] })).map(x => ({ ...x, fit: x.m.includes(state.m) ? 1 : 0 })).sort((a, b) => b.fit - a.fit);
@@ -405,7 +407,7 @@ const kindOf = g => String(g).startsWith('shop') ? 'shop' : 'look';
 const left = (k = state.mode === 'shop' ? 'shop' : 'look') => { const q = state.quota; if (!q) return 0; if (q.pro) return Infinity;
   const used = typeof q.used === 'object' ? q.used[k] : q.used, free = typeof q.free === 'object' ? q.free[k] : q.free; return Math.max(0, free - used); };
 const quotaPill = () => state.quota && !state.quota.pro ? `<span class="pill"><i></i>${left() ? `${left()} essai gratuit ${state.mode === 'shop' ? 'en magasin' : 'de looks'}` : `Essai gratuit ${state.mode === 'shop' ? 'en magasin' : 'de looks'} utilisé`}</span>` : '';
-const tkey = l => state.g + state.o + l.id;
+const tkey = l => state.pv + state.g + state.o + l.id;
 let queue = Promise.resolve();
 function runTry(k, garment, group, category = 'auto') {
   if (tries[k] && tries[k].st !== 'err') return;
@@ -416,11 +418,13 @@ function runTry(k, garment, group, category = 'auto') {
     return;
   }
   tries[k] = { st: 'run' };
+  const photo = state.photo, pv = state.pv;
   queue = queue.then(async () => {
+    if (pv !== state.pv) return;   // la photo a changé entre-temps : on abandonne cet essai
     for (let attempt = 0; attempt < 2; attempt++) {
       const t0 = Date.now(); let started = false;
       try {
-        const r = await api({ action: 'run', group, body: { model_name: 'tryon-v1.6', inputs: { model_image: state.photo, garment_image: garment, category, mode: 'quality' } } }, 45000);
+        const r = await api({ action: 'run', group, body: { model_name: 'tryon-v1.6', inputs: { model_image: photo, garment_image: garment, category, mode: 'quality' } } }, 45000);
         if (r._s === 402) { tries[k] = { st: 'quota' }; break; }
         if (r._s === 401) { tries[k] = { st: 'err', why: 'connexion expirée, reconnecte-toi' }; break; }
         if (!r.id) throw new Error(r.message || r.error || 'refusé');
@@ -439,6 +443,7 @@ function runTry(k, garment, group, category = 'auto') {
         // un essai déjà lancé compte dans le quota : on ne relance pas tout seul
         if (started || attempt) { tries[k] = { st: 'err', why }; break; } await wait(1500); }
     }
+    if (pv !== state.pv) return;
     if (tries[k].st === 'quota' && (state.step === 3 || state.step === 4 || state.step === 6)) { state.step = 9; render(); return; }
     if (state.step === 4 || state.step === 6) render(true);
     if (state.step === 3) onTryDone();
@@ -512,10 +517,9 @@ const S = [
       ${t.st === 'err' ? `<p class="note">Ça n'a pas marché (${t.why}). <button class="link" type="button" data-retry>Réessayer</button></p>` : ''}
       <p class="why"><b>${l.fit ? 'Idéal pour ta silhouette.' : 'Va bien avec ta silhouette.'}</b> ${MORPHS[state.m].t}</p>
       <div class="piece"><div class="ph"><img src="${pic(l, 300)}" alt="${l.n}"></div><div><b>${l.n}</b><small>À porter avec : ${l.a}</small></div></div>
-      <div class="row"><label class="ghost" for="photo" tabindex="0">Autre photo</label>
-        <a class="cta" href="https://www.vinted.fr/catalog?search_text=${encodeURIComponent(l.n)}" target="_blank" rel="noopener">Sur Vinted</a></div>
+      <a class="cta" href="https://www.vinted.fr/catalog?search_text=${encodeURIComponent(l.n)}" target="_blank" rel="noopener">🔍 Voir des habits similaires</a>
+      <div class="actions"><button class="ghost" type="button" data-restart>🎯 Changer d'occasion</button><label class="ghost" for="photo" tabindex="0">📷 Changer de photo</label></div>
       <span class="credit">${credit(l)}</span>
-      <button class="link" type="button" data-restart>Changer d'occasion</button>
     </section>`;
   },
   () => `<section class="screen">
@@ -536,7 +540,7 @@ const S = [
       ${quotaPill()}
     </section>`,
   () => {
-    const t = tries['shop' + state.gid] || {}, src = t.st === 'ok' ? t.url : state.photo;
+    const t = tries['shop' + state.pv + '-' + state.gid] || {}, src = t.st === 'ok' ? t.url : state.photo;
     return `<section class="screen">
       <h2>${t.st === 'ok' ? 'Et voilà, <span class="hl">sur toi</span>' : 'Essayage <span class="hl">en cours</span>'}</h2>
       <div class="frame media ${t.st === 'run' ? 'scan' : ''}"><div class="blur" style="background-image:url('${src}')"></div><img src="${src}" alt="${t.st === 'ok' ? 'Toi avec l\'habit' : 'Ta photo'}" class="${t.st === 'ok' ? 'reveal' : ''}">
@@ -716,7 +720,7 @@ document.addEventListener('click', e => {
   else if ('logout' in t.dataset) { sb.auth.signOut(); session = null; state.quota = null; }
   else if ('trylook' in t.dataset) { const l = looks()[state.pick]; tryOn(l); if ((tries[tkey(l)] || {}).st === 'quota') { state.step = 9; render(); } else render(true); return; }
   else if ('import' in t.dataset) { importLink(); return; }
-  else if ('shoptry' in t.dataset) { const k = 'shop' + state.gid; delete tries[k]; runTry(k, state.garment, 'shop' + Date.now() + state.gid); state.step = tries[k].st === 'quota' ? 9 : 6; }
+  else if ('shoptry' in t.dataset) { const k = 'shop' + state.pv + '-' + state.gid; delete tries[k]; runTry(k, state.garment, 'shop' + Date.now() + state.gid); state.step = tries[k].st === 'quota' ? 9 : 6; }
   else if (t.dataset.go) { state.step = +t.dataset.go; if (t.dataset.newg) state.garment = null; if (state.step === 2) { loadPose().catch(() => {}); loadSeg().catch(() => {}); loadFace().catch(() => {}); } }
   else if (t.dataset.occ) { state.o = t.dataset.occ; state.step = 3; render(); runAnalysis(); return; }
   else if (t.dataset.gender) { state.g = t.dataset.gender; t.closest('p').remove(); say(`Profil : <b>${state.g === 'f' ? 'Femme' : 'Homme'}</b>`); if (!state.m) state.m = 'H'; startTries(); return; }
@@ -732,9 +736,9 @@ document.addEventListener('keydown', e => { if (e.target.matches('label[for=phot
 $('#photo').addEventListener('change', e => {
   const f = e.target.files[0]; if (!f) return;
   shrink(f).then(d => { e.target.value = ''; if (!d) return;
-    state.photo = d; state.g = state.m = null; for (const k in tries) delete tries[k];
+    state.photo = d; state.pv++; state.g = state.m = null; for (const k in tries) delete tries[k];
     try { localStorage.setItem('cabine-photo', d); state.saved = true; } catch (_) {}
-    if (state.step === 6) { runTry('shop' + state.gid, state.garment, 'shop' + Date.now() + state.gid); render(); return; }
+    if (state.step === 6) { runTry('shop' + state.pv + '-' + state.gid, state.garment, 'shop' + Date.now() + state.gid); render(); return; }
     loadPose().catch(() => {}); loadSeg().catch(() => {}); loadFace().catch(() => {});
     if (state.step === 4) { state.step = 3; render(); runAnalysis(); } else render(); });
 });
