@@ -100,7 +100,8 @@ a.cta[aria-disabled] { opacity: .5; pointer-events: none; }
 .hero { display: grid; gap: 18px; }
 .kicker { font-size: 12px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--pink); }
 .home h1 { font-size: clamp(52px, 15vw, 96px); line-height: .92; margin-top: 8px; }
-.stage { position: relative; border-radius: 30px; overflow: hidden; height: 520px; background: #222; box-shadow: 0 30px 60px rgba(59,91,255,.25); animation: pop .8s cubic-bezier(.2,.8,.2,1) both; }
+.stage { position: relative; border-radius: 30px; overflow: hidden; height: 520px; background: #222; box-shadow: 0 30px 60px rgba(59,91,255,.25); }
+.first .stage { animation: pop .8s cubic-bezier(.2,.8,.2,1) both; }
 @keyframes pop { from { opacity: 0; transform: scale(.96); } }
 .slides img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transform: scale(1.12); transition: opacity 1.4s ease; }
 .slides img.on { opacity: 1; animation: kb 6s ease-out forwards; }
@@ -116,8 +117,9 @@ a.cta[aria-disabled] { opacity: .5; pointer-events: none; }
 .sdots i.on { width: 32px; background: #fff; }
 .scredit { position: absolute; top: 12px; right: 14px; font-size: 10px; color: rgba(255,255,255,.75); }
 .choices { display: grid; gap: 14px; }
-.choice { position: relative; display: block; overflow: hidden; height: 200px; padding: 0; border: 0; border-radius: 26px; cursor: pointer; color: #fff; text-align: left; isolation: isolate; animation: rise .7s cubic-bezier(.2,.8,.2,1) both; transition: transform .2s; }
-.choice + .choice { animation-delay: .12s; }
+.choice { position: relative; display: block; overflow: hidden; height: 200px; padding: 0; border: 0; border-radius: 26px; cursor: pointer; color: #fff; text-align: left; isolation: isolate; transition: transform .2s; }
+.first .choice { animation: rise .7s cubic-bezier(.2,.8,.2,1) both; }
+.first .choice + .choice { animation-delay: .12s; }
 @keyframes rise { from { opacity: 0; transform: translateY(24px); } }
 .choice img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: -2; transition: transform .6s; }
 .choice::before { content: ""; position: absolute; inset: 0; z-index: -1; }
@@ -475,7 +477,7 @@ const S = [
       </div>
       <div class="choices">
         ${[['look', 6, 'Trouver mon look', 'Ta silhouette est analysée et 3 tenues qui te vont te sont montrées.', 'c1'],
-           ['shop', 1, 'Essayage virtuel', 'Un habit repéré en boutique ou en ligne ? Importe sa photo ou son lien.', 'c2']].map(([k, i, t, d, c]) =>
+           ['shop', 7, 'Essayage virtuel', 'Un habit repéré en boutique ou en ligne ? Importe sa photo ou son lien.', 'c2']].map(([k, i, t, d, c]) =>
           `<button class="choice ${c}" type="button" data-start="${k}"><img src="${AMB[i].u}&w=700&h=700&q=75&fm=jpg&fit=crop&crop=faces" alt=""><span class="cbody"><b>${t}</b><small>${d}</small><span class="go">Commencer →</span></span></button>`).join('')}
       </div>
       ${account()}
@@ -635,7 +637,7 @@ function render(soft) {
   }
   if (soft) { const sc = $('#app .screen'); if (sc) sc.style.animation = 'none'; scrollTo(0, y); } else scrollTo(0, 0);
   $('#back').hidden = state.step === 0;
-  if (state.step === 0) startSlides();
+  if (state.step === 0) { startSlides(); if (!soft && !window.__homeShown) { window.__homeShown = 1; $('#app .home').classList.add('first'); } }
   syncHistory();
 
 
