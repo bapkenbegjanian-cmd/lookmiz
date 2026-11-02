@@ -489,7 +489,8 @@ const S = [
       ${state.src === 'link' ? `<div class="linkbox"><b>Colle le lien de l'article</b>
           <div class="lrow"><input id="glink" type="url" inputmode="url" placeholder="https://…" aria-label="Lien de l'habit"><button class="ghost" type="button" data-import>Importer</button></div>
           <p class="note" id="gmsg" role="status"></p>
-          <small>✅ Marche avec : <b>Vinted, Shein, Zalando, Amazon, Nike, Jules, Primark</b>.</small>
+          <small>✅ Testé et validé : <b>Nike</b>.</small>
+          <small>⚠️ Peut marcher, selon l'article : Vinted, Shein, Zalando, Amazon, Jules, Primark.</small>
           <small>❌ Ne marche pas avec : Zara, H&amp;M, Mango, Bershka, Kiabi, Decathlon, La Redoute, Celio, Lacoste, Adidas, Asos, Uniqlo. Pour eux, fais une capture d'écran et choisis « Image ».</small></div>
         ${state.garment ? frame(state.garment) : ''}`
       : `<label class="media" for="garment2" tabindex="0" style="cursor:pointer;display:block">${state.garment ? frame(state.garment) : `<div class="frame"><div class="empty"><span class="plus">👕</span><b>Ajoute l'habit</b>Photo prise en boutique ou capture d'écran d'un site</div></div>`}</label>
