@@ -589,6 +589,10 @@ function account() {
     : `<p class="note"><button class="link" type="button" data-plus>Lookmiz+ : essais illimités dès 6,67 €/mois</button></p>`;
 }
 
+// Le bouton retour du téléphone fait comme la flèche ← du site, au lieu de quitter Lookmiz
+let pushed = false;
+function syncHistory() { if (state.step !== 0 && !pushed) { history.pushState({ lookmiz: 1 }, ''); pushed = true; } }
+addEventListener('popstate', () => { pushed = false; if (state.step !== 0) $('#back').click(); });
 const wide = matchMedia('(min-width: 900px)');
 wide.addEventListener('change', () => render(true));
 function render(soft) {
@@ -602,6 +606,7 @@ function render(soft) {
   }
   if (soft) { const sc = $('#app .screen'); if (sc) sc.style.animation = 'none'; scrollTo(0, y); } else scrollTo(0, 0);
   $('#back').hidden = state.step === 0;
+  syncHistory();
 
 
 }
