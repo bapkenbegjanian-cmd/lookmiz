@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Lookmiz — essaie les looks sur ta photo</title>
-<meta name="description" content="Mets ta photo : Lookmiz lit ta silhouette et t'habille avec les looks qui te vont.">
+<meta name="description" content="Essayage virtuel : mets ta photo, importe un habit ou un lien Vinted, et vois-le porté par toi.">
 <meta name="theme-color" content="#f7f6f3">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://images.unsplash.com"><link rel="preconnect" href="https://cdn.jsdelivr.net">
@@ -133,10 +133,11 @@ a.cta[aria-disabled] { opacity: .5; pointer-events: none; }
 .choice .go { margin-top: 6px; font-weight: 800; font-size: 14px; background: #fff; color: var(--ink); padding: 10px 16px; border-radius: 99px; width: max-content; position: relative; overflow: hidden; }
 .choice .go::after { content: ""; position: absolute; top: 0; left: -60%; width: 40%; height: 100%; background: linear-gradient(90deg, transparent, rgba(59,91,255,.25), transparent); transform: skewX(-20deg); animation: shine 2.8s ease-in-out infinite; }
 @keyframes shine { 60%, 100% { left: 130%; } }
+  .choice.solo1 { height: 220px; }
 @media (min-width: 900px) {
   .stage { height: 600px; }
   .stext { left: 48px; bottom: 44px; }
-  .choices { grid-template-columns: 1fr 1fr; }
+  .choices { grid-template-columns: 1fr; }
   .choice { height: 260px; }
 }
 @media (prefers-reduced-motion: reduce) { .slides img.on, .stage, .choice, .choice .go::after { animation: none; } }
@@ -497,8 +498,7 @@ const S = [
         <span class="scredit" id="scredit">Photo ${AMB[0].by} / Unsplash</span>
       </div>
       <div class="choices">
-        ${[['look', 6, 'Trouver mon look', 'Ta silhouette est analysée et 3 tenues qui te vont te sont montrées.', 'c1'],
-           ['shop', 7, 'Essayage virtuel', 'Importe une image de l\'habit ou colle un lien Vinted, et vois-le sur toi.', 'c2']].map(([k, i, t, d, c]) =>
+        ${[['shop', 7, 'Essayage virtuel', 'Importe une image de l\'habit ou colle un lien Vinted, et vois-le sur toi.', 'c1 solo1']].map(([k, i, t, d, c]) =>
           `<button class="choice ${c}" type="button" data-start="${k}"><img src="${AMB[i].u}&w=700&h=700&q=75&fm=jpg&fit=crop&crop=faces" alt=""><span class="cbody"><b>${t}</b><small>${d}</small><span class="go">Commencer →</span></span></button>`).join('')}
       </div>
       ${account()}
@@ -583,7 +583,7 @@ const S = [
     </section>`,
   () => `<section class="screen solo">
       <h2>${state.signup ? 'Crée ton compte' : 'Connecte-toi'} <span class="hl">${state.signup ? 'gratuit' : ''}</span></h2>
-      <p class="sub">${state.signup ? 'Un e-mail et un mot de passe, c\'est tout. <b>1 essai de looks et 1 essai en magasin offerts.</b>' : 'Avec l\'e-mail et le mot de passe de ton compte.'}</p>
+      <p class="sub">${state.signup ? 'Un e-mail et un mot de passe, c\'est tout. <b>1 essai offert.</b>' : 'Avec l\'e-mail et le mot de passe de ton compte.'}</p>
       ${session ? `<button class="cta" type="button" data-go="1">Tu es connecté, continuer →</button>` : ''}
       <form id="login" class="loginbox">
         <input id="email" type="email" required autocomplete="email" placeholder="ton@email.com" aria-label="Adresse e-mail">
@@ -595,8 +595,8 @@ const S = [
   () => `<section class="screen solo">
       <div class="shophero"><span class="pill" style="background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.2);color:#fff"><i></i>Lookmiz+</span>
         <h2>${state.quota && state.quota.pro ? 'Tu es <span class="hl">Lookmiz+</span>' : 'Passe à <span class="hl">Lookmiz+</span>'}</h2>
-        <p class="sub" style="color:#c9cdd8">${state.quota && state.quota.pro ? 'Essais illimités activés. Merci pour ton soutien !' : (state.quota && left() === 0 ? 'Ton essai gratuit est utilisé. ' : '') + 'Essaie autant d\'habits que tu veux, en looks comme en magasin.'}</p></div>
-      <div class="steps3"><div><span>♾️</span><p style="margin:0"><b>Essais illimités</b>Les 3 looks, autant de fois que tu veux.</p></div>
+        <p class="sub" style="color:#c9cdd8">${state.quota && state.quota.pro ? 'Essais illimités activés. Merci pour ton soutien !' : (state.quota && left() === 0 ? 'Ton essai gratuit est utilisé. ' : '') + 'Essaie autant d\'habits que tu veux, sur ta photo.'}</p></div>
+      <div class="steps3"><div><span>♾️</span><p style="margin:0"><b>Essais illimités</b>Autant d'habits que tu veux.</p></div>
         <div><span>🛍️</span><p style="margin:0"><b>Essayage virtuel sans limite</b>Image ou lien Vinted.</p></div>
         <div><span>🔓</span><p style="margin:0"><b>Sans engagement</b>Résiliable à tout moment, en un clic.</p></div></div>
       ${state.quota && state.quota.pro ? '' : `<div class="plans" role="radiogroup" aria-label="Choisis ta formule">
@@ -615,7 +615,7 @@ const S = [
 const PAY = { mois: 'https://buy.stripe.com/dRm4gzbGU6tybcw1FO0sU00', an: 'https://buy.stripe.com/aFadR9h1eg48dkE2JS0sU01', portail: 'https://billing.stripe.com/p/login/dRm4gzbGU6tybcw1FO0sU00' };
 function payHref(k) {
   if (!PAY[k]) return 'aria-disabled="true" title="Bientôt disponible"';
-  if (!session) return 'href="#" data-start="look"';
+  if (!session) return 'href="#" data-start="shop"';
   return `href="${PAY[k]}?client_reference_id=${session.user.id}&prefilled_email=${encodeURIComponent(session.user.email)}"`;
 }
 function account() {
