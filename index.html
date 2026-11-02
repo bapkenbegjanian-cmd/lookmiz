@@ -100,33 +100,30 @@ a.cta[aria-disabled] { opacity: .5; pointer-events: none; }
 .hero { display: grid; gap: 18px; }
 .kicker { font-size: 12px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--pink); }
 .home h1 { font-size: clamp(52px, 15vw, 96px); line-height: .92; margin-top: 8px; }
-.mosaic { display: grid; grid-template-columns: 1.2fr 1fr; grid-template-rows: repeat(2, minmax(0, 1fr)); gap: 10px; height: 300px; overflow: hidden; }
-.mosaic img { width: 100%; height: 100%; min-height: 0; object-fit: cover; border-radius: 18px; background: #e9e8e4; }
-.mosaic .m0 { grid-row: 1 / 3; }
+.himg { margin: 0; position: relative; }
+.himg img, .band img { width: 100%; object-fit: cover; border-radius: 24px; background: #e9e8e4; }
+.himg img { height: 300px; }
+figcaption { font-size: 11px; color: var(--muted); margin-top: 6px; }
+figcaption a { color: inherit; }
 .choices { display: grid; gap: 14px; }
-.choice { display: grid; grid-template-columns: 112px minmax(0, 1fr); text-align: left; padding: 0; border-radius: 22px; border: 1px solid var(--line); background: #fff; overflow: hidden; cursor: pointer; color: var(--ink); transition: transform .15s, box-shadow .2s; }
+.choice { display: grid; grid-template-columns: minmax(0, 1fr) 64px; gap: 12px; align-items: center; text-align: left; padding: 20px; border-radius: 22px; border: 1px solid var(--line); background: #fff; cursor: pointer; color: var(--ink); transition: transform .15s, box-shadow .2s; }
 .choice:hover { box-shadow: 0 16px 34px rgba(15,15,18,.12); transform: translateY(-2px); }
 .choice:active { transform: scale(.98); }
-.choice img { width: 100%; height: 100%; min-height: 150px; object-fit: cover; background: #e9e8e4; }
-.cbody { display: grid; gap: 4px; padding: 16px; align-content: center; }
+.choice .ce { width: 64px; height: 64px; border-radius: 20px; display: grid; place-items: center; font-size: 30px; background: #f2f1ee; }
+.cbody { display: grid; gap: 4px; }
 .num { font: 400 13px var(--display); color: var(--pink); letter-spacing: .1em; }
-.choice b { font: 400 26px/1 var(--display); text-transform: uppercase; }
-.choice small { color: var(--muted); font-size: 13.5px; line-height: 1.4; }
+.choice b { font: 400 28px/1 var(--display); text-transform: uppercase; }
+.choice small { color: var(--muted); font-size: 14px; line-height: 1.4; }
 .choice .go { margin-top: 6px; font-weight: 800; font-size: 14px; color: var(--pink); }
-.trends { display: grid; gap: 4px; }
-.trends h3 { margin: 0; font: 400 28px var(--display); text-transform: uppercase; }
-.tscroll { display: grid; grid-auto-flow: column; grid-auto-columns: 132px; gap: 10px; overflow-x: auto; padding: 8px 2px 6px; scroll-snap-type: x mandatory; }
-.trend { padding: 0; border: 0; background: none; text-align: left; cursor: pointer; scroll-snap-align: start; color: var(--ink); }
-.trend img { width: 132px; height: 176px; object-fit: cover; border-radius: 16px; background: #e9e8e4; transition: transform .2s; }
-.trend:hover img { transform: scale(1.03); }
-.trend span { display: block; font-size: 13px; font-weight: 700; margin-top: 6px; line-height: 1.25; }
+.band { margin: 0; position: relative; }
+.band img { height: 220px; }
+.band figcaption { display: grid; gap: 2px; }
+.band figcaption b { font: 400 24px var(--display); text-transform: uppercase; color: var(--ink); }
 @media (min-width: 900px) {
   .hero { grid-template-columns: 1fr 1fr; align-items: center; gap: 40px; }
-  .mosaic { height: 440px; }
+  .himg img { height: 460px; }
   .choices { grid-template-columns: 1fr 1fr; }
-  .choice { grid-template-columns: 1fr; }
-  .choice img { height: 260px; }
-  .tscroll { grid-auto-columns: 160px; } .trend img { width: 160px; height: 214px; }
+  .band img { height: 320px; }
 }
 .seg { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 6px; border-radius: 18px; background: var(--glass); border: 1px solid var(--line); }
 .seg button { border: 0; background: none; padding: 13px; border-radius: 13px; font-weight: 800; font-size: 15px; color: var(--muted); cursor: pointer; }
@@ -253,6 +250,7 @@ a.cta[aria-disabled] { opacity: .5; pointer-events: none; }
 const $ = s => document.querySelector(s);
 const DATA = {"g": {"30": {"u": "https://images.unsplash.com/photo-1772571157276-a76fa80f2a1a?ixid=M3wxMTE2NDI3fDB8MXxzZWFyY2h8N3x8cmVkJTIwZHJlc3MlMjBoYW5nZXJ8ZW58MXx8fHwxNzkzMjE4MDg1fDA&ixlib=rb-4.1.0", "by": "atelierbyvineeth ...", "user": "https://unsplash.com/@atelierbyvineeth", "n": "Robe rouge cintrée", "p": 89, "m": "XAH", "a": "Escarpins nude et pochette dorée"}, "40": {"u": "https://images.unsplash.com/photo-1687380330652-7badcb8f44c3?ixid=M3wxMTE2NDI3fDB8MXxzZWFyY2h8NXx8YmxhY2slMjBkcmVzcyUyMGhhbmdlcnxlbnwxfHx8fDE3OTMyMTgwODZ8MA&ixlib=rb-4.1.0", "by": "Jason Leung", "user": "https://unsplash.com/@ninjason", "n": "Robe portefeuille noire", "p": 79, "m": "XOAH", "a": "Talons fins et bijoux dorés"}, "14": {"u": "https://images.unsplash.com/photo-1604531825858-a8e24ed6b43d?ixid=M3wxMTE2NDI3fDB8MXxzZWFyY2h8M3x8ZXZlbmluZyUyMGdvd24lMjBoYW5nZXJ8ZW58MXx8fHwxNzkzMjE4MDg1fDA&ixlib=rb-4.1.0", "by": "Nathan Walker", "user": "https://unsplash.com/@nwphoto", "n": "Robe en dentelle blanche", "p": 95, "m": "AVHX", "a": "Ballerines et petit sac"}, "69": {"u": "https://images.unsplash.com/photo-1721824299322-6b77921d8c14?ixid=M3wxMTE2NDI3fDB8MXxzZWFyY2h8MTB8fGZsb3JhbCUyMGRyZXNzJTIwaGFuZ2VyfGVufDF8fHx8MTc5MzIxODA4Nnww&ixlib=rb-4.1.0", "by": "Lisa Anna", "user": "https://unsplash.com/@lisaanna195", "n": "Robe fleurie manches longues", "p": 69, "m": "AVHO", "a": "Bottines et veste en jean"}, "11": {"u": "https://images.unsplash.com/photo-1578747522731-9e5a179b02f7?ixid=M3wxMTE2NDI3fDB8MXxzZWFyY2h8MTJ8fGRyZXNzJTIwb24lMjBoYW5nZXJ8ZW58MXx8fHwxNzkzMjE4MDg1fDA&ixlib=rb-4.1.0", "by": "Content Pixie", "user": "https://unsplash.com/@contentpixie", "n": "Top blanc sans manches", "p": 29, "m": "AHVX", "a": "Pantalon taille haute et mocassins"}, "175": {"u": "https://images.unsplash.com/photo-1761499101317-e32c4ed50b2f?ixid=M3wxMTE2NDI3fDB8MXxzZWFyY2h8OHx8bWVuJTIwYmxhemVyJTIwaGFuZ2VyfGVufDF8fHx8MTc5MzIxODA4OHww&ixlib=rb-4.1.0", "by": "Rodrigo Rodrigues | WOLF Λ R T", "user": "https://unsplash.com/@wolfart32", "n": "Blazer clair", "p": 99, "m": "AHOX", "a": "Chemise blanche et pantalon droit"}, "117": {"u": "https://images.unsplash.com/photo-1548606704-5eadbed74bd9?ixid=M3wxMTE2NDI3fDB8MXxzZWFyY2h8MTB8fHNwb3J0c3dlYXIlMjBmbGF0JTIwbGF5fGVufDF8fHx8MTc5MzIxODA4N3ww&ixlib=rb-4.1.0", "by": "Sincerely Media", "user": "https://unsplash.com/@sincerelymedia", "n": "Brassière et legging", "p": 59, "m": "AVHXO", "a": "Baskets de running et casquette"}, "110": {"u": "https://images.unsplash.com/photo-1548606703-580672e56c26?ixid=M3wxMTE2NDI3fDB8MXxzZWFyY2h8M3x8c3BvcnRzd2VhciUyMGZsYXQlMjBsYXl8ZW58MXx8fHwxNzkzMjE4MDg3fDA&ixlib=rb-4.1.0", "by": "Sincerely Media", "user": "https://unsplash.com/@sincerelymedia", "n": "Ensemble sport noir", "p": 55, "m": "AVHXO", "a": "Baskets et gourde"}, "192": {"u": "https://images.unsplash.com/photo-1620799140188-3b2a02fd9a77?ixid=M3wxMTE2NDI3fDB8MXxzZWFyY2h8MXx8aG9vZGllJTIwZmxhdCUyMGxheXxlbnwxfHx8fDE3OTMyMTgwODh8MA&ixlib=rb-4.1.0", "by": "Mediamodifier", "user": "https://unsplash.com/@mediamodifier", "n": "Sweat à capuche blanc", "p": 45, "m": "AVHXO", "a": "Jean clair et baskets blanches"}, "129": {"u": "https://images.unsplash.com/photo-1586084611164-a9accaeab607?ixid=M3wxMTE2NDI3fDB8MXxzZWFyY2h8MTB8fGplYW5zJTIwYW5kJTIwc2hpcnQlMjBmbGF0JTIwbGF5fGVufDF8fHx8MTc5MzIxODA4N3ww&ixlib=rb-4.1.0", "by": "Sincerely Media", "user": "https://unsplash.com/@sincerelymedia", "n": "Marinière et jean", "p": 65, "m": "VHXA", "a": "Baskets blanches ou espadrilles"}, "165": {"u": "https://images.unsplash.com/photo-1564584217132-2271feaeb3c5?ixid=M3wxMTE2NDI3fDB8MXxzZWFyY2h8MTB8fG1lbiUyMHNoaXJ0JTIwb24lMjBoYW5nZXJ8ZW58MXx8fHwxNzkzMjE4MDg3fDA&ixlib=rb-4.1.0", "by": "Cristofer Maximilian", "user": "https://unsplash.com/@cristofer", "n": "T-shirt gris chiné", "p": 19, "m": "VHXAO", "a": "Jean droit et baskets"}, "91": {"u": "https://images.unsplash.com/photo-1667283831517-5b747b3c17c8?ixid=M3wxMTE2NDI3fDB8MXxzZWFyY2h8OHx8YmxhemVyJTIwb24lMjBoYW5nZXJ8ZW58MXx8fHwxNzkzMjE4MDg2fDA&ixlib=rb-4.1.0", "by": "Vetrivel Viswanathar", "user": "https://unsplash.com/@vetrivikashviswanathar", "n": "Costume bleu marine", "p": 189, "m": "VHXAO", "a": "Chemise blanche et derbies"}, "89": {"u": "https://images.unsplash.com/photo-1667284152861-36e03571486a?ixid=M3wxMTE2NDI3fDB8MXxzZWFyY2h8Nnx8YmxhemVyJTIwb24lMjBoYW5nZXJ8ZW58MXx8fHwxNzkzMjE4MDg2fDA&ixlib=rb-4.1.0", "by": "Vetrivel Viswanathar", "user": "https://unsplash.com/@vetrivikashviswanathar", "n": "Veste bordeaux", "p": 149, "m": "VHX", "a": "Col roulé noir et mocassins"}, "85": {"u": "https://images.unsplash.com/photo-1598808503746-f34c53b9323e?ixid=M3wxMTE2NDI3fDB8MXxzZWFyY2h8Mnx8YmxhemVyJTIwb24lMjBoYW5nZXJ8ZW58MXx8fHwxNzkzMjE4MDg2fDA&ixlib=rb-4.1.0", "by": "LOGAN WEAVER | @LGNWVR", "user": "https://unsplash.com/@lgnwvr", "n": "Costume noir", "p": 199, "m": "VHXA", "a": "Cravate fine et souliers noirs"}, "95": {"u": "https://images.unsplash.com/photo-1784749615306-10675f31bae2?ixid=M3wxMTE2NDI3fDB8MXxzZWFyY2h8MTJ8fGJsYXplciUyMG9uJTIwaGFuZ2VyfGVufDF8fHx8MTc5MzIxODA4Nnww&ixlib=rb-4.1.0", "by": "Alexander Mass", "user": "https://unsplash.com/@alexandermassph", "n": "Veste camel", "p": 129, "m": "HOAVX", "a": "Chemise ouverte et chino"}, "159": {"u": "https://images.unsplash.com/photo-1611312449412-6cefac5dc3e4?ixid=M3wxMTE2NDI3fDB8MXxzZWFyY2h8NHx8bWVuJTIwc2hpcnQlMjBvbiUyMGhhbmdlcnxlbnwxfHx8fDE3OTMyMTgwODd8MA&ixlib=rb-4.1.0", "by": "Caio Coelho", "user": "https://unsplash.com/@smokthebikini", "n": "Chemise à carreaux", "p": 39, "m": "VHXAO", "a": "Jean brut et bottines"}, "182": {"u": "https://images.unsplash.com/photo-1625910513413-c23b8bb81cba?ixid=M3wxMTE2NDI3fDB8MXxzZWFyY2h8M3x8cG9sbyUyMHNoaXJ0fGVufDF8fHx8MTc5MzIxODA4OHww&ixlib=rb-4.1.0", "by": "Clément Vatte", "user": "https://unsplash.com/@clement_vatte", "n": "Polo noir", "p": 35, "m": "VHXA", "a": "Chino beige et baskets"}, "84": {"u": "https://images.unsplash.com/photo-1592343516109-362f7bd871aa?ixid=M3wxMTE2NDI3fDB8MXxzZWFyY2h8MXx8YmxhemVyJTIwb24lMjBoYW5nZXJ8ZW58MXx8fHwxNzkzMjE4MDg2fDA&ixlib=rb-4.1.0", "by": "Victoria Priessnitz", "user": "https://unsplash.com/@victoriapriessnitz", "n": "Veste de costume noire", "p": 119, "m": "VHXAO", "a": "Chemise blanche et pantalon gris"}, "83": {"u": "https://images.unsplash.com/photo-1621773881532-fe65715b5137?ixid=M3wxMTE2NDI3fDB8MXxzZWFyY2h8MTJ8fGJsb3VzZSUyMG9uJTIwaGFuZ2VyfGVufDF8fHx8MTc5MzIxODA4Nnww&ixlib=rb-4.1.0", "by": "Lisanto 李奕良", "user": "https://unsplash.com/@lisanto_", "n": "Chemise blanche", "p": 39, "m": "VHXAO", "a": "Pantalon fuselé et ceinture cuir"}, "180": {"u": "https://images.unsplash.com/photo-1581655353564-df123a1eb820?ixid=M3wxMTE2NDI3fDB8MXxzZWFyY2h8MXx8cG9sbyUyMHNoaXJ0fGVufDF8fHx8MTc5MzIxODA4OHww&ixlib=rb-4.1.0", "by": "Haryo Setyadi", "user": "https://unsplash.com/@uyk", "n": "T-shirt blanc", "p": 19, "m": "VHXAO", "a": "Jogging et baskets"}, "196": {"u": "https://images.unsplash.com/photo-1739384994765-d44f7af12029?ixid=M3wxMTE2NDI3fDB8MXxzZWFyY2h8NXx8aG9vZGllJTIwZmxhdCUyMGxheXxlbnwxfHx8fDE3OTMyMTgwODh8MA&ixlib=rb-4.1.0", "by": "philippe wehrli", "user": "https://unsplash.com/@philippewehrli", "n": "Sweat bleu et jean", "p": 69, "m": "VHXAO", "a": "Baskets de course"}, "125": {"u": "https://images.unsplash.com/photo-1739384879592-79903b12b2a6?ixid=M3wxMTE2NDI3fDB8MXxzZWFyY2h8Nnx8amVhbnMlMjBhbmQlMjBzaGlydCUyMGZsYXQlMjBsYXl8ZW58MXx8fHwxNzkzMjE4MDg3fDA&ixlib=rb-4.1.0", "by": "philippe wehrli", "user": "https://unsplash.com/@philippewehrli", "n": "Veste beige et jean", "p": 99, "m": "VHXAO", "a": "Baskets blanches"}, "183": {"u": "https://images.unsplash.com/photo-1671438118097-479e63198629?ixid=M3wxMTE2NDI3fDB8MXxzZWFyY2h8NHx8cG9sbyUyMHNoaXJ0fGVufDF8fHx8MTc5MzIxODA4OHww&ixlib=rb-4.1.0", "by": "Mediamodifier", "user": "https://unsplash.com/@mediamodifier", "n": "Polo blanc", "p": 35, "m": "VHXAO", "a": "Short chino et sneakers"}}, "L": {"f_soiree": [30, 40, 14], "f_rdv": [14, 30, 69], "f_travail": [175, 11, 69], "f_mariage": [69, 14, 30], "f_sport": [117, 110, 192], "f_casual": [129, 165, 192], "h_soiree": [91, 89, 85], "h_rdv": [95, 159, 182], "h_travail": [84, 83, 175], "h_mariage": [91, 175, 85], "h_sport": [180, 192, 196], "h_casual": [125, 196, 183]}};
 const UTM = '?utm_source=lookmiz&utm_medium=referral';
+const AMB = [{"u": "https://images.unsplash.com/photo-1558769132-cb1aea458c5e?ixid=M3wxMTE2NDI3fDB8MXxzZWFyY2h8MXx8Y2xvdGhlcyUyMHJhY2slMjBhZXN0aGV0aWN8ZW58MXwwfHx8MTc5MzY1NDU3OHww&ixlib=rb-4.1.0", "by": "Alyssa Strohmann", "user": "https://unsplash.com/@anotherlovely"}, {"u": "https://images.unsplash.com/photo-1570974797119-9d44484cd541?ixid=M3wxMTE2NDI3fDB8MXxzZWFyY2h8M3x8Zml0dGluZyUyMHJvb20lMjBtaXJyb3J8ZW58MXwwfHx8MTc5MzY1NDU3N3ww&ixlib=rb-4.1.0", "by": "Brina Blum", "user": "https://unsplash.com/@brina_blum"}];
 const pic = (g, w = 700) => `${g.u}&w=${w}&q=75&fm=jpg&fit=crop&crop=entropy`;
 const credit = g => `Photo de la pièce : <a href="${g.user}${UTM}" target="_blank" rel="noopener">${g.by}</a> / <a href="https://unsplash.com/${UTM}" target="_blank" rel="noopener">Unsplash</a>`;
 const wait = ms => new Promise(r => setTimeout(r, ms));
@@ -457,15 +455,14 @@ const S = [
         <div class="htext"><span class="kicker">Cabine d'essayage virtuelle</span>
           <h1>Essaie tout.<br><span class="hl">Sur toi.</span></h1>
           <p class="sub">Mets ta photo et vois les vêtements portés par toi, en 20 secondes.</p></div>
-        <div class="mosaic">${['91', '14', '183'].map((id, i) => `<img class="m${i}" src="${pic(DATA.g[id], 520)}" alt="${DATA.g[id].n}">`).join('')}</div>
+        <figure class="himg"><img src="${AMB[0].u}&w=1200&q=80&fm=jpg&fit=crop" alt="Portant de vêtements aux tons doux"><figcaption>Photo <a href="${AMB[0].user}${UTM}" target="_blank" rel="noopener">${AMB[0].by}</a> / Unsplash</figcaption></figure>
       </div>
       <div class="choices">
-        ${[['look', '30', 'Mes looks', 'Ta silhouette est analysée et 3 tenues qui te vont te sont montrées, pour l\'occasion de ton choix.', '01'],
-           ['shop', '95', 'Essayage virtuel', 'Tu as repéré un habit en boutique ou en ligne ? Importe sa photo ou son lien, et vois-le sur toi.', '02']].map(([k, id, t, d, n]) =>
-          `<button class="choice" type="button" data-start="${k}"><img src="${pic(DATA.g[id], 520)}" alt=""><span class="cbody"><span class="num">${n}</span><b>${t}</b><small>${d}</small><span class="go">Commencer →</span></span></button>`).join('')}
+        ${[['look', '✨', 'Mes looks', 'Ta silhouette est analysée et 3 tenues qui te vont te sont montrées, pour l\'occasion de ton choix.', '01'],
+           ['shop', '🪞', 'Essayage virtuel', 'Tu as repéré un habit en boutique ou en ligne ? Importe sa photo ou son lien, et vois-le sur toi.', '02']].map(([k, e, t, d, n]) =>
+          `<button class="choice" type="button" data-start="${k}"><span class="cbody"><span class="num">${n}</span><b>${t}</b><small>${d}</small><span class="go">Commencer →</span></span><span class="ce">${e}</span></button>`).join('')}
       </div>
-      <div class="trends"><h3>Tendances à essayer</h3><p class="sub">Touche un habit pour le voir sur toi.</p>
-        <div class="tscroll">${['30', '91', '14', '192', '69', '182', '129', '89'].map(id => `<button type="button" class="trend" data-trend="${id}"><img src="${pic(DATA.g[id], 360)}" alt=""><span>${DATA.g[id].n}</span></button>`).join('')}</div></div>
+      <figure class="band"><img src="${AMB[1].u}&w=1200&q=80&fm=jpg&fit=crop" alt="Miroir et fleurs dans une pièce lumineuse"><figcaption><b>Ta cabine d'essayage, dans ta poche.</b><span>Photo <a href="${AMB[1].user}${UTM}" target="_blank" rel="noopener">${AMB[1].by}</a> / Unsplash</span></figcaption></figure>
       ${account()}
     </section>`,
   () => `<section class="screen">
@@ -674,8 +671,6 @@ document.addEventListener('click', e => {
   if (t.id === 'back' && history.state && history.state.step === state.step && state.step !== 0) { history.back(); return; }
   if (t.id === 'back') { state.step = state.step === 7 ? 0 : state.step === 8 ? 0 : state.step === 9 ? (state.prev ?? 0) : state.step === 4 ? 2 : state.step === 5 ? 0 : state.step === 6 ? 5 : state.step === 1 ? 0 : Math.max(0, state.step - 1); }
   else if (t.dataset.tab) { state.mode = 'look'; state.step = 0; }
-  else if (t.dataset.trend) { const g = DATA.g[t.dataset.trend]; state.garment = pic(g, 768); state.gid++; state.src = 'img'; state.mode = 'shop';
-    if (sb && !session) { try { localStorage.setItem('cabine-next', 'shop'); } catch (_) {} state.step = 8; } else state.step = state.photo ? 5 : 1; }
   else if (t.dataset.src) { state.src = t.dataset.src; render(true); return; }
   else if ('forget' in t.dataset) { try { localStorage.removeItem('cabine-photo'); } catch (_) {} state.photo = null; state.saved = false; }
   else if (t.dataset.mode) { state.mode = t.dataset.mode; state.step = 1; }
