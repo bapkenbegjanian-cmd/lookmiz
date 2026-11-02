@@ -589,10 +589,20 @@ function account() {
     : `<p class="note"><button class="link" type="button" data-plus>Lookmiz+ : essais illimités dès 6,67 €/mois</button></p>`;
 }
 
-// Le bouton retour du téléphone fait comme la flèche ← du site, au lieu de quitter Lookmiz
-let pushed = false;
-function syncHistory() { if (state.step !== 0 && !pushed) { history.pushState({ lookmiz: 1 }, ''); pushed = true; } }
-addEventListener('popstate', () => { pushed = false; if (state.step !== 0) $('#back').click(); });
+// Chaque écran est une étape de l'historique : le retour du téléphone revient à l'écran précédent
+let lastStep = 0, popping = false;
+history.replaceState({ step: 0 }, '');
+function syncHistory() {
+  if (popping || state.step === lastStep) return;
+  history.pushState({ step: state.step }, ''); lastStep = state.step;
+}
+addEventListener('popstate', e => {
+  let st = e.state && typeof e.state.step === 'number' ? e.state.step : 0;
+  if (st === 3) st = 2;            // l'analyse ne se rejoue pas : retour au choix de l'occasion
+  if (st === 6) st = 5;            // résultat en magasin : retour au choix de l'habit
+  if (st === 8 && session) st = 0; // déjà connecté : pas de retour sur la connexion
+  popping = true; state.step = st; lastStep = st; render(); popping = false;
+});
 const wide = matchMedia('(min-width: 900px)');
 wide.addEventListener('change', () => render(true));
 function render(soft) {
@@ -661,6 +671,7 @@ function onTryDone() {
 
 document.addEventListener('click', e => {
   const t = e.target.closest('button'); if (!t) return;
+  if (t.id === 'back' && history.state && history.state.step === state.step && state.step !== 0) { history.back(); return; }
   if (t.id === 'back') { state.step = state.step === 7 ? 0 : state.step === 8 ? 0 : state.step === 9 ? (state.prev ?? 0) : state.step === 4 ? 2 : state.step === 5 ? 0 : state.step === 6 ? 5 : state.step === 1 ? 0 : Math.max(0, state.step - 1); }
   else if (t.dataset.tab) { state.mode = 'look'; state.step = 0; }
   else if (t.dataset.trend) { const g = DATA.g[t.dataset.trend]; state.garment = pic(g, 768); state.gid++; state.src = 'img'; state.mode = 'shop';
