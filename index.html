@@ -140,6 +140,22 @@ a.cta[aria-disabled] { opacity: .5; pointer-events: none; }
   .choice { height: 260px; }
 }
 @media (prefers-reduced-motion: reduce) { .slides img.on, .stage, .choice, .choice .go::after { animation: none; } }
+.vt .sub { margin-top: -8px; }
+label.media .frame { max-width: 320px; margin: 0 auto; }
+@media (min-width: 900px) { .vt .duo { max-width: 520px; margin: 0 auto; width: 100%; } }
+.pick3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.tile { display: grid; justify-items: center; gap: 2px; padding: 16px 6px; border-radius: 20px; background: #fff; border: 1px solid var(--line); cursor: pointer; text-align: center; color: var(--ink); font: inherit; box-shadow: 0 8px 20px rgba(15,15,18,.06); transition: transform .15s, border-color .2s; }
+.tile:active { transform: scale(.96); }
+.tile.on { border: 2px solid var(--pink); }
+.tile span { font-size: 28px; line-height: 1.1; }
+.tile b { font-size: 15px; }
+.tile small { font-size: 12px; color: var(--muted); }
+.duo { display: grid; grid-template-columns: 1fr 28px 1fr; align-items: center; gap: 6px; }
+.duo figure { margin: 0; display: grid; gap: 6px; }
+.duo img, .duo .empty > span { width: 100%; aspect-ratio: 3 / 4; object-fit: cover; border-radius: 18px; background: #fff; box-shadow: 0 10px 24px rgba(15,15,18,.1); }
+.duo .empty > span { display: grid; place-items: center; font-size: 40px; border: 2px dashed var(--line); box-shadow: none; opacity: .7; }
+.duo figcaption { text-align: center; font-size: 13px; color: var(--muted); }
+.plusx { text-align: center; font: 400 26px var(--display); color: var(--pink); }
 .seg { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 6px; border-radius: 18px; background: var(--glass); border: 1px solid var(--line); }
 .seg button { border: 0; background: none; padding: 13px; border-radius: 13px; font-weight: 800; font-size: 15px; color: var(--muted); cursor: pointer; }
 .seg button[aria-selected="true"] { background: var(--ink); color: #fff; }
@@ -522,21 +538,25 @@ const S = [
       <span class="credit">${credit(l)}</span>
     </section>`;
   },
-  () => `<section class="screen">
+  () => `<section class="screen solo vt">
       <h2>Essayage <span class="hl">virtuel</span></h2>
-      ${state.photo ? `<div class="mephoto"><img src="${state.photo}" alt="Ta photo"><p style="margin:0"><b>✅ Ta photo</b><label class="link" for="photo" tabindex="0">Changer</label></p></div>` : ''}
-      <div class="seg" role="tablist"><button type="button" role="tab" data-src="img" aria-selected="${state.src !== 'link'}">📷 Image</button><button type="button" role="tab" data-src="link" aria-selected="${state.src === 'link'}">🔗 Lien</button></div>
-      ${state.src === 'link' ? `<div class="linkbox"><b>Colle le lien de l'article</b>
-          <div class="lrow"><input id="glink" type="url" inputmode="url" placeholder="https://…" aria-label="Lien de l'habit"><button class="ghost" type="button" data-import>Importer</button></div>
+      <p class="sub">Choisis l'habit à essayer sur ta photo.</p>
+      <div class="pick3">
+        <label class="tile" for="garment" tabindex="0"><span>📷</span><b>Photo</b><small>En boutique</small></label>
+        <label class="tile" for="garment2" tabindex="0"><span>🖼️</span><b>Image</b><small>Capture d'écran</small></label>
+        <button class="tile ${state.src === 'link' ? 'on' : ''}" type="button" data-src="${state.src === 'link' ? 'img' : 'link'}"><span>🔗</span><b>Lien</b><small>D'un site</small></button>
+      </div>
+      ${state.src === 'link' ? `<div class="linkbox">
+          <div class="lrow"><input id="glink" type="url" inputmode="url" placeholder="Colle le lien de l'article" aria-label="Lien de l'habit"><button class="ghost" type="button" data-import>Importer</button></div>
           <p class="note" id="gmsg" role="status"></p>
-          <small>✅ Testé et validé : <b>Nike</b>.</small>
-          <small>⚠️ Peut marcher, selon l'article : Vinted, Shein, Zalando, Amazon, Jules, Primark.</small>
-          <small>❌ Ne marche pas avec : Zara, H&amp;M, Mango, Bershka, Kiabi, Decathlon, La Redoute, Celio, Lacoste, Adidas, Asos, Uniqlo. Pour eux, fais une capture d'écran et choisis « Image ».</small></div>
-        ${state.garment ? frame(state.garment) : ''}`
-      : `<label class="media" for="garment2" tabindex="0" style="cursor:pointer;display:block">${state.garment ? frame(state.garment) : `<div class="frame"><div class="empty"><span class="plus">👕</span><b>Ajoute l'habit</b>Photo prise en boutique ou capture d'écran d'un site</div></div>`}</label>
-        <div class="row"><label class="ghost" for="garment" tabindex="0">📷 Prendre une photo</label><label class="ghost" for="garment2" tabindex="0">🖼️ Choisir une image</label></div>
-        <p class="note">L'habit en entier, bien éclairé, sur un fond simple.</p>`}
-      <button class="cta" type="button" data-shoptry ${state.garment ? '' : 'disabled'}>${state.garment ? '🪄 Me l\'essayer' : '👆 Ajoute d\'abord un habit'}</button>
+          <small>✅ Testé : <b>Nike</b> · ⚠️ Selon l'article : Vinted, Shein, Zalando, Amazon, Jules, Primark.</small>
+          <small>❌ Bloqués : Zara, H&amp;M, Mango, Asos… Pour eux, fais une capture d'écran et choisis « Image ».</small></div>` : ''}
+      <div class="duo">
+        <figure><img src="${state.photo}" alt="Ta photo"><figcaption>Toi · <label class="link" for="photo" tabindex="0">changer</label></figcaption></figure>
+        <span class="plusx">+</span>
+        <figure class="${state.garment ? '' : 'empty'}">${state.garment ? `<img src="${state.garment}" alt="L'habit">` : '<span>👕</span>'}<figcaption>${state.garment ? 'L\'habit' : 'Aucun habit'}</figcaption></figure>
+      </div>
+      <button class="cta" type="button" data-shoptry ${state.garment ? '' : 'disabled'}>${state.garment ? '🪄 Me l\'essayer' : 'Choisis un habit ci-dessus'}</button>
       ${quotaPill()}
     </section>`,
   () => {
