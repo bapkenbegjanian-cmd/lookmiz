@@ -33,7 +33,7 @@ img { display: block; max-width: 100%; }
 .app { position: relative; z-index: 1; max-width: 520px; margin: 0 auto; min-height: 100vh; min-height: 100dvh;
   padding: calc(env(safe-area-inset-top, 0px) + 12px) max(18px, env(safe-area-inset-right, 0px)) calc(env(safe-area-inset-bottom, 0px) + 32px) max(18px, env(safe-area-inset-left, 0px)); }
 .top { display: grid; grid-template-columns: 44px 1fr 44px; align-items: center; margin-bottom: 14px; }
-.logo { grid-column: 2; text-align: center; font: 800 26px/1 var(--display); letter-spacing: -.02em; }
+.logo { grid-column: 2; text-align: center; font: 800 26px/1 var(--body); letter-spacing: -.04em; }
 .logo span { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
 .back { width: 44px; height: 44px; border-radius: 14px; border: 1px solid var(--line); background: var(--glass); backdrop-filter: blur(12px); cursor: pointer; font-size: 18px; }
 
@@ -100,8 +100,8 @@ a.cta[aria-disabled] { opacity: .5; pointer-events: none; }
 .hero { display: grid; gap: 18px; }
 .kicker { font-size: 12px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--pink); }
 .home h1 { font-size: clamp(52px, 15vw, 96px); line-height: .92; margin-top: 8px; }
-.mosaic { display: grid; grid-template-columns: 1.2fr 1fr; grid-template-rows: 1fr 1fr; gap: 10px; height: 340px; }
-.mosaic img { width: 100%; height: 100%; object-fit: cover; border-radius: 18px; background: #e9e8e4; }
+.mosaic { display: grid; grid-template-columns: 1.2fr 1fr; grid-template-rows: repeat(2, minmax(0, 1fr)); gap: 10px; height: 300px; overflow: hidden; }
+.mosaic img { width: 100%; height: 100%; min-height: 0; object-fit: cover; border-radius: 18px; background: #e9e8e4; }
 .mosaic .m0 { grid-row: 1 / 3; }
 .choices { display: grid; gap: 14px; }
 .choice { display: grid; grid-template-columns: 112px minmax(0, 1fr); text-align: left; padding: 0; border-radius: 22px; border: 1px solid var(--line); background: #fff; overflow: hidden; cursor: pointer; color: var(--ink); transition: transform .15s, box-shadow .2s; }
