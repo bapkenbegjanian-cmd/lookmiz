@@ -101,20 +101,27 @@ a.cta[aria-disabled] { opacity: .5; pointer-events: none; }
 .kicker { font-size: 12px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--pink); }
 .home h1 { font-size: clamp(52px, 15vw, 96px); line-height: .92; margin-top: 8px; }
 .himg { margin: 0; position: relative; }
+/* téléphone : les 2 choix juste sous le titre, l'image ensuite */
+@media (max-width: 899px) {
+  .hero { display: contents; }
+  .htext { order: 1; } .choices { order: 2; } .himg { order: 3; } .band { order: 4; } .home > .note { order: 5; }
+  .himg img { height: 240px; }
+}
 .himg img, .band img { width: 100%; object-fit: cover; border-radius: 24px; background: #e9e8e4; }
 .himg img { height: 300px; }
 figcaption { font-size: 11px; color: var(--muted); margin-top: 6px; }
 figcaption a { color: inherit; }
 .choices { display: grid; gap: 14px; }
-.choice { display: grid; grid-template-columns: minmax(0, 1fr) 64px; gap: 12px; align-items: center; text-align: left; padding: 20px; border-radius: 22px; border: 1px solid var(--line); background: #fff; cursor: pointer; color: var(--ink); transition: transform .15s, box-shadow .2s; }
-.choice:hover { box-shadow: 0 16px 34px rgba(15,15,18,.12); transform: translateY(-2px); }
+.choice { display: grid; grid-template-columns: minmax(0, 1fr) 72px; gap: 14px; align-items: center; text-align: left; padding: 26px 22px; border-radius: 26px; border: 0; cursor: pointer; color: #fff; background: var(--grad); box-shadow: 0 18px 40px rgba(59,91,255,.28); transition: transform .15s, box-shadow .2s; }
+.choice + .choice { background: linear-gradient(135deg, #15151b, #2c2c38); box-shadow: 0 18px 40px rgba(15,15,18,.28); }
+.choice:hover { transform: translateY(-3px); }
 .choice:active { transform: scale(.98); }
-.choice .ce { width: 64px; height: 64px; border-radius: 20px; display: grid; place-items: center; font-size: 30px; background: #f2f1ee; }
-.cbody { display: grid; gap: 4px; }
-.num { font: 400 13px var(--display); color: var(--pink); letter-spacing: .1em; }
-.choice b { font: 400 28px/1 var(--display); text-transform: uppercase; }
-.choice small { color: var(--muted); font-size: 14px; line-height: 1.4; }
-.choice .go { margin-top: 6px; font-weight: 800; font-size: 14px; color: var(--pink); }
+.choice .ce { width: 72px; height: 72px; border-radius: 22px; display: grid; place-items: center; font-size: 34px; background: rgba(255,255,255,.16); }
+.cbody { display: grid; gap: 6px; }
+.num { font: 400 14px var(--display); color: rgba(255,255,255,.75); letter-spacing: .12em; }
+.choice b { font: 400 32px/1 var(--display); text-transform: uppercase; }
+.choice small { color: rgba(255,255,255,.85); font-size: 14.5px; line-height: 1.45; }
+.choice .go { margin-top: 8px; font-weight: 800; font-size: 15px; color: #fff; background: rgba(255,255,255,.18); padding: 10px 16px; border-radius: 99px; width: max-content; }
 .band { margin: 0; position: relative; }
 .band img { height: 220px; }
 .band figcaption { display: grid; gap: 2px; }
@@ -385,7 +392,7 @@ async function refreshQuota() {
   const q = await api({ action: 'quota' }, 15000).catch(() => null);
   if (q && q._s === 200) state.quota = q;
 }
-// Essais gratuits : 1 pour « Mes looks » (les 3 looks), 1 pour « En magasin »
+// Essais gratuits : 1 pour « Trouver mon look » (les 3 looks), 1 pour « En magasin »
 const kindOf = g => String(g).startsWith('shop') ? 'shop' : 'look';
 const left = (k = state.mode === 'shop' ? 'shop' : 'look') => { const q = state.quota; if (!q) return 0; if (q.pro) return Infinity;
   const used = typeof q.used === 'object' ? q.used[k] : q.used, free = typeof q.free === 'object' ? q.free[k] : q.free; return Math.max(0, free - used); };
@@ -458,7 +465,7 @@ const S = [
         <figure class="himg"><img src="${AMB[0].u}&w=1200&q=80&fm=jpg&fit=crop" alt="Portant de vêtements aux tons doux"><figcaption>Photo <a href="${AMB[0].user}${UTM}" target="_blank" rel="noopener">${AMB[0].by}</a> / Unsplash</figcaption></figure>
       </div>
       <div class="choices">
-        ${[['look', '✨', 'Mes looks', 'Ta silhouette est analysée et 3 tenues qui te vont te sont montrées, pour l\'occasion de ton choix.', '01'],
+        ${[['look', '✨', 'Trouver mon look', 'Ta silhouette est analysée et 3 tenues qui te vont te sont montrées, pour l\'occasion de ton choix.', '01'],
            ['shop', '🪞', 'Essayage virtuel', 'Tu as repéré un habit en boutique ou en ligne ? Importe sa photo ou son lien, et vois-le sur toi.', '02']].map(([k, e, t, d, n]) =>
           `<button class="choice" type="button" data-start="${k}"><span class="cbody"><span class="num">${n}</span><b>${t}</b><small>${d}</small><span class="go">Commencer →</span></span><span class="ce">${e}</span></button>`).join('')}
       </div>
@@ -628,7 +635,7 @@ async function runAnalysis() {
   if (state.step !== 3) return;
   log.innerHTML = '';
   if (!a.ok) {
-    say('Je ne vois pas bien ta silhouette. Pas grave, dis-moi :');
+    say('Je ne vois pas bien ta silhouette sur la photo. 👉 <b>Choisis celle qui te ressemble :</b>');
     return askManual(a.g);
   }
   $('#sframe').classList.remove('scan');
@@ -646,7 +653,7 @@ async function runAnalysis() {
   state.g = a.g; await wait(500); startTries();
 }
 function askGender() {
-  const p = say('Ce look est pour… <span class="choice"><button type="button" data-gender="f">Femme</button><button type="button" data-gender="h">Homme</button></span>', 'wait');
+  const p = say('👉 <b>Touche ton profil pour continuer :</b> <span class="choice"><button type="button" data-gender="f">Femme</button><button type="button" data-gender="h">Homme</button></span>', 'wait');
   p.dataset.ask = 1;
 }
 function askManual(g) {
@@ -656,9 +663,17 @@ function askManual(g) {
 function startTries() {
   const L = looks();
   say(`3 pièces choisies : <b>${L.map(x => x.n).join(', ')}</b>`);
-  say('Essayage des 3 looks sur ta photo… (environ 15 s par look)', 'wait');
+  const p = say('Essayage des 3 looks sur ta photo… <b id="secs">0 s</b>', 'wait'), t0 = Date.now();
   lookGroup = 'look' + Date.now() + Math.random().toString(36).slice(2, 8);
   waitingTry = true; L.forEach(tryOn);
+  const tick = setInterval(() => {
+    if (!waitingTry || state.step !== 3) return clearInterval(tick);
+    const s = Math.round((Date.now() - t0) / 1000), el = $('#secs'); if (el) el.textContent = s + ' s';
+    if (s >= 100) {   // trop long : on le dit clairement, avec une solution
+      clearInterval(tick); waitingTry = false;
+      say('Ça prend plus de temps que prévu. <span class="choice-row"><button type="button" class="link" data-restart-look>Réessayer</button></span>');
+    }
+  }, 1000);
 }
 function onTryDone() {
   if (!waitingTry) return;
@@ -671,6 +686,7 @@ document.addEventListener('click', e => {
   if (t.id === 'back' && history.state && history.state.step === state.step && state.step !== 0) { history.back(); return; }
   if (t.id === 'back') { state.step = state.step === 7 ? 0 : state.step === 8 ? 0 : state.step === 9 ? (state.prev ?? 0) : state.step === 4 ? 2 : state.step === 5 ? 0 : state.step === 6 ? 5 : state.step === 1 ? 0 : Math.max(0, state.step - 1); }
   else if (t.dataset.tab) { state.mode = 'look'; state.step = 0; }
+  else if ('restartLook' in t.dataset) { for (const k in tries) if (tries[k].st !== 'ok') delete tries[k]; state.step = 2; }
   else if (t.dataset.src) { state.src = t.dataset.src; render(true); return; }
   else if ('forget' in t.dataset) { try { localStorage.removeItem('cabine-photo'); } catch (_) {} state.photo = null; state.saved = false; }
   else if (t.dataset.mode) { state.mode = t.dataset.mode; state.step = 1; }
