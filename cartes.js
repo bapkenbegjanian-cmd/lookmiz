@@ -35,8 +35,8 @@ const PAL = {
 // confettis, neige, coeurs, etoiles, petales, ballons, lanternes, feux, bulles, paillettes
 
 const CATS = [
-  { id: 'inv', nom: 'Invitations', emo: '💌', sous: 'Anniversaire, mariage, baptême, soirée…' },
-  { id: 'voeux', nom: 'Vœux & souhaits', emo: '🎁', sous: 'Noël, anniversaire, Aïd, Saint-Valentin…' }
+  { id: 'inv', nom: 'Invitations', sous: 'Anniversaire, mariage, baptême, soirée…' },
+  { id: 'voeux', nom: 'Vœux & souhaits', sous: 'Noël, anniversaire, Aïd, Saint-Valentin…' }
 ];
 
 // occasion : id, catégorie, nom, emoji, titre par défaut, message par défaut, motifs, modèles [palette, police, animation, nom]

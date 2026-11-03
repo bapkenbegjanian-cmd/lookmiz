@@ -55,18 +55,23 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .hero .show .card:nth-child(3) { transform: translateY(-6px); z-index: 2; animation: floaty 5s ease-in-out infinite; }
 @keyframes floaty { 50% { transform: translateY(-16px) rotate(1deg); } }
 .cats { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.catc { position: relative; overflow: hidden; border: 0; border-radius: 24px; padding: 22px 18px; text-align: left; cursor: pointer; color: #fff; min-height: 170px; display: grid; align-content: end; gap: 4px; transition: transform .2s; }
+.catc { position: relative; overflow: hidden; border: 0; border-radius: 24px; padding: 22px 18px; text-align: left; cursor: pointer; color: #fff; min-height: 230px; display: grid; align-content: end; gap: 4px; transition: transform .2s; }
 .catc:active { transform: scale(.98); }
 .catc.inv { background: linear-gradient(150deg, #e0794a, #a8402a); }
 .catc.voeux { background: linear-gradient(150deg, #8a5cff, #4b2aa8); }
-.catc .big { position: absolute; top: 10px; right: 12px; font-size: 54px; filter: drop-shadow(0 6px 10px rgba(0,0,0,.2)); animation: floaty 4s ease-in-out infinite; }
+.catc img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: -1; transition: transform .6s; }
+.catc { isolation: isolate; } .catc::before { content: ''; position: absolute; inset: 0; z-index: -1; }
+.catc.inv::before { background: linear-gradient(180deg, rgba(168,64,42,.15), rgba(140,50,30,.85)); } .catc.voeux::before { background: linear-gradient(180deg, rgba(75,42,168,.15), rgba(60,30,140,.85)); }
+.catc:hover img { transform: scale(1.05); }
+.catc .go { margin-top: 8px; width: max-content; background: #fff; color: var(--ink); font-weight: 800; font-size: 14px; padding: 9px 16px; border-radius: 99px; }
+.catc .big-old { position: absolute; top: 10px; right: 12px; font-size: 54px; filter: drop-shadow(0 6px 10px rgba(0,0,0,.2)); animation: floaty 4s ease-in-out infinite; }
 .catc b { font: 700 24px/1.05 var(--title); }
 .catc small { opacity: .9; font-size: 13px; }
 .sec h3 { margin: 0 0 10px; font: 700 22px var(--title); }
 .occs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
 .occ { border: 1px solid var(--line); background: var(--paper); border-radius: 18px; padding: 14px 8px; cursor: pointer; display: grid; justify-items: center; gap: 4px; text-align: center; transition: transform .15s, box-shadow .2s; }
 .occ:hover { box-shadow: 0 10px 22px rgba(28,23,18,.08); transform: translateY(-2px); }
-.occ span { font-size: 30px; line-height: 1.1; }
+.occ { padding: 0; overflow: hidden; gap: 0; } .occ img { width: 100%; aspect-ratio: 3 / 3.4; object-fit: cover; } .occ b { padding: 10px 6px 12px; font-size: 13.5px; }
 .occ b { font-size: 13px; line-height: 1.2; }
 .how { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
 .how div { background: var(--paper); border: 1px solid var(--line); border-radius: 18px; padding: 14px 10px; text-align: center; font-size: 13px; }
@@ -176,6 +181,8 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 #qr img, #qr canvas { width: 150px !important; height: 150px !important; }
 .resp { display: grid; gap: 8px; }
 .resp .r { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; background: var(--bg); border-radius: 12px; padding: 10px 12px; font-size: 14px; }
+.dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; } .dot.oui { background: #2fb36b; } .dot.non { background: #e0485a; } .dot.peut-etre { background: #f0a92b; }
+.guests { display: grid; gap: 8px; } .guest { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 8px; align-items: center; background: var(--bg); border-radius: 12px; padding: 8px 8px 8px 14px; font-weight: 700; } .guest button { border: 1px solid var(--line); background: #fff; border-radius: 10px; padding: 8px 12px; font-weight: 700; font-size: 13px; cursor: pointer; }
 .resp .tot { display: flex; gap: 10px; flex-wrap: wrap; font-weight: 800; }
 .resp .tot span { background: var(--bg); border-radius: 99px; padding: 6px 12px; }
 .mylist { display: grid; gap: 10px; }
@@ -226,7 +233,7 @@ footer a { color: inherit; }
   .grid { grid-template-columns: repeat(4, 1fr); }
   .editor { grid-template-columns: 360px 1fr; align-items: start; }
   .editor .prev { position: sticky; top: 20px; }
-  .cats .catc { min-height: 220px; }
+  .cats .catc { min-height: 300px; }
 }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01s !important; animation-iteration-count: 1 !important; transition-duration: .01s !important; } }
 </style>
@@ -251,6 +258,10 @@ const mdlOf = id => MODELES.find(m => m.id === id);
 const store = { get: k => { try { return JSON.parse(localStorage.getItem('lmz-' + k)); } catch (_) { return null; } }, set: (k, v) => { try { localStorage.setItem('lmz-' + k, JSON.stringify(v)); } catch (_) {} } };
 
 /* ---------- dessin d'une carte ---------- */
+// occasions où l'on envoie la même carte à plusieurs personnes
+const GROUPE = new Set([...OCC.filter(o => o.cat === 'inv').map(o => o.id), 'noel', 'nouvel-an', 'aid', 'ramadan', 'paques', 'merci']);
+const destList = f => String(f.dest || '').split(/\n|,/).map(x => x.trim()).filter(Boolean).slice(0, 200);
+const linkFor = (url, nom) => url + (url.includes('?') ? '&' : '?') + 'n=' + encodeURIComponent(nom);
 function cardVars(m) { const [bg, ink, acc] = PAL[m.pal]; return `--c-bg:${bg};--c-ink:${ink};--c-acc:${acc}`; }
 function defaults(o) { return { titre: o.titre, noms: '', msg: o.msg, date: '', lieu: '', adresse: '', rsvp: o.cat === 'inv', de: '' }; }
 const ORN = '<svg class="orn" viewBox="0 0 160 16" aria-hidden="true"><path d="M2 8h52M106 8h52" stroke="currentColor" stroke-width="1.2"/><path d="M58 8c6-7 14-7 22 0c8 7 16 7 22 0c-6 7-14 7-22 0c-8-7-16-7-22 0z" fill="none" stroke="currentColor" stroke-width="1.2"/><circle cx="80" cy="8" r="2.2" fill="currentColor"/></svg>';
@@ -267,7 +278,7 @@ function cardHTML(m, f, { live = false } = {}) {
       ${ORN}
       ${f.noms ? `<div class="nm">${esc(f.noms)}</div>` : ''}
       <div class="msg">${esc(f.msg)}</div>
-      ${inv && (dateTxt || f.lieu) ? `<div class="info">${dateTxt ? '📅 ' + esc(dateTxt) : ''}${dateTxt && f.lieu ? '<br>' : ''}${f.lieu ? '📍 ' + esc(f.lieu) : ''}</div>` : ''}
+      ${inv && (dateTxt || f.lieu) ? `<div class="info">${dateTxt ? esc(dateTxt.charAt(0).toUpperCase() + dateTxt.slice(1)) : ''}${dateTxt && f.lieu ? '<br>' : ''}${f.lieu ? esc(f.lieu) : ''}</div>` : ''}
       ${!inv && f.de ? `<div class="sig">${esc(f.de)}</div>` : ''}</div>
   </div>`;
 }
@@ -323,32 +334,34 @@ function liveCards(root = document) {
 
 /* ---------- écrans ---------- */
 const state = { route: '', f: null, mid: null };
-const occGrid = list => `<div class="occs">${list.map(o => `<button class="occ" type="button" data-go="o-${o.id}"><span>${o.emo}</span><b>${esc(o.nom)}</b></button>`).join('')}</div>`;
-const demo = f => ({ ...f, noms: f.noms || 'Sarah & Yanis', date: f.date || '2026-06-20T18:00', lieu: f.lieu || 'Domaine des Roses' });
+const occGrid = list => `<div class="occs">${list.map(o => { const d = (DECORS[o.id] || [])[0]; return `<button class="occ" type="button" data-go="o-${o.id}">${d ? `<img src="${d.u}&w=320&h=420&q=60&fm=jpg&fit=crop" alt="" loading="lazy">` : ''}<b>${esc(o.nom)}</b></button>`; }).join('')}</div>`;
+const EX = { anniversaire: ['Les 30 ans de Julie', 'Le Loft, Lyon'], 'anniversaire-enfant': ['Les 6 ans de Lucas', 'À la maison'], mariage: ['Claire & Thomas', 'Domaine des Roses'], fiancailles: ['Emma & Louis', 'Restaurant Le Jardin'],
+  henne: ['Le henné de Inès', 'Salle Les Jasmins'], bapteme: ['Le baptême de Louise', 'Église Saint-Jean'], 'baby-shower': ['Bébé Martin arrive', 'Chez Camille'], 'gender-reveal': ['Fille ou garçon ?', 'Au jardin'],
+  soiree: ['Soirée chez Antoine', 'Rooftop Bellecour'], cremaillere: ['Chez Manon & Paul', '12 rue des Lilas'], evjf: ['Pour la future mariée Chloé', 'Barcelone'], diplome: ['Hugo est diplômé', 'Chez ses parents'],
+  'joyeux-anniversaire': ['Pour Mathilde'], noel: ['Pour toute la famille'], 'nouvel-an': ['Pour vous tous'], aid: ['Pour toute la famille'], ramadan: ['Pour vous tous'], 'saint-valentin': ['Pour mon amour'],
+  'fete-des-meres': ['Pour Maman'], 'fete-des-peres': ['Pour Papa'], paques: ['Pour les enfants'], felicitations: ['Bravo Léa'], naissance: ['Bienvenue Gabriel'], merci: ['Pour Nathalie'], retablissement: ['Pour Pierre'] };
+const demo = (f, oid) => { const e = EX[oid || f.occ] || []; return { ...f, noms: f.noms || e[0] || '', date: f.date || '2026-06-20T18:00', lieu: f.lieu || e[1] || '' }; };
 
 function home() {
-  const show = ['mariage-1', 'noel-1', 'anniversaire-2'].map(id => { const m = mdlOf(id), o = occOf(m.occ); return cardHTML(m, demo(defaults(o)), { live: true }); }).join('');
+  const show = ['mariage-1', 'noel-6', 'anniversaire-2'].map(id => { const m = mdlOf(id), o = occOf(m.occ); return cardHTML(m, demo(defaults(o), o.id), { live: true }); }).join('');
+  const bg = { inv: DECORS.mariage[2], voeux: DECORS.noel[0] };
   return `<section class="screen">
     <div class="hero">
       <div style="display:grid;gap:16px"><span class="kicker">Invitations & cartes animées</span>
         <h1>Des cartes qui font <i>de l'effet.</i></h1>
-        <p class="sub">Choisis parmi ${MODELES.length} modèles animés, personnalise-les en 2 minutes et envoie une enveloppe qui s'ouvre comme une vraie.</p>
-        <div style="display:flex;gap:10px;flex-wrap:wrap"><button class="cta" type="button" data-go="cat-inv">💌 Créer une invitation</button><button class="ghost" type="button" data-go="cat-voeux">🎁 Envoyer des vœux</button></div></div>
+        <p class="sub">${MODELES.length} modèles animés, personnalisés en 2 minutes, envoyés dans une enveloppe qui s'ouvre comme une vraie.</p></div>
       <div class="show">${show}</div>
     </div>
-    <div class="cats">${CATS.map(c => `<button class="catc ${c.id}" type="button" data-go="cat-${c.id}"><span class="big">${c.emo}</span><b>${c.nom}</b><small>${c.sous}</small></button>`).join('')}</div>
-    <div class="sec"><h3>Invitations</h3>${occGrid(OCC.filter(o => o.cat === 'inv'))}</div>
-    <div class="sec"><h3>Vœux & souhaits</h3>${occGrid(OCC.filter(o => o.cat === 'voeux'))}</div>
-    <div class="sec"><h3>Comment ça marche</h3><div class="how"><div><span>🎨</span><b>Choisis</b>un modèle animé</div><div><span>✍️</span><b>Personnalise</b>textes, date, lieu</div><div><span>💌</span><b>Envoie</b>une enveloppe qui s'ouvre</div></div></div>
+    <div class="cats">${CATS.map(c => `<button class="catc ${c.id}" type="button" data-go="cat-${c.id}"><img src="${bg[c.id].u}&w=700&h=500&q=70&fm=jpg&fit=crop" alt=""><b>${c.nom}</b><small>${c.sous}</small><span class="go">Choisir</span></button>`).join('')}</div>
   </section>`;
 }
 function catPage(id) {
   const c = CATS.find(x => x.id === id);
-  return `<section class="screen"><span class="kicker">${c.emo} ${c.nom}</span><h2>Quelle <i>occasion</i> ?</h2>${occGrid(OCC.filter(o => o.cat === id))}</section>`;
+  return `<section class="screen"><span class="kicker">${c.nom}</span><h2>Quelle <i>occasion</i> ?</h2>${occGrid(OCC.filter(o => o.cat === id))}</section>`;
 }
 function occPage(id) {
-  const o = occOf(id), ms = MODELES.filter(m => m.occ === id), f = demo(defaults(o));
-  return `<section class="screen"><span class="kicker">${o.emo} ${esc(o.nom)}</span><h2>Choisis ton <i>modèle</i></h2><p class="sub">${ms.length} modèles animés. Touche celui qui te plaît pour le personnaliser.</p>
+  const o = occOf(id), ms = MODELES.filter(m => m.occ === id), f = demo(defaults(o), id);
+  return `<section class="screen"><span class="kicker">${esc(o.nom)}</span><h2>Choisis ton <i>modèle</i></h2><p class="sub">${ms.length} modèles animés. Touche celui qui te plaît pour le personnaliser.</p>
     <div class="grid">${ms.map(m => `<button class="mdl" type="button" data-go="m-${m.id}">${cardHTML(m, f, { live: true })}<b>${esc(m.nom)}</b><small>Animation : ${m.anim}</small></button>`).join('')}</div></section>`;
 }
 function editor(mid) {
@@ -357,8 +370,8 @@ function editor(mid) {
   const f = state.f;
   return `<section class="screen editor">
     <div class="prev"><div id="pv">${cardHTML(m, f, { live: true })}</div>
-      <button class="openbtn" type="button" data-preview>💌 Voir l'ouverture</button></div>
-    <div class="form"><span class="kicker">${o.emo} ${esc(o.nom)} · ${esc(m.nom)}</span><h2>Personnalise <i>ta carte</i></h2>
+      <button class="openbtn" type="button" data-preview>Voir l'ouverture</button></div>
+    <div class="form"><span class="kicker">${esc(o.nom)} · ${esc(m.nom)}</span><h2>Personnalise <i>ta carte</i></h2>
       <label>Titre<input data-f="titre" value="${esc(f.titre)}" maxlength="60"></label>
       <label>${inv ? 'Qui invite ? (ex. Sarah fête ses 30 ans)' : 'Pour qui ? (ex. Pour Maman)'}<input data-f="noms" value="${esc(f.noms)}" maxlength="60" placeholder="${inv ? 'Sarah & Yanis' : 'Pour toi'}"></label>
       <label>Message<textarea data-f="msg" maxlength="300">${esc(f.msg)}</textarea></label>
@@ -366,22 +379,24 @@ function editor(mid) {
         <label>Adresse (pour le GPS)<input data-f="adresse" value="${esc(f.adresse)}" maxlength="120" placeholder="12 rue des Lilas, Lyon"></label>
         <label class="switch">Les invités répondent (je viens / je ne viens pas)<input type="checkbox" data-f="rsvp" ${f.rsvp ? 'checked' : ''}></label>`
       : `<label>Signature<input data-f="de" value="${esc(f.de)}" maxlength="40" placeholder="Bisous, Sarah"></label>`}
+      ${GROUPE.has(o.id) ? `<label>${inv ? 'Invités' : 'Destinataires'} (un prénom par ligne, facultatif)<textarea data-f="dest" maxlength="4000" placeholder="Camille&#10;Thomas et Julie&#10;Famille Durand">${esc(f.dest || '')}</textarea><small style="font-weight:500">Chacun reçoit son propre lien, avec son prénom sur l'enveloppe.</small></label>` : ''}
       <label>De la part de (affiché sur l'enveloppe)<input data-f="exp" value="${esc(f.exp || '')}" maxlength="40" placeholder="Sarah"></label>
-      <button class="cta full" type="button" data-save>💌 Créer et envoyer</button>
+      <button class="cta full" type="button" data-save>Créer et envoyer</button>
       <p class="note" id="smsg" role="status"></p>
     </div></section>`;
 }
 function sharePage(id, cle, url) {
   const mine = (store.get('mine') || []).find(x => x.id === id), inv = mine && occOf(mine.occ).cat === 'inv' && mine.rsvp;
   return `<section class="screen" style="max-width:620px;margin:0 auto;width:100%">
-    <span class="kicker">C'est prêt 🎉</span><h2>Envoie ta <i>carte</i></h2>
+    <span class="kicker">C'est prêt</span><h2>Envoie ta <i>carte</i></h2>
     <div class="sharebox">
       <div class="linkrow"><input id="lnk" readonly value="${esc(url)}" aria-label="Lien de la carte"><button class="cta" type="button" data-copy>Copier</button></div>
-      <div class="btns"><button class="ghost" type="button" data-share>📤 Partager</button><a class="ghost" href="mailto:?subject=${encodeURIComponent('Tu as reçu une carte 💌')}&body=${encodeURIComponent('Ouvre ton enveloppe : ' + url)}">✉️ Par e-mail</a></div>
-      <a class="ghost" href="${esc(url)}" target="_blank" rel="noopener">👀 Voir comme l'invité</a>
+      <div class="btns"><button class="ghost" type="button" data-share>Partager</button><a class="ghost" href="mailto:?subject=${encodeURIComponent('Tu as reçu une carte')}&body=${encodeURIComponent('Ouvre ton enveloppe : ' + url)}">Par e-mail</a></div>
+      <a class="ghost" href="${esc(url)}" target="_blank" rel="noopener">Voir comme l'invité</a>
+      ${mine && destList(mine.f).length ? `<h3 style="margin:6px 0 0;font:700 20px var(--title)">Un lien par invité</h3><div class="guests">${destList(mine.f).map(n => `<div class="guest"><span>${esc(n)}</span><button type="button" data-gcopy="${esc(linkFor(url, n))}">Copier</button><button type="button" data-gshare="${esc(linkFor(url, n))}" data-gname="${esc(n)}">Envoyer</button></div>`).join('')}</div>` : ''}
       <div id="qr" aria-label="QR code de la carte"></div><p class="note">QR code à imprimer ou à afficher le jour J.</p>
     </div>
-    ${inv ? `<div class="sharebox"><h3 style="margin:0;font:700 22px var(--title)">Réponses des invités</h3><div class="resp" id="resp"><p class="note">Chargement…</p></div><button class="ghost" type="button" data-reload="${id}">🔄 Actualiser</button></div>` : ''}
+    ${inv ? `<div class="sharebox"><h3 style="margin:0;font:700 22px var(--title)">Réponses des invités</h3><div class="resp" id="resp"><p class="note">Chargement…</p></div><button class="ghost" type="button" data-reload="${id}">Actualiser</button></div>` : ''}
     <button class="ghost" type="button" data-go="">Créer une autre carte</button>
   </section>`;
 }
@@ -430,12 +445,13 @@ async function loadResp(id, cle) {
     const L = await r.json(); if (!Array.isArray(L)) throw 0;
     if (!L.length) { box.innerHTML = '<p class="note">Pas encore de réponse. Elles s\'afficheront ici.</p>'; return; }
     const n = k => L.filter(x => x.reponse === k).reduce((a, x) => a + (k === 'oui' ? (x.nb || 1) : 1), 0);
-    box.innerHTML = `<div class="tot"><span>✅ ${n('oui')} viennent</span><span>🤔 ${n('peut-etre')} peut-être</span><span>❌ ${n('non')} non</span></div>` +
-      L.map(x => `<div class="r"><span>${x.reponse === 'oui' ? '✅' : x.reponse === 'non' ? '❌' : '🤔'}</span><span><b>${esc(x.nom)}</b>${x.message ? `<br><small>${esc(x.message)}</small>` : ''}</span><span>${x.reponse === 'oui' && x.nb > 1 ? '×' + x.nb : ''}</span></div>`).join('');
+    box.innerHTML = `<div class="tot"><span>${n('oui')} viennent</span><span>${n('peut-etre')} peut-être</span><span>${n('non')} non</span></div>` +
+      L.map(x => `<div class="r"><span class="dot ${x.reponse}"></span><span><b>${esc(x.nom)}</b>${x.message ? `<br><small>${esc(x.message)}</small>` : ''}</span><span>${x.reponse === 'oui' && x.nb > 1 ? '×' + x.nb : ''}</span></div>`).join('');
   } catch (_) { box.innerHTML = '<p class="note">Les réponses ne sont pas encore disponibles.</p>'; }
 }
 
 /* ---------- ouverture de l'enveloppe ---------- */
+const POUR = (new URLSearchParams(location.search).get('n') || '').slice(0, 60);
 function openCard(data, { id = null, preview = false } = {}) {
   const m = mdlOf(data.mid); if (!m) return false;
   const o = occOf(m.occ), f = data.f, [, ink, acc, paper] = PAL[m.pal], inv = o.cat === 'inv';
@@ -445,21 +461,21 @@ function openCard(data, { id = null, preview = false } = {}) {
   const ini = (f.exp || f.noms || 'L').trim().charAt(0).toUpperCase();
   el.innerHTML = `<div class="ostage"><div class="env" id="env" style="--e-paper:${paper};--e-seal:${acc}" role="button" tabindex="0" aria-label="Ouvrir l'enveloppe">
       <div class="eback"></div><div class="inner">${cardHTML(m, f)}</div><div class="front"></div><div class="flap"></div><div class="seal">${esc(ini)}</div>
-      <div class="ohint">Touche pour ouvrir ✨<small>${f.exp ? 'De la part de ' + esc(f.exp) : 'Tu as reçu une carte'}</small></div></div></div>
-    ${preview ? '<button class="back" type="button" data-close style="position:fixed;top:calc(env(safe-area-inset-top,0px) + 14px);left:16px;z-index:60">✕</button>' : ''}`;
+      <div class="ohint">Touche pour ouvrir<small>${POUR ? 'Pour ' + esc(POUR) + (f.exp ? ' · de la part de ' + esc(f.exp) : '') : f.exp ? 'De la part de ' + esc(f.exp) : 'Tu as reçu une carte'}</small></div></div></div>
+    ${preview ? '<button class="back" type="button" data-close style="position:fixed;top:calc(env(safe-area-inset-top,0px) + 14px);left:16px;z-index:60">×</button>' : ''}`;
   const env = $('#env');
   const doOpen = () => {
     if (env.classList.contains('opened')) return; env.classList.add('opened');
     setTimeout(() => {
       const when = f.date ? new Date(f.date) : null, addr = f.adresse || f.lieu;
-      el.innerHTML = `${preview ? '<button class="back" type="button" data-close style="position:fixed;top:calc(env(safe-area-inset-top,0px) + 14px);left:16px;z-index:60">✕</button>' : ''}
+      el.innerHTML = `${preview ? '<button class="back" type="button" data-close style="position:fixed;top:calc(env(safe-area-inset-top,0px) + 14px);left:16px;z-index:60">×</button>' : ''}
         <div class="reveal">${cardHTML(m, f, { live: true })}
         ${inv && when && !isNaN(when) && when > Date.now() ? `<div class="panel"><h3>Plus que…</h3><div class="count" id="cnt"></div></div>` : ''}
-        ${inv && (addr || when) ? `<div class="panel">${addr ? `<a class="ghost" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(addr)}" target="_blank" rel="noopener">📍 Itinéraire vers ${esc(f.lieu || 'le lieu')}</a>` : ''}
-          ${when && !isNaN(when) ? `<a class="ghost" href="${icsHref(f, o)}" download="invitation.ics">🗓️ Ajouter à mon agenda</a>` : ''}</div>` : ''}
+        ${inv && (addr || when) ? `<div class="panel">${addr ? `<a class="ghost" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(addr)}" target="_blank" rel="noopener">Itinéraire vers ${esc(f.lieu || 'le lieu')}</a>` : ''}
+          ${when && !isNaN(when) ? `<a class="ghost" href="${icsHref(f, o)}" download="invitation.ics">Ajouter à mon agenda</a>` : ''}</div>` : ''}
         ${inv && f.rsvp && id ? `<div class="panel" id="rsvp"><h3>Tu viens ?</h3>
-          <input id="rn" maxlength="60" placeholder="Ton prénom et nom" style="padding:13px;border-radius:12px;border:1px solid var(--line)">
-          <div class="choice3"><button type="button" data-rv="oui" aria-pressed="false">✅ Oui</button><button type="button" data-rv="peut-etre" aria-pressed="false">🤔 Peut-être</button><button type="button" data-rv="non" aria-pressed="false">❌ Non</button></div>
+          <input id="rn" maxlength="60" value="${esc(POUR)}" placeholder="Ton prénom et nom" style="padding:13px;border-radius:12px;border:1px solid var(--line)">
+          <div class="choice3"><button type="button" data-rv="oui" aria-pressed="false">Oui</button><button type="button" data-rv="peut-etre" aria-pressed="false">Peut-être</button><button type="button" data-rv="non" aria-pressed="false">Non</button></div>
           <label style="display:flex;align-items:center;gap:10px;font-weight:700">Nombre de personnes <input id="rnb" type="number" min="1" max="20" value="1" style="width:70px;padding:10px;border-radius:10px;border:1px solid var(--line)"></label>
           <textarea id="rm" maxlength="300" placeholder="Un petit mot (facultatif)" style="padding:12px;border-radius:12px;border:1px solid var(--line);min-height:70px"></textarea>
           <button class="cta" type="button" data-send-rsvp="${id}">Envoyer ma réponse</button><p class="note" id="rmsg" role="status"></p></div>` : ''}
@@ -494,8 +510,10 @@ document.addEventListener('click', async e => {
   if ('preview' in t.dataset) { openCard({ mid: state.mid, f: state.f }, { preview: true }); history.pushState({ r: state.route, open: 1 }, ''); return; }
   if ('close' in t.dataset) { history.back(); return; }
   if ('save' in t.dataset) { save(); return; }
-  if ('copy' in t.dataset) { const i = $('#lnk'); try { await navigator.clipboard.writeText(i.value); t.textContent = 'Copié ✓'; } catch (_) { i.select(); } return; }
-  if ('share' in t.dataset) { const u = $('#lnk').value; if (navigator.share) navigator.share({ title: 'Tu as reçu une carte 💌', text: 'Ouvre ton enveloppe :', url: u }).catch(() => {}); else { try { await navigator.clipboard.writeText(u); t.textContent = 'Lien copié ✓'; } catch (_) {} } return; }
+  if ('copy' in t.dataset) { const i = $('#lnk'); try { await navigator.clipboard.writeText(i.value); t.textContent = 'Copié'; } catch (_) { i.select(); } return; }
+  if ('share' in t.dataset) { const u = $('#lnk').value; if (navigator.share) navigator.share({ title: 'Tu as reçu une carte', text: 'Ouvre ton enveloppe :', url: u }).catch(() => {}); else { try { await navigator.clipboard.writeText(u); t.textContent = 'Lien copié'; } catch (_) {} } return; }
+  if (t.dataset.gcopy) { try { await navigator.clipboard.writeText(t.dataset.gcopy); t.textContent = 'Copié'; } catch (_) {} return; }
+  if (t.dataset.gshare) { const u = t.dataset.gshare; if (navigator.share) navigator.share({ title: t.dataset.gname + ', tu as reçu une carte', url: u }).catch(() => {}); else { try { await navigator.clipboard.writeText(u); t.textContent = 'Copié'; } catch (_) {} } return; }
   if (t.dataset.reload) { const x = (store.get('mine') || []).find(y => y.id === t.dataset.reload); if (x) loadResp(x.id, x.cle); return; }
   if (t.dataset.openMine) { const x = (store.get('mine') || []).find(y => y.id === t.dataset.openMine); if (x) { state.share = [x.id, x.cle, x.url]; go('ok-' + x.id); } return; }
   if (t.dataset.rv) { document.querySelectorAll('[data-rv]').forEach(b => b.setAttribute('aria-pressed', b === t)); return; }
@@ -504,7 +522,7 @@ document.addEventListener('click', async e => {
     if (!nom) { m.textContent = 'Indique ton prénom.'; return; } if (!rep) { m.textContent = 'Choisis Oui, Peut-être ou Non.'; return; }
     t.disabled = true; m.textContent = 'Envoi…';
     try { const r = await sb('reponses', { carte: t.dataset.sendRsvp, nom, reponse: rep, nb: Math.max(1, Math.min(20, +$('#rnb').value || 1)), message: $('#rm').value.trim() || null }); if (!r.ok) throw 0;
-      $('#rsvp').innerHTML = `<h3>Merci ${esc(nom)} ! 💌</h3><p style="margin:0">Ta réponse a bien été envoyée.</p>`; }
+      $('#rsvp').innerHTML = `<h3>Merci ${esc(nom)} !</h3><p style="margin:0">Ta réponse a bien été envoyée.</p>`; }
     catch (_) { m.textContent = 'L\'envoi n\'a pas marché. Réessaie dans un instant.'; t.disabled = false; }
   }
 });
