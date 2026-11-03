@@ -163,7 +163,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .others button { flex: none; width: 64px; padding: 0; border: 2px solid transparent; border-radius: 12px; background: none; cursor: pointer; }
 .others button[aria-pressed="true"] { border-color: var(--acc); }
 .others .card { border-radius: 10px; }
-.prev .openbtn { position: absolute; right: -6px; bottom: 18px; z-index: 5; border: 0; border-radius: 99px; padding: 12px 16px; font-weight: 800; font-size: 14px; color: #fff; background: var(--grad); box-shadow: 0 10px 24px rgba(194,100,58,.35); cursor: pointer; animation: bob 2.4s ease-in-out infinite; }
+.prev .openbtn { position: relative; display: block; margin: 12px auto 0; width: 100%; z-index: 5; border: 0; border-radius: 99px; padding: 12px 16px; font-weight: 800; font-size: 14px; color: #fff; background: var(--grad); box-shadow: 0 10px 24px rgba(194,100,58,.35); cursor: pointer; animation: bob 2.4s ease-in-out infinite; }
 @keyframes bob { 50% { transform: translateY(-4px); } }
 .note { font-size: 13px; color: var(--muted); text-align: center; margin: 0; }
 
