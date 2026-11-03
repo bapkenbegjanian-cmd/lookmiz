@@ -4,821 +4,484 @@
 <meta charset="utf-8">
 <meta name="google-site-verification" content="tPkA79ZQCeMVM4kRewvgCNKZUg0uWoztpdDwAbVpFfc" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Lookmiz — essaie les looks sur ta photo</title>
-<meta name="description" content="Essayage virtuel : mets ta photo, importe un habit ou un lien Vinted, et vois-le porté par toi.">
-<meta name="theme-color" content="#f7f6f3">
+<title>Lookmiz — invitations et cartes animées</title>
+<meta name="description" content="Crée des invitations et des cartes de vœux animées : anniversaire, mariage, baptême, Noël, Aïd… Une enveloppe qui s'ouvre, des réponses des invités, en quelques minutes.">
+<meta name="theme-color" content="#fbf6ef">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="preconnect" href="https://images.unsplash.com"><link rel="preconnect" href="https://cdn.jsdelivr.net">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cinzel:wght@500;700&family=Fredoka:wght@500;700&family=Great+Vibes&family=Pacifico&family=Playfair+Display:ital,wght@0,500;0,700;1,500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
 <style>
+/* Mise en page : une boutique de cartes. Accueil → catégorie → occasion (galerie de modèles) → personnalisation → partage.
+   Le destinataire reçoit une enveloppe qui s'ouvre, puis la carte animée. */
 :root {
-  --ink: #0f0f12; --muted: #66666e; --line: #e6e5e1; --glass: #ffffff;
-  --pink: #3b5bff; --violet: #8a5cff; --peach: #ffcf4a; --mint: #22c58b;
-  --grad: linear-gradient(120deg, var(--pink), var(--violet));
-  --display: "Anton", "Impact", "Arial Narrow", sans-serif; --body: "Plus Jakarta Sans", system-ui, sans-serif;
+  --bg: #fbf6ef; --paper: #ffffff; --ink: #1c1712; --muted: #7a6f63; --line: #eadfd2;
+  --acc: #c2643a; --acc2: #8a5cff; --gold: #c99a45;
+  --grad: linear-gradient(120deg, #e0794a, #c2643a 40%, #8a5cff);
+  --ui: "Plus Jakarta Sans", system-ui, sans-serif; --title: "Playfair Display", Georgia, serif;
   color-scheme: light;
 }
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-html, body { margin: 0; color: var(--ink); font: 16px/1.5 var(--body); background: radial-gradient(900px 600px at 0% 0%, #e3e8ff, transparent 60%), radial-gradient(800px 600px at 100% 30%, #ffe1ef, transparent 60%), radial-gradient(800px 600px at 30% 100%, #fff1d6, transparent 60%), #fbfaf8; background-attachment: fixed; }
-button { font: inherit; color: inherit; }
+html, body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.5 var(--ui); }
+body { background: radial-gradient(900px 600px at 0% -10%, #ffe6d4, transparent 60%), radial-gradient(800px 600px at 110% 20%, #ece4ff, transparent 60%), var(--bg); background-attachment: fixed; min-height: 100vh; }
+button, input, textarea, select { font: inherit; color: inherit; }
 img { display: block; max-width: 100%; }
-
-/* Fond animé : dégradé vivant */
-.bg { position: fixed; inset: 0; z-index: 0; overflow: hidden; background: linear-gradient(160deg, #f6f8fb, #eef4f6 55%, #f7f5f0); }
-.bg i { position: absolute; border-radius: 50%; filter: blur(60px); opacity: .7; animation: blob 16s ease-in-out infinite alternate; }
-.bg i:nth-child(1) { width: 380px; height: 380px; background: #cddcff; top: -120px; left: -100px; }
-.bg i:nth-child(2) { width: 340px; height: 340px; background: #c6efe7; top: 30%; right: -140px; animation-delay: -6s; }
-.bg i:nth-child(3) { width: 300px; height: 300px; background: #ebe4d6; bottom: -100px; left: 10%; animation-delay: -11s; }
-@keyframes blob { 50% { transform: translate(60px, 50px) scale(1.15); } 100% { transform: translate(-30px, 80px) scale(.95); } }
-
-.app { position: relative; z-index: 1; max-width: 520px; margin: 0 auto; min-height: 100vh; min-height: 100dvh;
-  padding: calc(env(safe-area-inset-top, 0px) + 12px) max(18px, env(safe-area-inset-right, 0px)) calc(env(safe-area-inset-bottom, 0px) + 32px) max(18px, env(safe-area-inset-left, 0px)); }
-.top { display: grid; grid-template-columns: 44px 1fr 44px; align-items: center; margin-bottom: 14px; }
-.logo { grid-column: 2; text-align: center; font: 800 26px/1 var(--body); letter-spacing: -.04em; }
+[hidden] { display: none !important; }
+.app { max-width: 1080px; margin: 0 auto; padding: calc(env(safe-area-inset-top, 0px) + 12px) max(18px, env(safe-area-inset-right, 0px)) calc(env(safe-area-inset-bottom, 0px) + 40px) max(18px, env(safe-area-inset-left, 0px)); }
+.top { display: flex; align-items: center; gap: 12px; height: 52px; margin-bottom: 8px; }
+.logo { font: 800 26px/1 var(--ui); letter-spacing: -.04em; text-decoration: none; color: var(--ink); background: none; border: 0; cursor: pointer; padding: 0; }
 .logo span { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
-.back { width: 44px; height: 44px; border-radius: 14px; border: 1px solid var(--line); background: var(--glass); backdrop-filter: blur(12px); cursor: pointer; font-size: 18px; }
-
-.screen { display: grid; gap: 18px; animation: screenin .6s cubic-bezier(.2,.8,.2,1) both; }
-@keyframes screenin { from { opacity: 0; transform: translateY(16px) scale(.99); } }
-h1, h2 { font-family: var(--display); font-weight: 400; margin: 0; letter-spacing: .005em; text-transform: uppercase; text-wrap: balance; }
-h1 { font-size: clamp(40px, 11.5vw, 60px); line-height: .95; }
-h2 { font-size: clamp(30px, 8.5vw, 40px); line-height: 1; }
-.hl { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
-.sub { color: var(--muted); margin: 0; max-width: 36ch; }
-.pill { display: inline-flex; align-items: center; gap: 8px; width: max-content; font-size: 13px; font-weight: 700; padding: 7px 12px; border-radius: 99px; background: var(--glass); border: 1px solid var(--line); backdrop-filter: blur(12px); }
-.pill i { width: 8px; height: 8px; border-radius: 50%; background: var(--mint); box-shadow: 0 0 0 4px rgba(61,214,181,.2); animation: pulse 1.6s infinite; }
-@keyframes pulse { 50% { box-shadow: 0 0 0 8px rgba(61,214,181,0); } }
-
-.cta { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; border: 0; border-radius: 18px; padding: 18px 24px; cursor: pointer; font-weight: 800; font-size: 17px; text-decoration: none;
-  color: #fff; background: var(--grad); background-size: 200% 100%; box-shadow: 0 14px 30px rgba(47,107,255,.28); animation: gradmove 5s ease infinite; transition: transform .15s; }
-@keyframes gradmove { 50% { background-position: 100% 0; } }
+.back { width: 42px; height: 42px; border-radius: 14px; border: 1px solid var(--line); background: var(--paper); cursor: pointer; font-size: 18px; }
+.top .sp { flex: 1; }
+.mine { border: 1px solid var(--line); background: var(--paper); border-radius: 99px; padding: 8px 14px; font-weight: 700; font-size: 14px; cursor: pointer; }
+.screen { display: grid; gap: 22px; animation: in .5s cubic-bezier(.2,.8,.2,1) both; }
+@keyframes in { from { opacity: 0; transform: translateY(12px); } }
+h1, h2 { font-family: var(--title); font-weight: 700; margin: 0; line-height: 1.05; letter-spacing: -.01em; text-wrap: balance; }
+h1 { font-size: clamp(40px, 10vw, 68px); }
+h2 { font-size: clamp(28px, 7vw, 40px); }
+h1 i, h2 i { font-style: italic; background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.sub { color: var(--muted); margin: 0; max-width: 46ch; }
+.kicker { font-size: 12px; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; color: var(--acc); }
+.cta { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 0; border-radius: 16px; padding: 16px 22px; font-weight: 800; font-size: 16px; color: #fff; background: var(--grad); cursor: pointer; text-decoration: none; box-shadow: 0 12px 28px rgba(194,100,58,.28); transition: transform .15s; }
 .cta:active { transform: scale(.97); }
-.cta[disabled] { opacity: .4; pointer-events: none; }
-.ghost { display: flex; align-items: center; justify-content: center; width: 100%; border: 1px solid var(--line); border-radius: 18px; padding: 16px 20px; background: var(--glass); backdrop-filter: blur(12px); cursor: pointer; font-weight: 700; text-align: center; text-decoration: none; color: var(--ink); }
-button:focus-visible, a:focus-visible, label:focus-visible { outline: 3px solid var(--violet); outline-offset: 3px; }
+.cta.full { width: 100%; }
+.ghost { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid var(--line); border-radius: 16px; padding: 14px 18px; font-weight: 700; background: var(--paper); cursor: pointer; text-decoration: none; color: var(--ink); }
+button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px solid var(--acc2); outline-offset: 2px; }
 
-/* Accueil */
-.showcase { position: relative; height: 380px; margin: 6px 0; }
-.showcase .card { position: absolute; width: 58%; aspect-ratio: 3 / 4; border-radius: 26px; overflow: hidden; box-shadow: 0 24px 50px rgba(29,21,48,.18); border: 4px solid #fff; background: #fff; transition: all .9s cubic-bezier(.2,.8,.2,1); }
-.showcase .card img { width: 100%; height: 100%; object-fit: cover; }
-.showcase .c0 { left: 21%; top: 0; z-index: 3; transform: rotate(0); }
-.showcase .c1 { left: 0; top: 40px; z-index: 2; transform: rotate(-9deg) scale(.86); opacity: .9; }
-.showcase .c2 { left: 42%; top: 40px; z-index: 1; transform: rotate(9deg) scale(.86); opacity: .9; }
-.float { position: absolute; z-index: 5; font-size: 13px; font-weight: 800; padding: 9px 13px; border-radius: 14px; background: #fff; box-shadow: 0 10px 24px rgba(29,21,48,.14); animation: bob 4s ease-in-out infinite; white-space: nowrap; }
-.float.a { left: -4px; top: 18px; } .float.b { right: -4px; top: 170px; animation-delay: -1.3s; } .float.c { left: 8px; bottom: 6px; animation-delay: -2.6s; }
-@keyframes bob { 50% { transform: translateY(-10px); } }
-.marquee { overflow: hidden; margin: 0 -18px; padding: 12px 0; background: var(--ink); color: #fff; transform: rotate(-2deg); }
-.marquee div { display: flex; gap: 28px; width: max-content; animation: slide 22s linear infinite; font: 800 15px var(--display); letter-spacing: .04em; text-transform: uppercase; }
-.marquee b { color: var(--peach); }
-@keyframes slide { to { transform: translateX(-50%); } }
-.how { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-.linkbox { display: grid; gap: 6px; background: var(--glass); backdrop-filter: blur(12px); border: 1px solid var(--line); border-radius: 18px; padding: 14px; }
-.linkbox small { color: var(--muted); }
-.lrow { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
-.lrow input, .loginbox input { font: inherit; padding: 14px; border-radius: 14px; border: 1px solid var(--line); background: #fff; color: var(--ink); min-width: 0; }
-.lrow .ghost { width: auto; padding: 12px 16px; }
-.loginbox { display: grid; gap: 10px; }
-.plans { display: grid; gap: 10px; }
-.plan { display: grid; grid-template-columns: 26px minmax(0, 1fr) auto; gap: 12px; align-items: center; width: 100%; text-align: left; padding: 16px; border-radius: 20px; background: var(--glass); backdrop-filter: blur(12px); border: 2px solid var(--line); color: var(--ink); cursor: pointer; transition: border-color .2s, box-shadow .2s, background .2s; }
-.plan .dot { width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--line); background: #fff; transition: all .2s; }
-.plan.on { border-color: var(--pink); background: #fff; box-shadow: 0 10px 26px rgba(47,107,255,.15); }
-.plan.on .dot { border: 7px solid var(--pink); }
-.plan .pinfo { display: grid; gap: 2px; min-width: 0; }
-.plan .pinfo b { font: 800 18px var(--display); }
-.plan small { color: var(--muted); font-size: 13px; }
-.plan em { font-style: normal; font-size: 12px; font-weight: 800; color: #fff; background: var(--grad); padding: 3px 9px; border-radius: 99px; width: max-content; margin-top: 4px; }
-.plan .pprice { text-align: right; display: grid; }
-.plan .pprice b { font: 800 22px var(--display); white-space: nowrap; }
-.recap { background: var(--glass); border: 1px dashed var(--line); border-radius: 16px; padding: 12px 14px; font-size: 14px; color: var(--muted); }
-.recap b { color: var(--ink); }
-a.cta[aria-disabled] { opacity: .5; pointer-events: none; }
-.plan[aria-disabled] { opacity: .55; pointer-events: none; }
-.demo { display: grid; justify-items: center; gap: 10px; margin: 6px 0; }
-.dlabel { font: 800 15px var(--display); }
-.phone { width: min(78%, 290px); aspect-ratio: 390 / 664; border-radius: 34px; padding: 8px; background: var(--ink); box-shadow: 0 24px 50px rgba(18,20,30,.28); }
-.phone video { width: 100%; height: 100%; display: block; border-radius: 27px; object-fit: cover; background: #eef1f5; }
-.screen.home { max-width: 1000px; margin: 0 auto; gap: 26px; }
-.hero { display: grid; gap: 18px; }
-.kicker { font-size: 12px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--pink); }
-.home h1 { font-size: clamp(52px, 15vw, 96px); line-height: .92; margin-top: 8px; }
-.stage { position: relative; border-radius: 26px; overflow: hidden; height: 330px; background: #222; box-shadow: 0 30px 60px rgba(59,91,255,.25); }
-.first .stage { animation: pop .8s cubic-bezier(.2,.8,.2,1) both; }
-@keyframes pop { from { opacity: 0; transform: scale(.96); } }
-.slides img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transform: scale(1.12); transition: opacity 1.4s ease; }
-.slides img.on { opacity: 1; animation: kb 6s ease-out forwards; }
-@keyframes kb { from { transform: scale(1.12); } to { transform: scale(1); } }
-.veil { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(10,10,20,0) 35%, rgba(10,10,20,.78) 100%); }
-.stext { position: absolute; left: 22px; right: 22px; bottom: 24px; color: #fff; display: grid; gap: 8px; }
-.stext .kicker { color: #fff; opacity: .9; }
-.stext h1 { color: #fff; font-size: clamp(40px, 11vw, 72px); line-height: .92; }
-.stext h1 .hl { background: linear-gradient(90deg, #ffd84d, #ff7ac6, #8fa2ff); -webkit-background-clip: text; background-clip: text; color: transparent; }
-.stext p { margin: 0; font-size: 16px; opacity: .92; max-width: 32ch; }
-.sdots { display: flex; gap: 6px; margin-top: 6px; }
-.sdots i { width: 18px; height: 3px; border-radius: 3px; background: rgba(255,255,255,.4); transition: all .4s; }
-.sdots i.on { width: 32px; background: #fff; }
-.scredit { position: absolute; top: 12px; right: 14px; font-size: 10px; color: rgba(255,255,255,.75); }
-.choices { display: grid; gap: 14px; }
-.choice { position: relative; display: block; overflow: hidden; height: 200px; padding: 0; border: 0; border-radius: 26px; cursor: pointer; color: #fff; text-align: left; isolation: isolate; transition: transform .2s; }
-.first .choice { animation: rise .7s cubic-bezier(.2,.8,.2,1) both; }
-.first .choice + .choice { animation-delay: .12s; }
-@keyframes rise { from { opacity: 0; transform: translateY(24px); } }
-.choice img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: -2; transition: transform .6s; }
-.choice::before { content: ""; position: absolute; inset: 0; z-index: -1; }
-.choice.c1::before { background: linear-gradient(100deg, rgba(59,91,255,.95) 20%, rgba(138,92,255,.55) 70%, rgba(138,92,255,.1)); }
-.choice.c2::before { background: linear-gradient(100deg, rgba(255,62,140,.95) 20%, rgba(255,140,60,.55) 70%, rgba(255,140,60,.1)); }
-.choice:hover img { transform: scale(1.06); }
-.choice:active { transform: scale(.98); }
-.cbody { position: absolute; left: 22px; top: 50%; transform: translateY(-50%); width: 64%; display: grid; gap: 6px; }
-.choice b { font: 400 34px/1 var(--display); text-transform: uppercase; }
-.choice small { font-size: 14px; line-height: 1.4; opacity: .95; }
-.choice .go { margin-top: 6px; font-weight: 800; font-size: 14px; background: #fff; color: var(--ink); padding: 10px 16px; border-radius: 99px; width: max-content; position: relative; overflow: hidden; }
-.choice .go::after { content: ""; position: absolute; top: 0; left: -60%; width: 40%; height: 100%; background: linear-gradient(90deg, transparent, rgba(59,91,255,.25), transparent); transform: skewX(-20deg); animation: shine 2.8s ease-in-out infinite; }
-@keyframes shine { 60%, 100% { left: 130%; } }
-.choice.solo1 { height: auto; min-height: 230px; }
-.choice.solo1 .cbody { position: relative; top: auto; left: auto; transform: none; width: 70%; padding: 24px 22px; }
-@media (min-width: 900px) {
-  .stage { height: 420px; }
-  .stext { left: 48px; bottom: 44px; }
-  .choices { grid-template-columns: 1fr; }
-  .choice { height: 260px; }
-  .choice.solo1 .cbody { width: 55%; padding: 36px 40px; }
-}
-@media (prefers-reduced-motion: reduce) { .slides img.on, .stage, .choice, .choice .go::after { animation: none; } }
-.vt .sub { margin-top: -8px; }
-label.media .frame { max-width: 320px; margin: 0 auto; }
-@media (min-width: 900px) { .vt .duo { max-width: 520px; margin: 0 auto; width: 100%; } }
-.pick2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.tile { display: grid; justify-items: center; gap: 2px; padding: 16px 6px; border-radius: 20px; background: #fff; border: 1px solid var(--line); cursor: pointer; text-align: center; color: var(--ink); font: inherit; box-shadow: 0 8px 20px rgba(15,15,18,.06); transition: transform .15s, border-color .2s; }
-.tile:active { transform: scale(.96); }
-.tile.on { border: 2px solid var(--pink); }
-.tile span { font-size: 28px; line-height: 1.1; }
-.tile b { font-size: 15px; }
-.tile small { font-size: 12px; color: var(--muted); }
-.duo { display: grid; grid-template-columns: 1fr 28px 1fr; align-items: center; gap: 6px; }
-.duo figure { margin: 0; display: grid; gap: 6px; }
-.duo img, .duo .empty > span { width: 100%; aspect-ratio: 3 / 4; object-fit: cover; border-radius: 18px; background: #fff; box-shadow: 0 10px 24px rgba(15,15,18,.1); }
-.duo .empty > span { display: grid; place-items: center; font-size: 40px; border: 2px dashed var(--line); box-shadow: none; opacity: .7; }
-.duo figcaption { text-align: center; font-size: 13px; color: var(--muted); }
-.plusx { text-align: center; font: 400 26px var(--display); color: var(--pink); }
-.seg { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 6px; border-radius: 18px; background: var(--glass); border: 1px solid var(--line); }
-.seg button { border: 0; background: none; padding: 13px; border-radius: 13px; font-weight: 800; font-size: 15px; color: var(--muted); cursor: pointer; }
-.seg button[aria-selected="true"] { background: var(--ink); color: #fff; }
-.linkbox small b { color: var(--ink); }
-.actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.actions .ghost { font-size: 14px; padding: 13px 10px; }
-.pwrap { position: relative; }
-.pover { position: absolute; top: 12px; right: 12px; display: flex; gap: 8px; z-index: 3; }
-.pbtn { display: inline-flex; align-items: center; gap: 4px; border: 0; cursor: pointer; font: 700 13px var(--body); color: var(--ink); background: rgba(255,255,255,.92); backdrop-filter: blur(8px); padding: 8px 12px; border-radius: 99px; box-shadow: 0 4px 14px rgba(0,0,0,.15); }
-.pbtn.sm { position: absolute; top: 8px; right: 8px; font-size: 11.5px; padding: 6px 9px; z-index: 2; }
-.duo figure { position: relative; }
-.ico { width: 1em; height: 1em; vertical-align: -.15em; }
-.vbadge .ico { width: 15px; height: 15px; }
-.ibox { width: 48px; height: 48px; border-radius: 15px; display: grid; place-items: center; background: var(--grad); color: #fff; margin-bottom: 6px; box-shadow: 0 8px 18px rgba(59,91,255,.3); }
-.ibox .ico { width: 26px; height: 26px; }
-.ibox.v { background: linear-gradient(135deg, #09b1ba, #0a8f98); box-shadow: 0 8px 18px rgba(9,177,186,.3); }
-.tile span.ibox { font-size: 0; }
-.vrow { display: flex; gap: 6px; margin-top: 4px; }
-.vbadge { font-size: 12.5px; font-weight: 800; padding: 5px 10px; border-radius: 8px; background: rgba(255,255,255,.22); color: #fff; }
-.vbadge.vinted { background: #fff; color: #09b1ba; font-family: Georgia, serif; font-style: italic; font-weight: 700; font-size: 14px; }
-.mephoto { display: grid; grid-template-columns: 54px 1fr; gap: 12px; align-items: center; background: var(--glass); backdrop-filter: blur(12px); border: 1px solid var(--line); border-radius: 18px; padding: 10px 12px; font-size: 14px; }
-.mephoto b { display: block; font: 800 15px var(--display); }
-.mephoto img { width: 54px; height: 70px; object-fit: cover; border-radius: 12px; }
-.tabbar { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(env(safe-area-inset-bottom, 0px) + 12px); z-index: 20; display: flex; gap: 4px; padding: 5px; border-radius: 20px;
-  background: rgba(18,20,30,.92); backdrop-filter: blur(14px); box-shadow: 0 14px 34px rgba(18,20,30,.3); }
-.tabbar button { border: 0; background: none; color: rgba(255,255,255,.65); font-weight: 800; font-size: 14px; padding: 11px 18px; border-radius: 15px; cursor: pointer; white-space: nowrap; }
-.tabbar button[aria-pressed="true"] { background: #fff; color: var(--ink); }
+/* --- accueil --- */
+.hero { display: grid; gap: 22px; align-items: center; }
+.hero .show { position: relative; height: 360px; display: grid; place-items: center; }
+.hero .show .card { width: 210px; position: absolute; box-shadow: 0 24px 50px rgba(28,23,18,.22); transition: transform .6s; }
+.hero .show .card:nth-child(1) { transform: rotate(-10deg) translate(-70px, 14px); }
+.hero .show .card:nth-child(2) { transform: rotate(8deg) translate(70px, 20px); }
+.hero .show .card:nth-child(3) { transform: translateY(-6px); z-index: 2; animation: floaty 5s ease-in-out infinite; }
+@keyframes floaty { 50% { transform: translateY(-16px) rotate(1deg); } }
+.cats { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.catc { position: relative; overflow: hidden; border: 0; border-radius: 24px; padding: 22px 18px; text-align: left; cursor: pointer; color: #fff; min-height: 170px; display: grid; align-content: end; gap: 4px; transition: transform .2s; }
+.catc:active { transform: scale(.98); }
+.catc.inv { background: linear-gradient(150deg, #e0794a, #a8402a); }
+.catc.voeux { background: linear-gradient(150deg, #8a5cff, #4b2aa8); }
+.catc .big { position: absolute; top: 10px; right: 12px; font-size: 54px; filter: drop-shadow(0 6px 10px rgba(0,0,0,.2)); animation: floaty 4s ease-in-out infinite; }
+.catc b { font: 700 24px/1.05 var(--title); }
+.catc small { opacity: .9; font-size: 13px; }
+.sec h3 { margin: 0 0 10px; font: 700 22px var(--title); }
+.occs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.occ { border: 1px solid var(--line); background: var(--paper); border-radius: 18px; padding: 14px 8px; cursor: pointer; display: grid; justify-items: center; gap: 4px; text-align: center; transition: transform .15s, box-shadow .2s; }
+.occ:hover { box-shadow: 0 10px 22px rgba(28,23,18,.08); transform: translateY(-2px); }
+.occ span { font-size: 30px; line-height: 1.1; }
+.occ b { font-size: 13px; line-height: 1.2; }
+.how { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.how div { background: var(--paper); border: 1px solid var(--line); border-radius: 18px; padding: 14px 10px; text-align: center; font-size: 13px; }
+.how span { display: block; font-size: 26px; }
+.how b { display: block; font-size: 14px; }
 
-.steps3 { display: grid; gap: 10px; }
-.steps3 div { display: grid; grid-template-columns: 46px 1fr; gap: 12px; align-items: center; background: var(--glass); backdrop-filter: blur(12px); border: 1px solid var(--line); border-radius: 18px; padding: 12px 14px; font-size: 14.5px; }
-.steps3 span { width: 46px; height: 46px; border-radius: 14px; display: grid; place-items: center; font-size: 22px; background: #fff; }
-.steps3 b { display: block; font: 800 16px var(--display); }
-.shophero { position: relative; border-radius: 28px; overflow: hidden; background: var(--ink); color: #fff; padding: 22px 20px; display: grid; gap: 8px; }
-.shophero::after { content: "🛍️"; position: absolute; right: -6px; bottom: -14px; font-size: 96px; opacity: .25; transform: rotate(-12deg); }
-.shophero h2 { color: #fff; }
-.shopcard { background: var(--ink); color: #fff; border-radius: 22px; padding: 16px 18px; font-size: 14px; display: grid; gap: 4px; }
-.shopcard b { font: 800 17px var(--display); }
-.how div { background: var(--glass); backdrop-filter: blur(12px); border: 1px solid var(--line); border-radius: 18px; padding: 12px 10px; text-align: center; font-size: 12.5px; font-weight: 700; }
-.how span { display: block; font-size: 24px; margin-bottom: 4px; }
+/* --- galerie --- */
+.grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+.mdl { border: 0; padding: 0; background: none; cursor: pointer; text-align: left; display: grid; gap: 8px; }
+.mdl .card { box-shadow: 0 12px 26px rgba(28,23,18,.14); transition: transform .25s; }
+.mdl:hover .card { transform: translateY(-4px) rotate(-1deg); }
+.mdl b { font-size: 14px; }
+.mdl small { color: var(--muted); font-size: 12px; }
 
-/* Cadre photo : la photo entière, jamais coupée */
-.frame { position: relative; width: 100%; aspect-ratio: 3 / 4; border-radius: 28px; overflow: hidden; background: #fff; box-shadow: 0 24px 50px rgba(29,21,48,.16); border: 4px solid #fff; }
-.frame .blur { position: absolute; inset: -20px; background-size: cover; background-position: center; filter: blur(24px) saturate(1.2); opacity: .55; }
-.frame > img, .frame canvas { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
-.frame .empty { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: 10px; text-align: center; padding: 24px; color: var(--muted); font-size: 14px;
-  background: repeating-linear-gradient(135deg, rgba(47,107,255,.04) 0 12px, transparent 12px 24px); border: 2px dashed rgba(47,107,255,.35); border-radius: 24px; }
-.frame .empty b { font: 800 22px var(--display); color: var(--ink); }
-.frame .plus { width: 72px; height: 72px; border-radius: 22px; background: var(--grad); color: #fff; display: grid; place-items: center; font-size: 34px; box-shadow: 0 12px 26px rgba(47,107,255,.3); }
-.frame .badge { position: absolute; left: 12px; top: 12px; z-index: 3; font-size: 12.5px; font-weight: 800; padding: 7px 11px; border-radius: 12px; background: rgba(255,255,255,.9); }
-.frame.scan::after { content: ""; position: absolute; left: 0; right: 0; height: 3px; top: 0; background: var(--grad); box-shadow: 0 0 22px 6px rgba(47,107,255,.4); animation: scanline 2.2s ease-in-out infinite alternate; z-index: 2; }
-@keyframes scanline { to { top: 100%; } }
-.reveal { animation: reveal 1.3s cubic-bezier(.2,.8,.2,1) both; }
-@keyframes reveal { from { clip-path: inset(0 0 100% 0); filter: blur(12px); } to { clip-path: inset(0); filter: none; } }
-.tips { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
-.tips span { font-size: 13px; font-weight: 600; background: var(--glass); border: 1px solid var(--line); border-radius: 99px; padding: 6px 12px; }
+/* --- la carte --- */
+.card { position: relative; width: 100%; aspect-ratio: 3 / 4.2; border-radius: 18px; overflow: hidden; container-type: inline-size; background: var(--c-bg); color: var(--c-ink); isolation: isolate; }
+.card::before { content: ""; position: absolute; inset: 4.5cqw; border: .7cqw solid color-mix(in srgb, var(--c-acc) 70%, transparent); border-radius: 3cqw; pointer-events: none; z-index: 2; }
+.card::after { content: ""; position: absolute; inset: 6.5cqw; border: .25cqw solid color-mix(in srgb, var(--c-acc) 45%, transparent); border-radius: 2cqw; pointer-events: none; z-index: 2; }
+.card canvas { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
+.card .mot { position: absolute; z-index: 1; font-size: 11cqw; filter: drop-shadow(0 1cqw 1.5cqw rgba(0,0,0,.18)); animation: drift 6s ease-in-out infinite; }
+.card .mot.m1 { top: 8cqw; left: 9cqw; } .card .mot.m2 { top: 9cqw; right: 9cqw; animation-delay: -2s; } .card .mot.m3 { bottom: 9cqw; left: 50%; margin-left: -5.5cqw; animation-delay: -4s; font-size: 9cqw; }
+@keyframes drift { 50% { transform: translateY(-2.5cqw) rotate(6deg); } }
+.card .ct { position: absolute; inset: 15cqw 11cqw 20cqw; z-index: 3; display: grid; align-content: center; justify-items: center; text-align: center; gap: 2.6cqw; }
+.card .pre { font: 700 3.2cqw var(--ui); letter-spacing: .3em; text-transform: uppercase; color: var(--c-acc); }
+.card .tt { font-size: 10.5cqw; line-height: 1.02; margin: 0; }
+.card .nm { font-size: 6.2cqw; font-weight: 600; color: var(--c-acc); }
+.card .msg { font: 500 4.1cqw/1.45 var(--ui); opacity: .92; max-width: 62cqw; white-space: pre-line; }
+.card .info { font: 700 3.8cqw/1.5 var(--ui); padding-top: 2cqw; border-top: .3cqw solid color-mix(in srgb, var(--c-acc) 50%, transparent); }
+.card .sig { font-size: 6.2cqw; color: var(--c-acc); }
+.f-script .tt, .f-script .nm, .f-script .sig { font-family: "Great Vibes", cursive; font-weight: 400; }
+.f-script .tt { font-size: 13.5cqw; }
+.f-serif .tt { font-family: "Playfair Display", Georgia, serif; font-style: italic; }
+.f-serif .nm, .f-serif .sig { font-family: "Playfair Display", Georgia, serif; }
+.f-royal .tt { font-family: "Cinzel", Georgia, serif; font-size: 8.6cqw; letter-spacing: .04em; }
+.f-royal .nm, .f-royal .sig { font-family: "Cinzel", Georgia, serif; font-size: 5cqw; }
+.f-fun .tt, .f-fun .nm, .f-fun .sig { font-family: "Fredoka", sans-serif; font-weight: 700; }
+.f-brush .tt, .f-brush .nm, .f-brush .sig { font-family: "Pacifico", cursive; font-weight: 400; }
+.f-brush .tt { font-size: 9.6cqw; }
+.f-arab .tt, .f-arab .nm, .f-arab .sig { font-family: "Amiri", Georgia, serif; font-weight: 700; }
+.f-arab .tt { font-size: 11cqw; }
 
-/* Choix de l'occasion */
-.options { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.opt { position: relative; overflow: hidden; background: var(--glass); backdrop-filter: blur(14px); border: 1px solid rgba(255,255,255,.8); border-radius: 22px; padding: 18px 14px; display: grid; gap: 4px; cursor: pointer; text-align: left;
-  box-shadow: 0 8px 22px rgba(29,21,48,.07); opacity: 0; transform: translateY(14px); animation: up .55s cubic-bezier(.2,.8,.2,1) forwards; transition: transform .2s, box-shadow .2s; }
-.opt::before { content: ""; position: absolute; width: 90px; height: 90px; border-radius: 50%; right: -30px; top: -30px; background: var(--c); opacity: .35; filter: blur(4px); }
-.opt:hover { box-shadow: 0 14px 30px rgba(47,107,255,.18); }
-.opt:active { transform: scale(.97); }
-.opt .e { font-size: 32px; line-height: 1.1; }
-.opt b { font: 800 19px var(--display); }
-.opt small { color: var(--muted); font-size: 12.5px; }
-@keyframes up { to { opacity: 1; transform: none; } }
-
-/* Analyse IA */
-.log { display: grid; gap: 8px; background: rgba(29,21,48,.92); color: #fff; border-radius: 22px; padding: 16px 18px; font-size: 14px; min-height: 120px; box-shadow: 0 18px 40px rgba(29,21,48,.25); }
-.log p { margin: 0; position: relative; padding-left: 24px; animation: logline .4s ease both; }
-.log p::before { content: "✓"; position: absolute; left: 0; color: var(--mint); font-weight: 800; }
-.log p.wait::before { content: "•"; color: var(--peach); animation: blink 1s infinite; }
-.log p b { color: var(--peach); font-weight: 700; }
-@keyframes logline { from { opacity: 0; transform: translateX(-8px); } }
-@keyframes blink { 50% { opacity: .2; } }
-.log .choice { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
-.log .choice button { border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.08); color: #fff; border-radius: 12px; padding: 8px 12px; cursor: pointer; font-weight: 700; font-size: 13px; }
-
-/* Résultat */
-.tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; padding: 6px; border-radius: 18px; background: var(--glass); backdrop-filter: blur(12px); border: 1px solid var(--line); }
-.tabs button { border: 0; background: none; padding: 11px 4px; border-radius: 13px; cursor: pointer; color: var(--muted); font-weight: 800; font-size: 14px; transition: all .3s; }
-.tabs button[aria-pressed="true"] { background: var(--ink); color: #fff; }
-.tabs .ld { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--pink); margin-left: 6px; vertical-align: middle; animation: blink 1s infinite; }
-.chips { display: flex; flex-wrap: wrap; gap: 6px; }
-.chips span { font-size: 12.5px; font-weight: 700; padding: 6px 10px; border-radius: 10px; background: #fff; border: 1px solid var(--line); }
-.piece { display: grid; grid-template-columns: 86px minmax(0, 1fr); gap: 14px; align-items: center; background: var(--glass); backdrop-filter: blur(14px); border: 1px solid rgba(255,255,255,.8); border-radius: 22px; padding: 12px; box-shadow: 0 10px 26px rgba(29,21,48,.08); }
-.piece .ph { width: 86px; aspect-ratio: 3 / 4; border-radius: 14px; overflow: hidden; background: #fff; }
-.piece .ph img { width: 100%; height: 100%; object-fit: cover; }
-.piece b { font: 800 18px/1.15 var(--display); display: block; }
-.piece .price { font-weight: 800; background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; font-variant-numeric: tabular-nums; }
-.piece small { color: var(--muted); display: block; font-size: 13px; margin-top: 3px; }
-.why { margin: 0; font-size: 14.5px; color: var(--muted); }
-.why b { color: var(--ink); }
-.row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+/* --- éditeur --- */
+.editor { display: grid; gap: 20px; }
+.prev { position: relative; max-width: 330px; width: 100%; margin: 0 auto; }
+.prev .card { box-shadow: 0 24px 50px rgba(28,23,18,.2); }
+.form { display: grid; gap: 12px; }
+.form label { display: grid; gap: 5px; font-size: 13px; font-weight: 700; color: var(--muted); }
+.form input, .form textarea { width: 100%; padding: 13px 14px; border-radius: 14px; border: 1px solid var(--line); background: var(--paper); font-size: 15px; color: var(--ink); }
+.form textarea { min-height: 90px; resize: vertical; }
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+@media (max-width: 520px) { .row2 { grid-template-columns: 1fr; } }
+.form input[type=datetime-local] { min-width: 0; }
+.switch { display: flex !important; align-items: center; justify-content: space-between; gap: 10px; background: var(--paper); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; color: var(--ink) !important; font-size: 15px !important; }
+.switch input { width: 46px; height: 26px; appearance: none; background: #ddd2c4; border-radius: 99px; position: relative; cursor: pointer; transition: background .2s; padding: 0; border: 0; flex: none; }
+.switch input::after { content: ""; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: #fff; transition: transform .2s; }
+.switch input:checked { background: var(--acc); }
+.switch input:checked::after { transform: translateX(20px); }
+.others { display: flex; gap: 8px; overflow-x: auto; padding: 4px 2px 8px; }
+.others button { flex: none; width: 64px; padding: 0; border: 2px solid transparent; border-radius: 12px; background: none; cursor: pointer; }
+.others button[aria-pressed="true"] { border-color: var(--acc); }
+.others .card { border-radius: 10px; }
 .note { font-size: 13px; color: var(--muted); text-align: center; margin: 0; }
-.credit { font-size: 11px; color: var(--muted); text-align: center; }
-.credit a { color: inherit; }
-.link { background: none; border: 0; color: var(--muted); text-decoration: underline; cursor: pointer; justify-self: center; font-size: 14px; font-weight: 600; }
-@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01s !important; animation-iteration-count: 1 !important; transition: none !important; } .opt { opacity: 1; transform: none; } }
 
-/* Ordinateur : deux colonnes, visuel à gauche, contenu à droite */
-.col { display: grid; gap: 18px; min-width: 0; align-content: start; }
+/* --- partage --- */
+.sharebox { background: var(--paper); border: 1px solid var(--line); border-radius: 22px; padding: 18px; display: grid; gap: 12px; }
+.linkrow { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
+.linkrow input { padding: 13px; border-radius: 12px; border: 1px solid var(--line); background: var(--bg); min-width: 0; font-size: 14px; }
+.btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+#qr { display: grid; place-items: center; padding: 10px; background: #fff; border-radius: 14px; }
+#qr img, #qr canvas { width: 150px !important; height: 150px !important; }
+.resp { display: grid; gap: 8px; }
+.resp .r { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; background: var(--bg); border-radius: 12px; padding: 10px 12px; font-size: 14px; }
+.resp .tot { display: flex; gap: 10px; flex-wrap: wrap; font-weight: 800; }
+.resp .tot span { background: var(--bg); border-radius: 99px; padding: 6px 12px; }
+.mylist { display: grid; gap: 10px; }
+.mylist button { display: grid; grid-template-columns: 54px 1fr auto; gap: 12px; align-items: center; text-align: left; border: 1px solid var(--line); background: var(--paper); border-radius: 16px; padding: 10px; cursor: pointer; }
+.mylist .card { border-radius: 8px; }
+
+/* --- l'enveloppe (vue du destinataire) --- */
+.open { position: fixed; inset: 0; z-index: 50; overflow-y: auto; background: var(--o-bg, #f4ece2); }
+.ostage { min-height: 100vh; min-height: 100dvh; display: grid; place-items: center; padding: 30px 18px; perspective: 1400px; }
+.env { position: relative; width: min(86vw, 380px); aspect-ratio: 1.45; cursor: pointer; transform-style: preserve-3d; animation: arrive 1s cubic-bezier(.2,.8,.2,1) both; }
+@keyframes arrive { from { opacity: 0; transform: translateY(40px) rotate(-4deg) scale(.9); } }
+.env .eback, .env .front, .env .flap { position: absolute; inset: 0; background: var(--e-paper); }
+.env .eback { border-radius: 10px; box-shadow: 0 30px 60px rgba(0,0,0,.25); }
+.env .front { clip-path: polygon(0 0, 50% 55%, 100% 0, 100% 100%, 0 100%); border-radius: 10px; z-index: 4; background: linear-gradient(170deg, color-mix(in srgb, var(--e-paper) 92%, #fff), var(--e-paper)); }
+.env .front::after { content: ""; position: absolute; inset: 0; background: linear-gradient(35deg, transparent 49.6%, rgba(0,0,0,.08) 50%, transparent 50.4%), linear-gradient(-35deg, transparent 49.6%, rgba(0,0,0,.08) 50%, transparent 50.4%); }
+.env .flap { clip-path: polygon(0 0, 100% 0, 50% 58%); transform-origin: top; z-index: 5; transition: transform .9s cubic-bezier(.5,0,.3,1) .25s, z-index 0s .7s; background: linear-gradient(180deg, color-mix(in srgb, var(--e-paper) 80%, #000), var(--e-paper)); border-radius: 10px 10px 0 0; }
+.env .seal { position: absolute; left: 50%; top: 52%; width: 64px; height: 64px; margin: -32px 0 0 -32px; border-radius: 50%; z-index: 6; display: grid; place-items: center; font: 700 26px "Playfair Display", serif; color: #fff7e8; background: radial-gradient(circle at 35% 30%, color-mix(in srgb, var(--e-seal) 80%, #fff), var(--e-seal) 60%, color-mix(in srgb, var(--e-seal) 70%, #000)); box-shadow: 0 4px 10px rgba(0,0,0,.3), inset 0 0 0 4px rgba(255,255,255,.12); transition: transform .4s, opacity .4s; }
+.env .inner { position: absolute; left: 6%; right: 6%; top: 6%; bottom: 6%; z-index: 3; border-radius: 8px; overflow: hidden; transition: transform 1.1s cubic-bezier(.3,.7,.2,1) .9s; }
+.env .inner .card { border-radius: 8px; }
+.env.opened .seal { transform: scale(1.4); opacity: 0; }
+.env.opened .flap { transform: rotateX(180deg); z-index: 1; }
+.env.opened .inner { transform: translateY(-70%); }
+.ohint { position: absolute; left: 0; right: 0; bottom: -64px; text-align: center; color: var(--o-ink, #3b2a14); font-weight: 700; animation: pulse 1.6s ease-in-out infinite; }
+.ohint small { display: block; font-weight: 500; opacity: .75; }
+@keyframes pulse { 50% { opacity: .45; } }
+.env.opened .ohint { opacity: 0; animation: none; transition: opacity .3s; }
+.reveal { display: grid; gap: 18px; justify-items: center; width: min(92vw, 420px); margin: 0 auto; padding: 24px 0 60px; }
+.reveal .card { box-shadow: 0 30px 70px rgba(0,0,0,.3); animation: pop 1s cubic-bezier(.2,.9,.2,1.1) both; }
+@keyframes pop { from { opacity: 0; transform: translateY(60px) scale(.7) rotate(-3deg); } }
+.panel { width: 100%; background: rgba(255,255,255,.92); backdrop-filter: blur(12px); border-radius: 22px; padding: 18px; display: grid; gap: 12px; color: #1c1712; animation: in .6s .5s both; }
+.panel h3 { margin: 0; font: 700 22px var(--title); }
+.count { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; text-align: center; }
+.count div { background: #f4ece2; border-radius: 14px; padding: 10px 4px; }
+.count b { display: block; font: 700 24px var(--title); }
+.count small { font-size: 11px; color: var(--muted); }
+.choice3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.choice3 button { border: 1px solid var(--line); background: #fff; border-radius: 14px; padding: 12px 4px; font-weight: 800; cursor: pointer; }
+.choice3 button[aria-pressed="true"] { background: var(--ink); color: #fff; border-color: var(--ink); }
+.made { font-size: 13px; color: var(--o-ink, #3b2a14); opacity: .8; text-align: center; }
+.made a { color: inherit; font-weight: 800; }
+footer { text-align: center; font-size: 12px; color: var(--muted); margin-top: 30px; }
+footer a { color: inherit; }
+
 @media (min-width: 900px) {
-  .app { max-width: 1140px; padding-left: 40px; padding-right: 40px; }
-  .top { grid-template-columns: 44px auto 1fr; gap: 16px; margin-bottom: 26px; }
-  .logo { grid-column: 2; text-align: left; font-size: 30px; }
-  .tabbar { top: 18px; bottom: auto; left: auto; right: max(24px, calc((100vw - 1140px) / 2 + 40px)); transform: none; }
-  .app { padding-bottom: 48px !important; }
-  .screen.split { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: 64px; align-items: start; }
-  .screen.split > .media { position: sticky; top: 24px; width: 100%; max-width: 500px; justify-self: center; }
-  .screen.split > .showcase { height: 520px; max-width: 520px; }
-  .screen.split .col { padding-top: 10px; }
-  .screen.solo { max-width: 760px; margin: 0 auto; width: 100%; }
-  .screen.solo .options { grid-template-columns: repeat(3, 1fr); }
-  h1 { font-size: 68px; }
-  h2 { font-size: 46px; }
-  .sub { font-size: 18px; }
-  .cta, .ghost { max-width: 460px; }
-  .row .cta, .row .ghost { max-width: none; }
-  .marquee { margin: 6px 0; border-radius: 14px; }
-  .opt { padding: 24px 18px; }
-  .opt:hover { transform: translateY(-3px); }
+  .hero { grid-template-columns: 1.1fr 1fr; }
+  .hero .show { height: 440px; } .hero .show .card { width: 250px; }
+  .occs { grid-template-columns: repeat(6, 1fr); }
+  .grid { grid-template-columns: repeat(4, 1fr); }
+  .editor { grid-template-columns: 360px 1fr; align-items: start; }
+  .editor .prev { position: sticky; top: 20px; }
+  .cats .catc { min-height: 220px; }
 }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01s !important; animation-iteration-count: 1 !important; transition-duration: .01s !important; } }
 </style>
 <!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "cdd9ad7e2e6f44e39d21157ecadb644e"}'></script><!-- End Cloudflare Web Analytics -->
 </head>
 <body>
-
 <div class="app">
-  <div class="top"><button class="back" type="button" id="back" aria-label="Retour" hidden>←</button><div class="logo">look<span>miz</span></div></div>
+  <div class="top"><button class="back" type="button" id="back" aria-label="Retour" hidden>←</button><button class="logo" type="button" data-go="">look<span>miz</span></button><span class="sp"></span><button class="mine" type="button" data-go="mes-cartes">Mes cartes</button></div>
   <main id="app"></main>
-  <input id="photo" type="file" accept="image/*" hidden>
-  <input id="garment" type="file" accept="image/*" capture="environment" hidden>
-  <input id="garment2" type="file" accept="image/*" hidden>
+  <footer>© Lookmiz · <a href="cgv.html">Conditions</a></footer>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
-<script type="module">
+<div class="open" id="open" hidden></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="cartes.js"></script>
+<script>
 const $ = s => document.querySelector(s);
-const DATA = {"g": {"30": {"u": "https://images.unsplash.com/photo-1772571157276-a76fa80f2a1a?ixid=M3wxMTE2NDI3fDB8MXxzZWFyY2h8N3x8cmVkJTIwZHJlc3MlMjBoYW5nZXJ8ZW58MXx8fHwxNzkzMjE4MDg1fDA&ixlib=rb-4.1.0", "by": "atelierbyvineeth ...", "user": "https://unsplash.com/@atelierbyvineeth", "n": "Robe rouge cintrée", "p": 89, "m": "XAH", "a": "Escarpins nude et pochette dorée", "c": "one-pieces"}, "40": {"u": "https://images.unsplash.com/photo-1687380330652-7badcb8f44c3?ixid=M3wxMTE2NDI3fDB8MXxzZWFyY2h8NXx8YmxhY2slMjBkcmVzcyUyMGhhbmdlcnxlbnwxfHx8fDE3OTMyMTgwODZ8MA&ixlib=rb-4.1.0", "by": "Jason Leung", "user": "https://unsplash.com/@ninjason", "n": "Robe portefeuille noire", "p": 79, "m": "XOAH", "a": "Talons fins et bijoux dorés", "c": "one-pieces"}, "14": {"u": "https://images.unsplash.com/photo-1604531825858-a8e24ed6b43d?ixid=M3wxMTE2NDI3fDB8MXxzZWFyY2h8M3x8ZXZlbmluZyUyMGdvd24lMjBoYW5nZXJ8ZW58MXx8fHwxNzkzMjE4MDg1fDA&ixlib=rb-4.1.0", "by": "Nathan Walker", "user": "https://unsplash.com/@nwphoto", "n": "Robe en dentelle blanche", "p": 95, "m": "AVHX", "a": "Ballerines et petit sac", "c": "one-pieces"}, "69": {"u": "https://images.unsplash.com/photo-1721824299322-6b77921d8c14?ixid=M3wxMTE2NDI3fDB8MXxzZWFyY2h8MTB8fGZsb3JhbCUyMGRyZXNzJTIwaGFuZ2VyfGVufDF8fHx8MTc5MzIxODA4Nnww&ixlib=rb-4.1.0", "by": "Lisa Anna", "user": "https://unsplash.com/@lisaanna195", "n": "Robe fleurie manches longues", "p": 69, "m": "AVHO", "a": "Bottines et veste en jean", "c": "one-pieces"}, "11": {"u": "https://images.unsplash.com/photo-1578747522731-9e5a179b02f7?ixid=M3wxMTE2NDI3fDB8MXxzZWFyY2h8MTJ8fGRyZXNzJTIwb24lMjBoYW5nZXJ8ZW58MXx8fHwxNzkzMjE4MDg1fDA&ixlib=rb-4.1.0", "by": "Content Pixie", "user": "https://unsplash.com/@contentpixie", "n": "Top blanc sans manches", "p": 29, "m": "AHVX", "a": "Pantalon taille haute et mocassins", "c": "tops"}, "175": {"u": "https://images.unsplash.com/photo-1761499101317-e32c4ed50b2f?ixid=M3wxMTE2NDI3fDB8MXxzZWFyY2h8OHx8bWVuJTIwYmxhemVyJTIwaGFuZ2VyfGVufDF8fHx8MTc5MzIxODA4OHww&ixlib=rb-4.1.0", "by": "Rodrigo Rodrigues | WOLF Λ R T", "user": "https://unsplash.com/@wolfart32", "n": "Blazer clair", "p": 99, "m": "AHOX", "a": "Chemise blanche et pantalon droit", "c": "tops"}, "192": {"u": "https://images.unsplash.com/photo-1620799140188-3b2a02fd9a77?ixid=M3wxMTE2NDI3fDB8MXxzZWFyY2h8MXx8aG9vZGllJTIwZmxhdCUyMGxheXxlbnwxfHx8fDE3OTMyMTgwODh8MA&ixlib=rb-4.1.0", "by": "Mediamodifier", "user": "https://unsplash.com/@mediamodifier", "n": "Sweat à capuche blanc", "p": 45, "m": "AVHXO", "a": "Jean clair et baskets blanches", "c": "tops"}, "165": {"u": "https://images.unsplash.com/photo-1564584217132-2271feaeb3c5?ixid=M3wxMTE2NDI3fDB8MXxzZWFyY2h8MTB8fG1lbiUyMHNoaXJ0JTIwb24lMjBoYW5nZXJ8ZW58MXx8fHwxNzkzMjE4MDg3fDA&ixlib=rb-4.1.0", "by": "Cristofer Maximilian", "user": "https://unsplash.com/@cristofer", "n": "T-shirt gris chiné", "p": 19, "m": "VHXAO", "a": "Jean droit et baskets", "c": "tops"}, "91": {"u": "https://images.unsplash.com/photo-1667283831517-5b747b3c17c8?ixid=M3wxMTE2NDI3fDB8MXxzZWFyY2h8OHx8YmxhemVyJTIwb24lMjBoYW5nZXJ8ZW58MXx8fHwxNzkzMjE4MDg2fDA&ixlib=rb-4.1.0", "by": "Vetrivel Viswanathar", "user": "https://unsplash.com/@vetrivikashviswanathar", "n": "Costume bleu marine", "p": 189, "m": "VHXAO", "a": "Chemise blanche et derbies", "c": "tops"}, "89": {"u": "https://images.unsplash.com/photo-1667284152861-36e03571486a?ixid=M3wxMTE2NDI3fDB8MXxzZWFyY2h8Nnx8YmxhemVyJTIwb24lMjBoYW5nZXJ8ZW58MXx8fHwxNzkzMjE4MDg2fDA&ixlib=rb-4.1.0", "by": "Vetrivel Viswanathar", "user": "https://unsplash.com/@vetrivikashviswanathar", "n": "Veste bordeaux", "p": 149, "m": "VHX", "a": "Col roulé noir et mocassins", "c": "tops"}, "85": {"u": "https://images.unsplash.com/photo-1598808503746-f34c53b9323e?ixid=M3wxMTE2NDI3fDB8MXxzZWFyY2h8Mnx8YmxhemVyJTIwb24lMjBoYW5nZXJ8ZW58MXx8fHwxNzkzMjE4MDg2fDA&ixlib=rb-4.1.0", "by": "LOGAN WEAVER | @LGNWVR", "user": "https://unsplash.com/@lgnwvr", "n": "Costume noir", "p": 199, "m": "VHXA", "a": "Cravate fine et souliers noirs", "c": "tops"}, "95": {"u": "https://images.unsplash.com/photo-1784749615306-10675f31bae2?ixid=M3wxMTE2NDI3fDB8MXxzZWFyY2h8MTJ8fGJsYXplciUyMG9uJTIwaGFuZ2VyfGVufDF8fHx8MTc5MzIxODA4Nnww&ixlib=rb-4.1.0", "by": "Alexander Mass", "user": "https://unsplash.com/@alexandermassph", "n": "Veste camel", "p": 129, "m": "HOAVX", "a": "Chemise ouverte et chino", "c": "tops"}, "159": {"u": "https://images.unsplash.com/photo-1611312449412-6cefac5dc3e4?ixid=M3wxMTE2NDI3fDB8MXxzZWFyY2h8NHx8bWVuJTIwc2hpcnQlMjBvbiUyMGhhbmdlcnxlbnwxfHx8fDE3OTMyMTgwODd8MA&ixlib=rb-4.1.0", "by": "Caio Coelho", "user": "https://unsplash.com/@smokthebikini", "n": "Chemise à carreaux", "p": 39, "m": "VHXAO", "a": "Jean brut et bottines", "c": "tops"}, "182": {"u": "https://images.unsplash.com/photo-1625910513413-c23b8bb81cba?ixid=M3wxMTE2NDI3fDB8MXxzZWFyY2h8M3x8cG9sbyUyMHNoaXJ0fGVufDF8fHx8MTc5MzIxODA4OHww&ixlib=rb-4.1.0", "by": "Clément Vatte", "user": "https://unsplash.com/@clement_vatte", "n": "Polo noir", "p": 35, "m": "VHXA", "a": "Chino beige et baskets", "c": "tops"}, "84": {"u": "https://images.unsplash.com/photo-1592343516109-362f7bd871aa?ixid=M3wxMTE2NDI3fDB8MXxzZWFyY2h8MXx8YmxhemVyJTIwb24lMjBoYW5nZXJ8ZW58MXx8fHwxNzkzMjE4MDg2fDA&ixlib=rb-4.1.0", "by": "Victoria Priessnitz", "user": "https://unsplash.com/@victoriapriessnitz", "n": "Veste de costume noire", "p": 119, "m": "VHXAO", "a": "Chemise blanche et pantalon gris", "c": "tops"}, "83": {"u": "https://images.unsplash.com/photo-1621773881532-fe65715b5137?ixid=M3wxMTE2NDI3fDB8MXxzZWFyY2h8MTJ8fGJsb3VzZSUyMG9uJTIwaGFuZ2VyfGVufDF8fHx8MTc5MzIxODA4Nnww&ixlib=rb-4.1.0", "by": "Lisanto 李奕良", "user": "https://unsplash.com/@lisanto_", "n": "Chemise blanche", "p": 39, "m": "VHXAO", "a": "Pantalon fuselé et ceinture cuir", "c": "tops"}, "180": {"u": "https://images.unsplash.com/photo-1581655353564-df123a1eb820?ixid=M3wxMTE2NDI3fDB8MXxzZWFyY2h8MXx8cG9sbyUyMHNoaXJ0fGVufDF8fHx8MTc5MzIxODA4OHww&ixlib=rb-4.1.0", "by": "Haryo Setyadi", "user": "https://unsplash.com/@uyk", "n": "T-shirt blanc", "p": 19, "m": "VHXAO", "a": "Jogging et baskets", "c": "tops"}, "183": {"u": "https://images.unsplash.com/photo-1671438118097-479e63198629?ixid=M3wxMTE2NDI3fDB8MXxzZWFyY2h8NHx8cG9sbyUyMHNoaXJ0fGVufDF8fHx8MTc5MzIxODA4OHww&ixlib=rb-4.1.0", "by": "Mediamodifier", "user": "https://unsplash.com/@mediamodifier", "n": "Polo blanc", "p": 35, "m": "VHXAO", "a": "Short chino et sneakers", "c": "tops"}}, "L": {"f_soiree": [30, 40, 14], "f_rdv": [14, 30, 69], "f_travail": [175, 11, 69], "f_mariage": [69, 14, 30], "f_sport": [192, 165, 11], "f_casual": [165, 192, 69], "h_soiree": [91, 89, 85], "h_rdv": [95, 159, 182], "h_travail": [84, 83, 175], "h_mariage": [91, 175, 85], "h_sport": [180, 192, 182], "h_casual": [183, 159, 180]}};
-const UTM = '?utm_source=lookmiz&utm_medium=referral';
-const AMB = [{"u": "https://images.unsplash.com/photo-1713354884883-6a419c1b104b?ixid=M3wxMTE2NDI3fDB8MXxzZWFyY2h8Mnx8bW9kZWwlMjBicmlnaHQlMjBvdXRmaXQlMjBzdHVkaW98ZW58MXwxfHx8MTc5MzY1NTY4MXww&ixlib=rb-4.1.0", "by": "Look Studio", "user": "https://unsplash.com/@lookphoto"}, {"u": "https://images.unsplash.com/photo-1789687088310-3abb4194ec69?ixid=M3wxMTE2NDI3fDB8MXxzZWFyY2h8NHx8bWFuJTIwZmFzaGlvbiUyMGNvbG9yZnVsJTIwd2FsbHxlbnwxfDF8fHwxNzkzNjU1Njc5fDA&ixlib=rb-4.1.0", "by": "McFollis", "user": "https://unsplash.com/@thisismcfollis"}, {"u": "https://images.unsplash.com/photo-1625503336205-fba8025fa0f1?ixid=M3wxMTE2NDI3fDB8MXxzZWFyY2h8NXx8bW9kZWwlMjBicmlnaHQlMjBvdXRmaXQlMjBzdHVkaW98ZW58MXwxfHx8MTc5MzY1NTY4MXww&ixlib=rb-4.1.0", "by": "Olha Ivanova", "user": "https://unsplash.com/@ollha"}, {"u": "https://images.unsplash.com/photo-1604942926673-48ee8a893c34?ixid=M3wxMTE2NDI3fDB8MXxzZWFyY2h8OHx8ZmFzaGlvbiUyMG1vZGVsJTIwY29sb3JmdWwlMjBiYWNrZ3JvdW5kfGVufDF8MXx8fDE3OTM2NTU2Nzh8MA&ixlib=rb-4.1.0", "by": "Khaled Ghareeb", "user": "https://unsplash.com/@khaledkagii"}, {"u": "https://images.unsplash.com/photo-1509631179647-0177331693ae?ixid=M3wxMTE2NDI3fDB8MXxzZWFyY2h8MXx8bW9kZWwlMjBicmlnaHQlMjBvdXRmaXQlMjBzdHVkaW98ZW58MXwxfHx8MTc5MzY1NTY4MXww&ixlib=rb-4.1.0", "by": "Ahmed Carter", "user": "https://unsplash.com/@ahmedcarter"}, {"u": "https://images.unsplash.com/photo-1638409867784-4ed76ed742a1?ixid=M3wxMTE2NDI3fDB8MXxzZWFyY2h8NXx8ZmFzaGlvbiUyMG1vZGVsJTIwY29sb3JmdWwlMjBiYWNrZ3JvdW5kfGVufDF8MXx8fDE3OTM2NTU2Nzh8MA&ixlib=rb-4.1.0", "by": "Michael Satterfield", "user": "https://unsplash.com/@satterfieldgroup"}, {"u": "https://images.unsplash.com/photo-1652184513381-9755426e7fd2?ixid=M3wxMTE2NDI3fDB8MXxzZWFyY2h8Mnx8ZmFzaGlvbiUyMGVkaXRvcmlhbCUyMGNvbG9yfGVufDF8MXx8fDE3OTM2NTU2Nzl8MA&ixlib=rb-4.1.0", "by": "Edward Howell", "user": "https://unsplash.com/@edwardhowellphotography"}, {"u": "https://images.unsplash.com/photo-1779398645805-d0ff0a93665f?ixid=M3wxMTE2NDI3fDB8MXxzZWFyY2h8M3x8ZmFzaGlvbiUyMHBob3Rvc2hvb3QlMjB2aWJyYW50fGVufDF8MXx8fDE3OTM2NTU2ODF8MA&ixlib=rb-4.1.0", "by": "ola szkolda", "user": "https://unsplash.com/@olaszkolda"}];
-const pic = (g, w = 700) => `${g.u}&w=${w}&q=75&fm=jpg&fit=crop&crop=entropy`;
-const credit = g => `Photo de la pièce : <a href="${g.user}${UTM}" target="_blank" rel="noopener">${g.by}</a> / <a href="https://unsplash.com/${UTM}" target="_blank" rel="noopener">Unsplash</a>`;
-const wait = ms => new Promise(r => setTimeout(r, ms));
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const SB = 'https://ctgjnpxdaqdnrcxjwnkp.supabase.co/rest/v1/', SBK = 'sb_publishable_mz--wiLicR1GMDd2b3Fd2g_ewLTbr9h';
+const sb = (path, body) => fetch(SB + path, { method: 'POST', headers: { apikey: SBK, 'Content-Type': 'application/json', Prefer: 'return=minimal' }, body: JSON.stringify(body) });
+const occOf = id => OCC.find(o => o.id === id);
+const mdlOf = id => MODELES.find(m => m.id === id);
+const store = { get: k => { try { return JSON.parse(localStorage.getItem('lmz-' + k)); } catch (_) { return null; } }, set: (k, v) => { try { localStorage.setItem('lmz-' + k, JSON.stringify(v)); } catch (_) {} } };
 
-const MORPHS = {
-  X: { n: 'Sablier', d: 'taille marquée, épaules et hanches équilibrées', t: 'On suit ta taille sans cacher tes courbes.' },
-  A: { n: 'Triangle', d: 'hanches un peu plus larges que les épaules', t: 'On attire le regard vers le haut.' },
-  V: { n: 'Triangle inversé', d: 'épaules plus larges que les hanches', t: 'On équilibre avec du volume en bas.' },
-  H: { n: 'Rectangle', d: 'épaules, taille et hanches alignées', t: 'On crée une taille avec des coupes structurées.' },
-  O: { n: 'Ronde', d: 'volume au centre', t: 'On allonge avec des lignes verticales.' }
-};
-const OCCS = { soiree: ['🥂', 'Soirée', 'Chic et lumineux', '#2f6bff'], rdv: ['🌹', 'Rendez-vous', 'Séduisant, pas trop', '#ff8a5c'], travail: ['💼', 'Travail', 'Net et assuré', '#7b5cff'],
-  mariage: ['💍', 'Mariage', 'Élégant', '#ffb37a'], sport: ['⚡', 'Sport', 'Beau et confortable', '#3dd6b5'], casual: ['☀️', 'Week-end', 'Facile et stylé', '#ffd23f'] };
-const state = { pv: 1, plan: 'an', signup: true, quota: null, step: 0, photo: null, o: null, g: null, m: null, info: [], pick: 0, mode: 'look', garment: null, gid: 0, saved: false };
-try { const p = localStorage.getItem('cabine-photo'); if (p) { state.photo = p; state.saved = true; } } catch (_) {}
-const tries = {};
-const looks = () => DATA.L[state.g + '_' + state.o].map(id => ({ id, ...DATA.g[id] })).map(x => ({ ...x, fit: x.m.includes(state.m) ? 1 : 0 })).sort((a, b) => b.fit - a.fit);
+/* ---------- dessin d'une carte ---------- */
+function cardVars(m) { const [bg, ink, acc] = PAL[m.pal]; return `--c-bg:${bg};--c-ink:${ink};--c-acc:${acc}`; }
+function defaults(o) { return { titre: o.titre, noms: '', msg: o.msg, date: '', lieu: '', adresse: '', rsvp: o.cat === 'inv', de: '' }; }
+function cardHTML(m, f, { live = false } = {}) {
+  const o = occOf(m.occ), inv = o.cat === 'inv';
+  const when = f.date ? new Date(f.date) : null;
+  const dateTxt = when && !isNaN(when) ? when.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' }) + (f.date.includes('T') ? ' · ' + when.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : '') : '';
+  return `<div class="card f-${m.font}" style="${cardVars(m)}" data-anim="${m.anim}">
+    ${live ? '<canvas></canvas>' : ''}
+    ${o.motif.map((x, i) => `<span class="mot m${i + 1}">${x}</span>`).join('')}
+    <div class="ct"><span class="pre">${esc(o.nom)}</span>
+      <h3 class="tt">${esc(f.titre || o.titre)}</h3>
+      ${f.noms ? `<div class="nm">${esc(f.noms)}</div>` : ''}
+      <div class="msg">${esc(f.msg)}</div>
+      ${inv && (dateTxt || f.lieu) ? `<div class="info">${dateTxt ? '📅 ' + esc(dateTxt) : ''}${dateTxt && f.lieu ? '<br>' : ''}${f.lieu ? '📍 ' + esc(f.lieu) : ''}</div>` : ''}
+      ${!inv && f.de ? `<div class="sig">${esc(f.de)}</div>` : ''}</div>
+  </div>`;
+}
 
-/* ---------- Vision dans le navigateur : la photo ne quitte pas le téléphone pour l'analyse ---------- */
-let poseP, segP, faceP, visionP;
-const vision = () => visionP ||= (async () => {
-  const V = await import('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs');
-  return { V, fs: await V.FilesetResolver.forVisionTasks('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm') };
-})();
-function loadPose() {
-  return poseP ||= vision().then(({ V, fs }) => V.PoseLandmarker.createFromOptions(fs, {
-    baseOptions: { modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task' }, runningMode: 'IMAGE', numPoses: 1 }));
-}
-function loadSeg() {
-  return segP ||= vision().then(({ V, fs }) => V.ImageSegmenter.createFromOptions(fs, {
-    baseOptions: { modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_segmenter/float16/latest/selfie_segmenter.tflite' },
-    runningMode: 'IMAGE', outputCategoryMask: true, outputConfidenceMasks: false }));
-}
-function loadFace() {
-  return faceP ||= (async () => {
-    const fa = await import('https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.13/dist/face-api.esm.js');
-    try { await fa.tf.setBackend('webgl'); } catch (_) { await fa.tf.setBackend('cpu'); }
-    await fa.tf.ready();
-    const M = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.13/model/';
-    await fa.nets.tinyFaceDetector.loadFromUri(M); await fa.nets.ageGenderNet.loadFromUri(M);
-    return fa;
-  })();
-}
-const imgOf = src => new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = src; });
-
-// Largeur de la silhouette sur une ligne de l'image (masque de segmentation), autour du centre du corps
-function rowWidth(mask, W, H, y, cx) {
-  y = Math.max(0, Math.min(H - 1, Math.round(y))); cx = Math.round(cx);
-  let l = cx, r = cx; const on = x => mask[y * W + x] > .5;
-  if (!on(cx)) return 0;
-  while (l > 0 && on(l - 1)) l--; while (r < W - 1 && on(r + 1)) r++;
-  return r - l + 1;
-}
-async function analyse(img) {
-  const out = { ok: false };
-  try {
-    const pl = await loadPose(), res = pl.detect(img), lm = res.landmarks && res.landmarks[0];
-    if (lm) {
-      out.ok = true; out.lm = lm;
-      const W = img.naturalWidth, H = img.naturalHeight, P = i => ({ x: lm[i].x * W, y: lm[i].y * H, v: lm[i].visibility ?? 1 });
-      const sL = P(11), sR = P(12), hL = P(23), hR = P(24), aL = P(27), aR = P(28);
-      const shY = (sL.y + sR.y) / 2, hpY = (hL.y + hR.y) / 2, cx = (hL.x + hR.x + sL.x + sR.x) / 4, torso = Math.max(1, hpY - shY);
-      let S = Math.hypot(sL.x - sR.x, sL.y - sR.y) * 1.18, Wa = 0, Hi = 0;
-      try {
-        const seg = await loadSeg(), sr = seg.segment(img), mk = sr.categoryMask;
-        const raw = mk.getAsUint8Array(), mw = mk.width, mh = mk.height, sx = mw / W, sy = mh / H;
-        const body = raw[Math.round((shY + torso * .5) * sy) * mw + Math.round(cx * sx)];   // valeur du masque au centre du corps
-        const m = Array.from(raw, v => v === body ? 1 : 0);
-        Wa = rowWidth(m, mw, mh, (shY + torso * .62) * sy, cx * sx) / sx;
-        Hi = rowWidth(m, mw, mh, (hpY + torso * .08) * sy, cx * sx) / sx;
-        if (sr.close) sr.close();
-      } catch (_) {}
-      if (!Hi) Hi = Math.hypot(hL.x - hR.x, hL.y - hR.y) * 1.9;
-      if (!Wa) Wa = (S + Hi) / 2 * .85;
-      const big = Math.max(S, Hi);
-      out.ratio = S / Hi;
-      out.m = Wa / big < .78 && Math.abs(S - Hi) / big < .12 ? 'X' : S > Hi * 1.1 ? 'V' : Hi > S * 1.07 ? 'A' : Wa / big > .97 ? 'O' : 'H';
-      const bw = Wa / torso; out.build = bw < .62 ? 'élancée' : bw < .85 ? 'équilibrée' : 'pleine';
-      out.legs = (aL.v > .5 || aR.v > .5) ? ((Math.max(aL.y, aR.y) - hpY) / torso > 1.55 ? 'jambes longues' : (Math.max(aL.y, aR.y) - hpY) / torso < 1.3 ? 'buste long' : 'proportions équilibrées') : null;
-      out.geo = { shY, hpY, waY: shY + torso * .62, hiY: hpY + torso * .08, cx, S, Wa, Hi, W, H };
+/* ---------- animations (canvas) ---------- */
+const FX = new Set();
+function startFx(cv, type, colors) {
+  const c = cv.getContext('2d'); let W, H, run = true; const dpr = Math.min(2, devicePixelRatio || 1);
+  const size = () => { const r = cv.getBoundingClientRect(); W = r.width; H = r.height; cv.width = W * dpr; cv.height = H * dpr; c.setTransform(dpr, 0, 0, dpr, 0, 0); };
+  size(); const R = (a, b) => a + Math.random() * (b - a), pick = a => a[Math.floor(Math.random() * a.length)];
+  const N = { confettis: 70, neige: 70, coeurs: 22, etoiles: 45, petales: 34, ballons: 12, lanternes: 12, feux: 0, bulles: 26, paillettes: 80 }[type] ?? 40;
+  const P = []; const make = (init) => {
+    const p = { x: R(0, W), y: init ? R(0, H) : (['ballons', 'lanternes', 'bulles', 'coeurs'].includes(type) ? H + R(10, 60) : -R(10, 60)), s: R(.6, 1.4), r: R(0, 6.28), vr: R(-.06, .06), col: pick(colors), t: R(0, 100) };
+    if (type === 'etoiles') { p.y = R(0, H); p.vy = 0; }
+    return p; };
+  for (let i = 0; i < N; i++) P.push(make(true));
+  const bursts = [];
+  const heart = (x, y, s) => { c.beginPath(); c.moveTo(x, y + s * .3); c.bezierCurveTo(x, y, x - s * .5, y, x - s * .5, y + s * .3); c.bezierCurveTo(x - s * .5, y + s * .6, x, y + s * .8, x, y + s); c.bezierCurveTo(x, y + s * .8, x + s * .5, y + s * .6, x + s * .5, y + s * .3); c.bezierCurveTo(x + s * .5, y, x, y, x, y + s * .3); c.fill(); };
+  const star = (x, y, r) => { c.beginPath(); for (let i = 0; i < 10; i++) { const a = i * Math.PI / 5 - Math.PI / 2, rr = i % 2 ? r * .45 : r; c.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr); } c.fill(); };
+  const k = W / 330;
+  function frame(tm) {
+    if (!run) return; if (!document.body.contains(cv)) { run = false; FX.delete(ctl); return; }
+    c.clearRect(0, 0, W, H);
+    for (const p of P) {
+      p.t += 1;
+      if (type === 'confettis') { p.y += 1.6 * p.s * k + .4; p.x += Math.sin(p.t / 20) * .6; p.r += p.vr * 3; c.save(); c.translate(p.x, p.y); c.rotate(p.r); c.fillStyle = p.col; c.fillRect(-4 * k, -2 * k, 8 * k * p.s, 4 * k * p.s); c.restore(); }
+      else if (type === 'neige') { p.y += .7 * p.s * k + .2; p.x += Math.sin(p.t / 40) * .4; c.globalAlpha = .9; c.fillStyle = '#fff'; c.beginPath(); c.arc(p.x, p.y, 2.2 * p.s * k, 0, 7); c.fill(); c.globalAlpha = 1; }
+      else if (type === 'coeurs') { p.y -= .8 * p.s * k + .2; p.x += Math.sin(p.t / 30) * .5; c.globalAlpha = .85; c.fillStyle = p.col; heart(p.x, p.y, 12 * p.s * k); c.globalAlpha = 1; }
+      else if (type === 'etoiles') { const a = .35 + .65 * Math.abs(Math.sin(p.t / 30 + p.r)); c.globalAlpha = a; c.fillStyle = p.col; star(p.x, p.y, 3.4 * p.s * k); c.globalAlpha = 1; }
+      else if (type === 'petales') { p.y += .9 * p.s * k + .2; p.x += Math.sin(p.t / 25) * 1.1; p.r += p.vr; c.save(); c.translate(p.x, p.y); c.rotate(p.r); c.globalAlpha = .85; c.fillStyle = p.col; c.beginPath(); c.ellipse(0, 0, 6 * p.s * k, 3.2 * p.s * k, 0, 0, 7); c.fill(); c.restore(); c.globalAlpha = 1; }
+      else if (type === 'ballons') { p.y -= .7 * p.s * k + .2; p.x += Math.sin(p.t / 45) * .4; const rr = 11 * p.s * k; c.strokeStyle = 'rgba(0,0,0,.25)'; c.lineWidth = 1; c.beginPath(); c.moveTo(p.x, p.y + rr * 1.2); c.quadraticCurveTo(p.x + 4, p.y + rr * 2, p.x, p.y + rr * 2.8); c.stroke(); c.fillStyle = p.col; c.beginPath(); c.ellipse(p.x, p.y, rr, rr * 1.2, 0, 0, 7); c.fill(); c.fillStyle = 'rgba(255,255,255,.45)'; c.beginPath(); c.ellipse(p.x - rr * .35, p.y - rr * .4, rr * .22, rr * .35, -.5, 0, 7); c.fill(); }
+      else if (type === 'lanternes') { p.y -= .45 * p.s * k + .15; p.x += Math.sin(p.t / 50) * .3; const w = 9 * p.s * k, h = 13 * p.s * k; const g = c.createRadialGradient(p.x, p.y, 0, p.x, p.y, h * 2); g.addColorStop(0, 'rgba(255,200,90,.55)'); g.addColorStop(1, 'rgba(255,200,90,0)'); c.fillStyle = g; c.beginPath(); c.arc(p.x, p.y, h * 2, 0, 7); c.fill(); c.fillStyle = '#ffb84d'; c.beginPath(); c.roundRect(p.x - w / 2, p.y - h / 2, w, h, w / 2.4); c.fill(); }
+      else if (type === 'bulles') { p.y -= .6 * p.s * k + .2; p.x += Math.sin(p.t / 35) * .6; const rr = 7 * p.s * k; c.strokeStyle = 'rgba(255,255,255,.85)'; c.lineWidth = 1.2; c.fillStyle = 'rgba(255,255,255,.18)'; c.beginPath(); c.arc(p.x, p.y, rr, 0, 7); c.fill(); c.stroke(); }
+      else if (type === 'paillettes') { p.y += .5 * p.s * k + .15; p.x += Math.sin(p.t / 30) * .3; const a = .3 + .7 * Math.abs(Math.sin(p.t / 12 + p.r)); c.globalAlpha = a; c.fillStyle = p.col; star(p.x, p.y, 2.2 * p.s * k); c.globalAlpha = 1; }
+      if (p.y > H + 70 || p.y < -70 || p.x < -40 || p.x > W + 40) Object.assign(p, make(false));
     }
-  } catch (e) { out.err = String(e); }
+    if (type === 'feux') {
+      if (Math.random() < .035) { const x = R(W * .15, W * .85), y = R(H * .12, H * .5), col = pick(colors); for (let i = 0; i < 46; i++) { const a = Math.random() * 6.28, v = R(.8, 2.6) * k; bursts.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, l: 1, col }); } }
+      for (let i = bursts.length - 1; i >= 0; i--) { const b = bursts[i]; b.x += b.vx; b.y += b.vy; b.vy += .025; b.vx *= .985; b.l -= .012; if (b.l <= 0) { bursts.splice(i, 1); continue; } c.globalAlpha = b.l; c.fillStyle = b.col; c.beginPath(); c.arc(b.x, b.y, 1.8 * k, 0, 7); c.fill(); }
+      c.globalAlpha = 1;
+    }
+    requestAnimationFrame(frame);
+  }
+  const ctl = { stop() { run = false; } }; FX.add(ctl); requestAnimationFrame(frame);
+  return ctl;
+}
+const COLS = { confettis: null, neige: null, coeurs: ['#ff6b8b', '#ff9fb3', '#e0435f'], etoiles: null, petales: ['#ffd6e0', '#ffffff', '#f7b6c7'], ballons: null, lanternes: null, feux: null, bulles: null, paillettes: null };
+function liveCards(root = document) {
+  root.querySelectorAll('.card canvas').forEach(cv => { if (cv.dataset.on) return; cv.dataset.on = 1;
+    const card = cv.closest('.card'), type = card.dataset.anim, acc = getComputedStyle(card).getPropertyValue('--c-acc').trim();
+    startFx(cv, type, COLS[type] || [acc, '#ffffff', '#ffd166', '#ef476f', '#06d6a0', '#8a5cff']); });
+}
+
+/* ---------- écrans ---------- */
+const state = { route: '', f: null, mid: null };
+const occGrid = list => `<div class="occs">${list.map(o => `<button class="occ" type="button" data-go="o-${o.id}"><span>${o.emo}</span><b>${esc(o.nom)}</b></button>`).join('')}</div>`;
+const demo = f => ({ ...f, noms: f.noms || 'Sarah & Yanis', date: f.date || '2026-06-20T18:00', lieu: f.lieu || 'Domaine des Roses' });
+
+function home() {
+  const show = ['mariage-1', 'noel-1', 'anniversaire-2'].map(id => { const m = mdlOf(id), o = occOf(m.occ); return cardHTML(m, demo(defaults(o)), { live: true }); }).join('');
+  return `<section class="screen">
+    <div class="hero">
+      <div style="display:grid;gap:16px"><span class="kicker">Invitations & cartes animées</span>
+        <h1>Des cartes qui font <i>de l'effet.</i></h1>
+        <p class="sub">Choisis parmi ${MODELES.length} modèles animés, personnalise-les en 2 minutes et envoie une enveloppe qui s'ouvre comme une vraie.</p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap"><button class="cta" type="button" data-go="cat-inv">💌 Créer une invitation</button><button class="ghost" type="button" data-go="cat-voeux">🎁 Envoyer des vœux</button></div></div>
+      <div class="show">${show}</div>
+    </div>
+    <div class="cats">${CATS.map(c => `<button class="catc ${c.id}" type="button" data-go="cat-${c.id}"><span class="big">${c.emo}</span><b>${c.nom}</b><small>${c.sous}</small></button>`).join('')}</div>
+    <div class="sec"><h3>Invitations</h3>${occGrid(OCC.filter(o => o.cat === 'inv'))}</div>
+    <div class="sec"><h3>Vœux & souhaits</h3>${occGrid(OCC.filter(o => o.cat === 'voeux'))}</div>
+    <div class="sec"><h3>Comment ça marche</h3><div class="how"><div><span>🎨</span><b>Choisis</b>un modèle animé</div><div><span>✍️</span><b>Personnalise</b>textes, date, lieu</div><div><span>💌</span><b>Envoie</b>une enveloppe qui s'ouvre</div></div></div>
+  </section>`;
+}
+function catPage(id) {
+  const c = CATS.find(x => x.id === id);
+  return `<section class="screen"><span class="kicker">${c.emo} ${c.nom}</span><h2>Quelle <i>occasion</i> ?</h2>${occGrid(OCC.filter(o => o.cat === id))}</section>`;
+}
+function occPage(id) {
+  const o = occOf(id), ms = MODELES.filter(m => m.occ === id), f = demo(defaults(o));
+  return `<section class="screen"><span class="kicker">${o.emo} ${esc(o.nom)}</span><h2>Choisis ton <i>modèle</i></h2><p class="sub">${ms.length} modèles animés. Touche celui qui te plaît pour le personnaliser.</p>
+    <div class="grid">${ms.map(m => `<button class="mdl" type="button" data-go="m-${m.id}">${cardHTML(m, f, { live: true })}<b>${esc(m.nom)}</b><small>Animation : ${m.anim}</small></button>`).join('')}</div></section>`;
+}
+function editor(mid) {
+  const m = mdlOf(mid), o = occOf(m.occ), inv = o.cat === 'inv';
+  if (!state.f || state.mid !== mid) { const keep = state.f && state.f.occ === o.id ? state.f : null; state.f = keep || { ...defaults(o), occ: o.id }; state.mid = mid; }
+  const f = state.f;
+  return `<section class="screen editor">
+    <div class="prev"><div id="pv">${cardHTML(m, f, { live: true })}</div>
+      <div class="others">${MODELES.filter(x => x.occ === o.id).map(x => `<button type="button" data-swap="${x.id}" aria-pressed="${x.id === mid}" title="${esc(x.nom)}">${cardHTML(x, f)}</button>`).join('')}</div></div>
+    <div class="form"><span class="kicker">${o.emo} ${esc(o.nom)} · ${esc(m.nom)}</span><h2>Personnalise <i>ta carte</i></h2>
+      <label>Titre<input data-f="titre" value="${esc(f.titre)}" maxlength="60"></label>
+      <label>${inv ? 'Qui invite ? (ex. Sarah fête ses 30 ans)' : 'Pour qui ? (ex. Pour Maman)'}<input data-f="noms" value="${esc(f.noms)}" maxlength="60" placeholder="${inv ? 'Sarah & Yanis' : 'Pour toi'}"></label>
+      <label>Message<textarea data-f="msg" maxlength="300">${esc(f.msg)}</textarea></label>
+      ${inv ? `<div class="row2"><label>Date et heure<input type="datetime-local" data-f="date" value="${esc(f.date)}"></label><label>Lieu<input data-f="lieu" value="${esc(f.lieu)}" maxlength="60" placeholder="Salle des fêtes"></label></div>
+        <label>Adresse (pour le GPS)<input data-f="adresse" value="${esc(f.adresse)}" maxlength="120" placeholder="12 rue des Lilas, Lyon"></label>
+        <label class="switch">Les invités répondent (je viens / je ne viens pas)<input type="checkbox" data-f="rsvp" ${f.rsvp ? 'checked' : ''}></label>`
+      : `<label>Signature<input data-f="de" value="${esc(f.de)}" maxlength="40" placeholder="Bisous, Sarah"></label>`}
+      <label>De la part de (affiché sur l'enveloppe)<input data-f="exp" value="${esc(f.exp || '')}" maxlength="40" placeholder="Sarah"></label>
+      <button class="ghost" type="button" data-preview>👀 Voir l'ouverture de l'enveloppe</button>
+      <button class="cta full" type="button" data-save>💌 Créer et envoyer</button>
+      <p class="note" id="smsg" role="status"></p>
+    </div></section>`;
+}
+function sharePage(id, cle, url) {
+  const mine = (store.get('mine') || []).find(x => x.id === id), inv = mine && occOf(mine.occ).cat === 'inv' && mine.rsvp;
+  return `<section class="screen" style="max-width:620px;margin:0 auto;width:100%">
+    <span class="kicker">C'est prêt 🎉</span><h2>Envoie ta <i>carte</i></h2>
+    <div class="sharebox">
+      <div class="linkrow"><input id="lnk" readonly value="${esc(url)}" aria-label="Lien de la carte"><button class="cta" type="button" data-copy>Copier</button></div>
+      <div class="btns"><button class="ghost" type="button" data-share>📤 Partager</button><a class="ghost" href="mailto:?subject=${encodeURIComponent('Tu as reçu une carte 💌')}&body=${encodeURIComponent('Ouvre ton enveloppe : ' + url)}">✉️ Par e-mail</a></div>
+      <a class="ghost" href="${esc(url)}" target="_blank" rel="noopener">👀 Voir comme l'invité</a>
+      <div id="qr" aria-label="QR code de la carte"></div><p class="note">QR code à imprimer ou à afficher le jour J.</p>
+    </div>
+    ${inv ? `<div class="sharebox"><h3 style="margin:0;font:700 22px var(--title)">Réponses des invités</h3><div class="resp" id="resp"><p class="note">Chargement…</p></div><button class="ghost" type="button" data-reload="${id}">🔄 Actualiser</button></div>` : ''}
+    <button class="ghost" type="button" data-go="">Créer une autre carte</button>
+  </section>`;
+}
+function myCards() {
+  const L = store.get('mine') || [];
+  return `<section class="screen" style="max-width:620px;margin:0 auto;width:100%"><h2>Mes <i>cartes</i></h2>
+    ${L.length ? `<div class="mylist">${L.map(x => { const m = mdlOf(x.mid); return m ? `<button type="button" data-open-mine="${x.id}">${cardHTML(m, x.f)}<span><b>${esc(x.f.titre)}</b><br><small style="color:var(--muted)">${esc(occOf(x.occ).nom)}</small></span><span>›</span></button>` : ''; }).join('')}</div>`
+      : `<p class="sub">Tu n'as pas encore créé de carte. Elles apparaîtront ici, sur ce téléphone.</p><button class="cta" type="button" data-go="">Créer ma première carte</button>`}</section>`;
+}
+
+function render() {
+  FX.forEach(x => x.stop()); FX.clear();
+  let r = state.route;
+  if (r.startsWith('ok-') && !state.share) { const x = (store.get('mine') || []).find(y => 'ok-' + y.id === r); if (x) state.share = [x.id, x.cle, x.url]; else r = state.route = ''; }
+  $('#app').innerHTML = r.startsWith('cat-') ? catPage(r.slice(4)) : r.startsWith('o-') && occOf(r.slice(2)) ? occPage(r.slice(2)) : r.startsWith('m-') && mdlOf(r.slice(2)) ? editor(r.slice(2))
+    : r.startsWith('ok-') ? sharePage(...state.share) : r === 'mes-cartes' ? myCards() : home();
+  $('#back').hidden = !r;
+  scrollTo(0, 0); liveCards();
+  if (r.startsWith('ok-')) { try { new QRCode($('#qr'), { text: state.share[2], width: 150, height: 150, correctLevel: QRCode.CorrectLevel.M }); } catch (_) { $('#qr').hidden = true; } loadResp(state.share[0], state.share[1]); }
+}
+function go(r) { if (r === state.route) return; state.route = r; history.pushState({ r }, '', r ? '#' + r : location.pathname); render(); }
+addEventListener('popstate', e => { const o = $('#open'); if (!o.hidden) { closeOpen(); return; } state.route = (e.state && e.state.r) || location.hash.slice(1); render(); });
+
+/* ---------- personnalisation ---------- */
+document.addEventListener('input', e => {
+  const k = e.target.dataset.f; if (!k || !state.f) return;
+  state.f[k] = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
+  const m = mdlOf(state.mid); $('#pv').innerHTML = cardHTML(m, state.f, { live: true }); liveCards($('#pv'));
+});
+const rid = n => Array.from(crypto.getRandomValues(new Uint8Array(n)), b => 'abcdefghjkmnpqrstuvwxyz23456789'[b % 31]).join('');
+const b64 = o => btoa(unescape(encodeURIComponent(JSON.stringify(o)))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+const unb64 = s => JSON.parse(decodeURIComponent(escape(atob(s.replace(/-/g, '+').replace(/_/g, '/')))));
+async function save() {
+  const m = mdlOf(state.mid), f = state.f, data = { mid: m.id, f }, msg = $('#smsg'), base = location.origin + location.pathname;
+  msg.textContent = 'Création de ta carte…';
+  const id = rid(12), cle = rid(16); let url;
+  try { const r = await sb('cartes', { id, cle, data }); if (!r.ok) throw 0; url = base + '?c=' + id; }
+  catch (_) { url = base + '?d=' + b64(data); }   // sans serveur : la carte voyage dans le lien
+  const L = store.get('mine') || []; L.unshift({ id, cle, mid: m.id, occ: m.occ, f: { ...f }, rsvp: !!f.rsvp && url.includes('?c='), url, at: Date.now() }); store.set('mine', L.slice(0, 50));
+  state.share = [id, cle, url]; go('ok-' + id);
+}
+async function loadResp(id, cle) {
+  const box = $('#resp'); if (!box) return;
   try {
-    const fa = await loadFace(), f = await fa.detectSingleFace(img, new fa.TinyFaceDetectorOptions({ inputSize: 416 })).withAgeAndGender();
-    console.warn('profil', f ? f.gender + ' ' + f.genderProbability.toFixed(2) : 'aucun visage');
-    if (f && f.genderProbability > .7) out.g = f.gender === 'female' ? 'f' : 'h';
-  } catch (e) { console.warn('profil erreur', e && e.message); }
-  return out;
+    const r = await fetch(SB + 'rpc/voir_reponses', { method: 'POST', headers: { apikey: SBK, 'Content-Type': 'application/json' }, body: JSON.stringify({ p_id: id, p_cle: cle }) });
+    const L = await r.json(); if (!Array.isArray(L)) throw 0;
+    if (!L.length) { box.innerHTML = '<p class="note">Pas encore de réponse. Elles s\'afficheront ici.</p>'; return; }
+    const n = k => L.filter(x => x.reponse === k).reduce((a, x) => a + (k === 'oui' ? (x.nb || 1) : 1), 0);
+    box.innerHTML = `<div class="tot"><span>✅ ${n('oui')} viennent</span><span>🤔 ${n('peut-etre')} peut-être</span><span>❌ ${n('non')} non</span></div>` +
+      L.map(x => `<div class="r"><span>${x.reponse === 'oui' ? '✅' : x.reponse === 'non' ? '❌' : '🤔'}</span><span><b>${esc(x.nom)}</b>${x.message ? `<br><small>${esc(x.message)}</small>` : ''}</span><span>${x.reponse === 'oui' && x.nb > 1 ? '×' + x.nb : ''}</span></div>`).join('');
+  } catch (_) { box.innerHTML = '<p class="note">Les réponses ne sont pas encore disponibles.</p>'; }
 }
 
-// Dessin animé des points du corps et des mesures, par-dessus la photo (même cadrage que l'image)
-const BONES = [[11, 12], [11, 13], [13, 15], [12, 14], [14, 16], [11, 23], [12, 24], [23, 24], [23, 25], [25, 27], [24, 26], [26, 28]];
-async function drawScan(cv, img, a) {
-  const r = cv.getBoundingClientRect(), dpr = devicePixelRatio || 1;
-  cv.width = r.width * dpr; cv.height = r.height * dpr;
-  const c = cv.getContext('2d'); c.scale(dpr, dpr);
-  const sc = Math.min(r.width / img.naturalWidth, r.height / img.naturalHeight), ox = (r.width - img.naturalWidth * sc) / 2, oy = (r.height - img.naturalHeight * sc) / 2;
-  const X = x => ox + x * sc, Y = y => oy + y * sc, L = i => ({ x: X(a.lm[i].x * img.naturalWidth), y: Y(a.lm[i].y * img.naturalHeight) });
-  const pts = [0, 11, 12, 13, 14, 15, 16, 23, 24, 25, 26, 27, 28];
-  const grad = c.createLinearGradient(0, 0, r.width, r.height); grad.addColorStop(0, '#2f6bff'); grad.addColorStop(1, '#12b3a6');
-  for (let k = 1; k <= 30; k++) {          // les os se dessinent progressivement
-    c.clearRect(0, 0, r.width, r.height);
-    c.strokeStyle = grad; c.lineWidth = 3; c.lineCap = 'round'; c.shadowColor = 'rgba(47,107,255,.6)'; c.shadowBlur = 10;
-    BONES.forEach(([p, q]) => { const A = L(p), B = L(q), t = Math.min(1, k / 30); c.beginPath(); c.moveTo(A.x, A.y); c.lineTo(A.x + (B.x - A.x) * t, A.y + (B.y - A.y) * t); c.stroke(); });
-    pts.forEach((i, n) => { if (n / pts.length > k / 30) return; const P = L(i); c.beginPath(); c.fillStyle = '#fff'; c.arc(P.x, P.y, 5, 0, 7); c.fill(); c.lineWidth = 2; c.stroke(); });
-    await wait(28);
-  }
-  return { c, X, Y, r, grad };
+/* ---------- ouverture de l'enveloppe ---------- */
+function openCard(data, { id = null, preview = false } = {}) {
+  const m = mdlOf(data.mid); if (!m) return false;
+  const o = occOf(m.occ), f = data.f, [, ink, acc, paper] = PAL[m.pal], inv = o.cat === 'inv';
+  const el = $('#open'); el.hidden = false; document.body.style.overflow = 'hidden';
+  el.style.setProperty('--o-bg', `radial-gradient(900px 700px at 50% 30%, color-mix(in srgb, ${paper} 60%, #fff), ${paper})`);
+  el.style.setProperty('--o-ink', ink);
+  const ini = (f.exp || f.noms || 'L').trim().charAt(0).toUpperCase();
+  el.innerHTML = `<div class="ostage"><div class="env" id="env" style="--e-paper:${paper};--e-seal:${acc}" role="button" tabindex="0" aria-label="Ouvrir l'enveloppe">
+      <div class="eback"></div><div class="inner">${cardHTML(m, f)}</div><div class="front"></div><div class="flap"></div><div class="seal">${esc(ini)}</div>
+      <div class="ohint">Touche pour ouvrir ✨<small>${f.exp ? 'De la part de ' + esc(f.exp) : 'Tu as reçu une carte'}</small></div></div></div>
+    ${preview ? '<button class="back" type="button" data-close style="position:fixed;top:calc(env(safe-area-inset-top,0px) + 14px);left:16px;z-index:60">✕</button>' : ''}`;
+  const env = $('#env');
+  const doOpen = () => {
+    if (env.classList.contains('opened')) return; env.classList.add('opened');
+    setTimeout(() => {
+      const when = f.date ? new Date(f.date) : null, addr = f.adresse || f.lieu;
+      el.innerHTML = `${preview ? '<button class="back" type="button" data-close style="position:fixed;top:calc(env(safe-area-inset-top,0px) + 14px);left:16px;z-index:60">✕</button>' : ''}
+        <div class="reveal">${cardHTML(m, f, { live: true })}
+        ${inv && when && !isNaN(when) && when > Date.now() ? `<div class="panel"><h3>Plus que…</h3><div class="count" id="cnt"></div></div>` : ''}
+        ${inv && (addr || when) ? `<div class="panel">${addr ? `<a class="ghost" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(addr)}" target="_blank" rel="noopener">📍 Itinéraire vers ${esc(f.lieu || 'le lieu')}</a>` : ''}
+          ${when && !isNaN(when) ? `<a class="ghost" href="${icsHref(f, o)}" download="invitation.ics">🗓️ Ajouter à mon agenda</a>` : ''}</div>` : ''}
+        ${inv && f.rsvp && id ? `<div class="panel" id="rsvp"><h3>Tu viens ?</h3>
+          <input id="rn" maxlength="60" placeholder="Ton prénom et nom" style="padding:13px;border-radius:12px;border:1px solid var(--line)">
+          <div class="choice3"><button type="button" data-rv="oui" aria-pressed="false">✅ Oui</button><button type="button" data-rv="peut-etre" aria-pressed="false">🤔 Peut-être</button><button type="button" data-rv="non" aria-pressed="false">❌ Non</button></div>
+          <label style="display:flex;align-items:center;gap:10px;font-weight:700">Nombre de personnes <input id="rnb" type="number" min="1" max="20" value="1" style="width:70px;padding:10px;border-radius:10px;border:1px solid var(--line)"></label>
+          <textarea id="rm" maxlength="300" placeholder="Un petit mot (facultatif)" style="padding:12px;border-radius:12px;border:1px solid var(--line);min-height:70px"></textarea>
+          <button class="cta" type="button" data-send-rsvp="${id}">Envoyer ma réponse</button><p class="note" id="rmsg" role="status"></p></div>` : ''}
+        <p class="made">Carte créée avec <a href="${location.origin + location.pathname}">Lookmiz</a> · <a href="${location.origin + location.pathname}">Crée la tienne</a></p></div>`;
+      liveCards(el); tickCount(when);
+    }, 2100);
+  };
+  env.addEventListener('click', doOpen); env.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); doOpen(); } });
+  return true;
 }
-async function drawMeasure(ctx, a, label, y, w, color) {
-  const { c, X, Y } = ctx, g = a.geo, yy = Y(y), x1 = X(g.cx - w / 2), x2 = X(g.cx + w / 2);
-  for (let k = 1; k <= 14; k++) {
-    const t = k / 14, m = (x1 + x2) / 2;
-    c.save(); c.shadowBlur = 0; c.strokeStyle = color; c.lineWidth = 2; c.setLineDash([5, 4]);
-    c.beginPath(); c.moveTo(m - (m - x1) * t, yy); c.lineTo(m + (x2 - m) * t, yy); c.stroke(); c.restore();
-    await wait(20);
-  }
-  c.save(); c.font = '800 12px "Plus Jakarta Sans", sans-serif'; const tw = c.measureText(label).width + 14;
-  c.fillStyle = color; c.beginPath(); c.roundRect(x2 + 6, yy - 11, tw, 22, 8); c.fill(); c.fillStyle = '#fff'; c.fillText(label, x2 + 13, yy + 4); c.restore();
+function closeOpen() { const el = $('#open'); el.hidden = true; el.innerHTML = ''; document.body.style.overflow = ''; liveCards(); }
+let cntT;
+function tickCount(when) {
+  clearInterval(cntT); if (!when || isNaN(when)) return;
+  const t = () => { const box = $('#cnt'); if (!box) return clearInterval(cntT); let s = Math.max(0, (when - Date.now()) / 1000);
+    const d = Math.floor(s / 86400), h = Math.floor(s % 86400 / 3600), m = Math.floor(s % 3600 / 60), ss = Math.floor(s % 60);
+    box.innerHTML = [[d, 'jours'], [h, 'heures'], [m, 'min'], [ss, 'sec']].map(([v, l]) => `<div><b>${v}</b><small>${l}</small></div>`).join(''); };
+  t(); cntT = setInterval(t, 1000);
+}
+function icsHref(f, o) {
+  const d = new Date(f.date), e = new Date(+d + 3 * 3600000), z = x => x.toISOString().replace(/[-:]/g, '').replace(/\.\d+/, '');
+  const ics = `BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Lookmiz//FR\r\nBEGIN:VEVENT\r\nUID:${Date.now()}@lookmiz.com\r\nDTSTAMP:${z(new Date())}\r\nDTSTART:${z(d)}\r\nDTEND:${z(e)}\r\nSUMMARY:${(f.titre || o.titre).replace(/[,;\n]/g, ' ')}\r\nLOCATION:${(f.adresse || f.lieu || '').replace(/[,;\n]/g, ' ')}\r\nEND:VEVENT\r\nEND:VCALENDAR`;
+  return 'data:text/calendar;charset=utf-8,' + encodeURIComponent(ics);
 }
 
-/* ---------- Essayage (FASHN via la fonction Supabase : la clé reste côté serveur) ---------- */
-const SBURL = 'https://ctgjnpxdaqdnrcxjwnkp.supabase.co', SBKEY = 'sb_publishable_mz--wiLicR1GMDd2b3Fd2g_ewLTbr9h';
-const FN = SBURL + '/functions/v1/bright-endpoint';
-const sb = window.supabase ? window.supabase.createClient(SBURL, SBKEY) : null;
-let session = null;
-const api = (d, ms) => { const c = new AbortController(), to = setTimeout(() => c.abort(), ms);
-  return fetch(FN, { method: 'POST', signal: c.signal, headers: { 'Content-Type': 'application/json', apikey: SBKEY, Authorization: 'Bearer ' + (session ? session.access_token : SBKEY) }, body: JSON.stringify(d) })
-    .then(async r => ({ ...(await r.json().catch(() => ({}))), _s: r.status })).finally(() => clearTimeout(to)); };
-async function refreshQuota() {
-  if (!session) { state.quota = null; return; }
-  const q = await api({ action: 'quota' }, 15000).catch(() => null);
-  if (q && q._s === 200) state.quota = q;
-}
-// Essais gratuits : 1 pour « Trouver mon look » (les 3 looks), 1 pour « En magasin »
-const kindOf = g => String(g).startsWith('shop') ? 'shop' : 'look';
-const left = (k = state.mode === 'shop' ? 'shop' : 'look') => { const q = state.quota; if (!q) return 0; if (q.pro) return Infinity;
-  const used = typeof q.used === 'object' ? q.used[k] : q.used, free = typeof q.free === 'object' ? q.free[k] : q.free; return Math.max(0, free - used); };
-const quotaPill = () => state.quota && !state.quota.pro ? `<span class="pill"><i></i>${left() ? `${left()} essai gratuit ${state.mode === 'shop' ? 'en magasin' : 'de looks'}` : `Essai gratuit ${state.mode === 'shop' ? 'en magasin' : 'de looks'} utilisé`}</span>` : '';
-const tkey = l => state.pv + state.g + state.o + l.id;
-let queue = Promise.resolve();
-function runTry(k, garment, group, category = 'auto') {
-  if (tries[k] && tries[k].st !== 'err') return;
-  group = group || 'g' + Date.now() + Math.random().toString(36).slice(2, 8);
-  if (state.quota && left(kindOf(group)) <= 0 && !usedGroups.has(group)) {
-    tries[k] = { st: 'quota' }; waitingTry = false;
-    if (state.step === 3 || state.step === 4 || state.step === 6) setTimeout(() => { state.step = 9; render(); }, 600);
+/* ---------- clics ---------- */
+document.addEventListener('click', async e => {
+  const t = e.target.closest('button, a'); if (!t) return;
+  if (t.id === 'back') { history.back(); return; }
+  if (t.dataset.go !== undefined) { go(t.dataset.go); return; }
+  if (t.dataset.swap) { state.route = 'm-' + t.dataset.swap; history.replaceState({ r: state.route }, '', '#' + state.route); render(); return; }
+  if ('preview' in t.dataset) { openCard({ mid: state.mid, f: state.f }, { preview: true }); history.pushState({ r: state.route, open: 1 }, ''); return; }
+  if ('close' in t.dataset) { history.back(); return; }
+  if ('save' in t.dataset) { save(); return; }
+  if ('copy' in t.dataset) { const i = $('#lnk'); try { await navigator.clipboard.writeText(i.value); t.textContent = 'Copié ✓'; } catch (_) { i.select(); } return; }
+  if ('share' in t.dataset) { const u = $('#lnk').value; if (navigator.share) navigator.share({ title: 'Tu as reçu une carte 💌', text: 'Ouvre ton enveloppe :', url: u }).catch(() => {}); else { try { await navigator.clipboard.writeText(u); t.textContent = 'Lien copié ✓'; } catch (_) {} } return; }
+  if (t.dataset.reload) { const x = (store.get('mine') || []).find(y => y.id === t.dataset.reload); if (x) loadResp(x.id, x.cle); return; }
+  if (t.dataset.openMine) { const x = (store.get('mine') || []).find(y => y.id === t.dataset.openMine); if (x) { state.share = [x.id, x.cle, x.url]; go('ok-' + x.id); } return; }
+  if (t.dataset.rv) { document.querySelectorAll('[data-rv]').forEach(b => b.setAttribute('aria-pressed', b === t)); return; }
+  if (t.dataset.sendRsvp) {
+    const nom = $('#rn').value.trim(), rep = (document.querySelector('[data-rv][aria-pressed="true"]') || {}).dataset?.rv, m = $('#rmsg');
+    if (!nom) { m.textContent = 'Indique ton prénom.'; return; } if (!rep) { m.textContent = 'Choisis Oui, Peut-être ou Non.'; return; }
+    t.disabled = true; m.textContent = 'Envoi…';
+    try { const r = await sb('reponses', { carte: t.dataset.sendRsvp, nom, reponse: rep, nb: Math.max(1, Math.min(20, +$('#rnb').value || 1)), message: $('#rm').value.trim() || null }); if (!r.ok) throw 0;
+      $('#rsvp').innerHTML = `<h3>Merci ${esc(nom)} ! 💌</h3><p style="margin:0">Ta réponse a bien été envoyée.</p>`; }
+    catch (_) { m.textContent = 'L\'envoi n\'a pas marché. Réessaie dans un instant.'; t.disabled = false; }
+  }
+});
+
+/* ---------- démarrage ---------- */
+(async () => {
+  const q = new URLSearchParams(location.search);
+  if (q.get('d')) { try { if (openCard(unb64(q.get('d')))) return; } catch (_) {} }
+  if (q.get('c')) {
+    try { const r = await fetch(SB + 'rpc/lire_carte', { method: 'POST', headers: { apikey: SBK, 'Content-Type': 'application/json' }, body: JSON.stringify({ p_id: q.get('c') }) });
+      const data = await r.json(); if (data && openCard(data, { id: q.get('c') })) return; } catch (_) {}
+    $('#app').innerHTML = '<section class="screen"><h2>Carte <i>introuvable</i></h2><p class="sub">Le lien est peut-être incomplet. Demande à la personne de te le renvoyer.</p><button class="cta" type="button" data-go="">Découvrir Lookmiz</button></section>';
     return;
   }
-  tries[k] = { st: 'run' };
-  const photo = state.photo, pv = state.pv;
-  queue = queue.then(async () => {
-    if (pv !== state.pv) return;   // la photo a changé entre-temps : on abandonne cet essai
-    for (let attempt = 0; attempt < 2; attempt++) {
-      const t0 = Date.now(); let started = false;
-      try {
-        const r = await api({ action: 'run', group, body: { model_name: 'tryon-v1.6', inputs: { model_image: photo, garment_image: garment, category, mode: 'quality' } } }, 45000);
-        if (r._s === 402) { tries[k] = { st: 'quota' }; break; }
-        if (r._s === 401) { tries[k] = { st: 'err', why: 'connexion expirée, reconnecte-toi' }; break; }
-        if (!r.id) throw new Error(r.message || r.error || 'refusé');
-        started = true;
-        if (state.quota && !usedGroups.has(group)) { const q = state.quota, kk = kindOf(group); if (typeof q.used === 'object') q.used[kk]++; else q.used++; }
-        usedGroups.add(group);
-        while (Date.now() - t0 < 120000) {
-          await wait(2500);
-          const s = await api({ action: 'status', id: r.id }, 20000).catch(() => ({}));
-          if (s.status === 'completed' && s.output) { tries[k] = { st: 'ok', url: s.output[0] }; break; }
-          if (s.status === 'failed') throw new Error((s.error && (s.error.message || s.error.name)) || 'échec');
-        }
-        if (tries[k].st === 'ok') break;
-        throw new Error('trop long');
-      } catch (e) { const why = e.name === 'AbortError' ? 'pas de réponse' : e.message;
-        // un essai déjà lancé compte dans le quota : on ne relance pas tout seul
-        if (started || attempt) { tries[k] = { st: 'err', why }; break; } await wait(1500); }
-    }
-    if (pv !== state.pv) return;
-    if (tries[k].st === 'quota' && (state.step === 3 || state.step === 4 || state.step === 6)) { state.step = 9; render(); return; }
-    if (state.step === 4 || state.step === 6) render(true);
-    if (state.step === 3) onTryDone();
-  });
-}
-const usedGroups = new Set();
-let lookGroup = null;   // les 3 looks d'une même analyse comptent pour un seul essai
-const tryOn = l => runTry(tkey(l), pic(l, 768), lookGroup, l.c || 'auto');
-
-function shrink(file) {
-  const raw = () => new Promise(res => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = () => res(null); r.readAsDataURL(file); });
-  return new Promise(res => {
-    const im = new Image(), url = URL.createObjectURL(file), done = v => { clearTimeout(to); URL.revokeObjectURL(url); res(v); };
-    const to = setTimeout(() => raw().then(done), 8000);
-    im.onload = () => { try {
-      const sc = Math.min(1, 1024 / Math.max(im.naturalWidth, im.naturalHeight)), c = document.createElement('canvas');
-      c.width = Math.round(im.naturalWidth * sc); c.height = Math.round(im.naturalHeight * sc); c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
-      done(c.toDataURL('image/jpeg', .88)); } catch (_) { raw().then(done); } };
-    im.onerror = () => raw().then(done); im.src = url;
-  });
-}
-
-/* ---------- Écrans ---------- */
-const frame = (src, extra = '') => `<div class="frame ${extra}"><div class="blur" style="background-image:url('${src}')"></div><img src="${src}" alt="Ta photo"></div>`;
-const showIds = ['91', '30', '192'];
-const S = [
-  () => `<section class="screen solo home">
-      <div class="stage">
-        <div class="slides">${AMB.slice(0, 6).map((x, i) => `<img src="${x.u}&w=900&h=1200&q=78&fm=jpg&fit=crop&crop=faces" alt="" class="${i ? '' : 'on'}" ${i ? 'loading="lazy"' : 'fetchpriority="high"'}>`).join('')}</div>
-        <div class="veil"></div>
-        <div class="stext"><span class="kicker">Cabine d'essayage virtuelle</span>
-          <h1>Essaie tout.<br><span class="hl">Sur toi.</span></h1>
-          <p>Mets ta photo et vois les vêtements portés par toi, en 20 secondes.</p>
-          <div class="sdots">${AMB.slice(0, 6).map((_, i) => `<i class="${i ? '' : 'on'}"></i>`).join('')}</div></div>
-      </div>
-      <div class="choices">
-        ${[['shop', 7, 'Essayage virtuel', 'Importe une image de l\'habit ou colle un lien Vinted, et vois-le sur toi.', 'c1 solo1']].map(([k, i, t, d, c]) =>
-          `<button class="choice ${c}" type="button" data-start="${k}"><img src="${AMB[i].u}&w=700&h=700&q=75&fm=jpg&fit=crop&crop=faces" alt=""><span class="cbody"><b>${t}</b><small>${d}</small><span class="vrow"><span class="vbadge"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="9" cy="9" r="1.8"/><path d="M21 15.5l-4.6-4.6a1.5 1.5 0 0 0-2.1 0L5 20"/></svg> Image</span><span class="vbadge vinted">Vinted</span></span><span class="go">Commencer →</span></span></button>`).join('')}
-      </div>
-      ${account()}
-    </section>`,
-  () => `<section class="screen">
-      <h2>D'abord, <span class="hl">ta photo</span></h2>
-      <p class="sub">Elle sert seulement à t'analyser et t'habiller.</p>
-      ${state.photo ? `<div class="media pwrap">${frame(state.photo)}<div class="pover"><label class="pbtn" for="photo" tabindex="0">📷 Changer</label><button class="pbtn" type="button" data-forget>🗑️ Effacer</button></div></div>`
-        : `<label class="media" for="photo" tabindex="0" style="cursor:pointer;display:block"><div class="frame"><div class="empty"><span class="plus">+</span><b>Ajoute ta photo</b>En entier, de face, bras le long du corps : c'est ce qui donne le meilleur résultat</div></div></label>`}
-      <div class="tips"><span>🧍 Du haut de la tête aux pieds</span><span>🙆 Bras le long du corps</span><span>👕 Vêtements près du corps</span><span>💡 Bien éclairée</span></div>
-      <button class="cta" type="button" data-go="${state.mode === 'shop' ? 5 : 2}" ${state.photo ? '' : 'disabled'}>${state.photo ? 'Utiliser cette photo' : 'Continuer'} <span>→</span></button>
-      ${state.photo ? `<p class="note">📱 Ta photo reste sur ce téléphone.</p>` : ''}
-    </section>`,
-  () => `<section class="screen solo"><h2>Pour quelle <span class="hl">occasion</span> ?</h2>
-      <div class="options">${Object.entries(OCCS).map(([k, [e, t, d, col]], i) => `<button class="opt" type="button" data-occ="${k}" style="--c:${col};animation-delay:${i * 60}ms"><span class="e">${e}</span><b>${t}</b><small>${d}</small></button>`).join('')}</div></section>`,
-  () => `<section class="screen">
-      <h2>Analyse de <span class="hl">ta silhouette</span></h2>
-      <div class="frame scan media" id="sframe"><div class="blur" style="background-image:url('${state.photo}')"></div><img src="${state.photo}" alt="Ta photo" id="simg"><canvas id="cv"></canvas></div>
-      <div class="log" id="log"><p class="wait">Lecture de ta photo…</p></div>
-    </section>`,
-  () => {
-    const L = looks(), l = L[state.pick], t = tries[tkey(l)] || {};
-    const src = t.st === 'ok' ? t.url : state.photo;
-    return `<section class="screen">
-      <h2>Tes 3 <span class="hl">looks</span></h2>
-      <div class="chips">${state.info.map(x => `<span>${x}</span>`).join('')}</div>
-      <div class="tabs">${L.map((x, i) => { const s = tries[tkey(x)] || {}; return `<button type="button" data-pick="${i}" aria-pressed="${i === state.pick}">Look ${i + 1}${s.st === 'run' ? '<span class="ld"></span>' : ''}</button>`; }).join('')}</div>
-      <div class="frame media ${t.st === 'run' ? 'scan' : ''}"><div class="blur" style="background-image:url('${src}')"></div><img src="${src}" alt="${t.st === 'ok' ? 'Toi avec ' + l.n : 'Ta photo'}" class="${t.st === 'ok' ? 'reveal' : ''}">
-        <span class="badge">${t.st === 'run' ? '🪄 Essayage en cours…' : t.st === 'ok' ? `✨ Toi · Look ${state.pick + 1}` : t.st === 'err' ? 'Essayage impossible' : '👗 Pas encore essayé'}</span></div>
-      ${!t.st ? `<button class="cta" type="button" data-trylook>✨ Me voir avec ce look</button>` : ''}
-      ${quotaPill()}
-      ${t.st === 'err' ? `<p class="note">Ça n'a pas marché (${t.why}). <button class="link" type="button" data-retry>Réessayer</button></p>` : ''}
-      <p class="why"><b>${l.fit ? 'Idéal pour ta silhouette.' : 'Va bien avec ta silhouette.'}</b> ${MORPHS[state.m].t}</p>
-      <div class="piece"><div class="ph"><img src="${pic(l, 300)}" alt="${l.n}"></div><div><b>${l.n}</b><small>À porter avec : ${l.a}</small></div></div>
-      <a class="cta" href="https://www.vinted.fr/catalog?search_text=${encodeURIComponent(l.n)}" target="_blank" rel="noopener">🔍 Voir des habits similaires</a>
-      <div class="actions"><button class="ghost" type="button" data-restart>🎯 Changer d'occasion</button><label class="ghost" for="photo" tabindex="0">📷 Changer de photo</label></div>
-      <span class="credit">${credit(l)}</span>
-    </section>`;
-  },
-  () => `<section class="screen solo vt">
-      <h2>Essayage <span class="hl">virtuel</span></h2>
-      <p class="sub">Choisis l'habit à essayer sur ta photo.</p>
-      <div class="pick2">
-        <label class="tile" for="garment2" tabindex="0"><span class="ibox"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="9" cy="9" r="1.8"/><path d="M21 15.5l-4.6-4.6a1.5 1.5 0 0 0-2.1 0L5 20"/></svg></span><b>Image</b><small>Photo ou capture de l'habit</small></label>
-        <button class="tile ${state.src === 'link' ? 'on' : ''}" type="button" data-src="${state.src === 'link' ? 'img' : 'link'}"><span class="ibox v"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 14a4.5 4.5 0 0 0 6.4 0l3-3a4.5 4.5 0 0 0-6.4-6.4l-1 1"/><path d="M14 10a4.5 4.5 0 0 0-6.4 0l-3 3a4.5 4.5 0 0 0 6.4 6.4l1-1"/></svg></span><b>Lien Vinted</b><small>Colle le lien de l'annonce</small></button>
-      </div>
-      ${state.src === 'link' ? `<div class="linkbox">
-          <div class="lrow"><input id="glink" type="url" inputmode="url" placeholder="https://www.vinted.fr/items/…" aria-label="Lien de l'annonce Vinted"><button class="ghost" type="button" data-import>Importer</button></div>
-          <p class="note" id="gmsg" role="status"></p></div>` : ''}
-      <div class="duo">
-        <figure class="pwrap"><img src="${state.photo}" alt="Ta photo"><label class="pbtn sm" for="photo" tabindex="0">📷 Changer</label><figcaption>Toi</figcaption></figure>
-        <span class="plusx">+</span>
-        <figure class="${state.garment ? '' : 'empty'}">${state.garment ? `<img src="${state.garment}" alt="L'habit"><button class="pbtn sm" type="button" data-delg>🗑️ Retirer</button>` : '<span>👕</span>'}<figcaption>${state.garment ? 'L\'habit' : 'Aucun habit'}</figcaption></figure>
-      </div>
-      <button class="cta" type="button" data-shoptry ${state.garment ? '' : 'disabled'}>${state.garment ? '🪄 Me l\'essayer' : 'Choisis un habit ci-dessus'}</button>
-      ${quotaPill()}
-    </section>`,
-  () => {
-    const t = tries['shop' + state.pv + '-' + state.gid] || {}, src = t.st === 'ok' ? t.url : state.photo;
-    return `<section class="screen">
-      <h2>${t.st === 'ok' ? 'Et voilà, <span class="hl">sur toi</span>' : 'Essayage <span class="hl">en cours</span>'}</h2>
-      <div class="frame media ${t.st === 'run' ? 'scan' : ''}"><div class="blur" style="background-image:url('${src}')"></div><img src="${src}" alt="${t.st === 'ok' ? 'Toi avec l\'habit' : 'Ta photo'}" class="${t.st === 'ok' ? 'reveal' : ''}">
-        <span class="badge">${t.st === 'run' ? '🪄 Essayage en cours… environ 15 s' : t.st === 'ok' ? '✨ Toi avec cet habit' : 'Essayage impossible'}</span></div>
-      ${t.st === 'err' ? `<p class="note">Ça n'a pas marché (${t.why}). Reprends l'habit en entier, bien éclairé. <button class="link" type="button" data-shoptry>Réessayer</button></p>` : ''}
-      <div class="piece"><div class="ph"><img src="${state.garment}" alt="L'habit photographié"></div><div><b>L'habit de la boutique</b><small>Tu peux l'essayer avec une autre photo de toi, ou essayer un autre habit.</small></div></div>
-      <div class="row"><button class="ghost" type="button" data-go="5" data-newg="1">Autre habit</button><label class="cta" for="photo" tabindex="0">Autre photo de moi</label></div>
-      <button class="link" type="button" data-tab="look">Accueil</button>
-    </section>`;
-  },
-  () => `<section class="screen">
-      <span class="pill"><i></i>En boutique ou en ligne</span>
-      <h1>Essaie sans <span class="hl">cabine.</span></h1>
-      <p class="sub">Un habit te plaît en magasin ou sur un site ? Prends-le en photo, fais une capture ou colle son lien : tu le vois sur toi en 15 secondes.</p>
-      <div class="showcase media">${['95', '14', '183'].map((id, i) => `<div class="card c${i}"><img src="${pic(DATA.g[id], 500)}" alt="${DATA.g[id].n}"></div>`).join('')}
-        <span class="float a">📷 Photo de l'habit</span><span class="float b">🔗 Ou son lien</span><span class="float c">🪞 Sur ta propre photo</span></div>
-      <button class="cta" type="button" data-start="shop">👕 Choisir un habit</button>
-      ${state.photo ? `<div class="mephoto"><img src="${state.photo}" alt="Ta photo"><p style="margin:0"><b>✅ Ta photo est prête</b>Elle reste sur ton téléphone. <label class="link" for="photo" tabindex="0">Changer</label></p></div>`
-        : `<label class="ghost" for="photo" tabindex="0">🧍 Ajouter ma photo d'abord</label>`}
-      <div class="marquee" aria-hidden="true"><div>${Array(2).fill('Zara <b>✦</b> Vinted <b>✦</b> Shein <b>✦</b> H&amp;M <b>✦</b> Zalando <b>✦</b> En boutique <b>✦</b>').join(' ')}</div></div>
-      <div class="how"><div><span>🧍</span>Ta photo</div><div><span>📷</span>L'habit</div><div><span>🪞</span>Sur toi</div></div>
-      ${account()}
-    </section>`,
-  () => `<section class="screen solo">
-      <h2>${state.signup ? 'Crée ton compte' : 'Connecte-toi'} <span class="hl">${state.signup ? 'gratuit' : ''}</span></h2>
-      <p class="sub">${state.signup ? 'Un e-mail et un mot de passe, c\'est tout. <b>1 essai offert.</b>' : 'Avec l\'e-mail et le mot de passe de ton compte.'}</p>
-      ${session ? `<button class="cta" type="button" data-go="1">Tu es connecté, continuer →</button>` : ''}
-      <form id="login" class="loginbox">
-        <input id="email" type="email" required autocomplete="email" placeholder="ton@email.com" aria-label="Adresse e-mail">
-        <input id="pass" type="password" required minlength="6" autocomplete="${state.signup ? 'new-password' : 'current-password'}" placeholder="${state.signup ? 'Choisis un mot de passe (6 caractères min.)' : 'Ton mot de passe'}" aria-label="Mot de passe">
-        <button class="cta" type="submit">${state.signup ? 'Créer mon compte' : 'Se connecter'}</button><p class="note" id="lmsg" role="status"></p></form>
-      <button class="link" type="button" data-switch>${state.signup ? 'J\'ai déjà un compte' : 'Pas encore de compte ? Crée-le'}</button>
-      <p class="note">Ton e-mail sert seulement à ton compte. Ta photo reste sur ton téléphone, sauf au moment de l'essayage.</p>
-    </section>`,
-  () => `<section class="screen solo">
-      <div class="shophero"><span class="pill" style="background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.2);color:#fff"><i></i>Lookmiz+</span>
-        <h2>${state.quota && state.quota.pro ? 'Tu es <span class="hl">Lookmiz+</span>' : 'Passe à <span class="hl">Lookmiz+</span>'}</h2>
-        <p class="sub" style="color:#c9cdd8">${state.quota && state.quota.pro ? 'Essais illimités activés. Merci pour ton soutien !' : (state.quota && left() === 0 ? 'Ton essai gratuit est utilisé. ' : '') + 'Essaie autant d\'habits que tu veux, sur ta photo.'}</p></div>
-      <div class="steps3"><div><span>♾️</span><p style="margin:0"><b>Essais illimités</b>Autant d'habits que tu veux.</p></div>
-        <div><span>🛍️</span><p style="margin:0"><b>Essayage virtuel sans limite</b>Image ou lien Vinted.</p></div>
-        <div><span>🔓</span><p style="margin:0"><b>Sans engagement</b>Résiliable à tout moment, en un clic.</p></div></div>
-      ${state.quota && state.quota.pro ? '' : `<div class="plans" role="radiogroup" aria-label="Choisis ta formule">
-        ${[['an', 'Annuel', '79,99 €', 'par an', 'Soit 6,67 € par mois', 'Le plus avantageux · −33 %'], ['mois', 'Mensuel', '9,99 €', 'par mois', 'Sans engagement', '']].map(([k, n, p, per, sub, tag]) =>
-          `<button type="button" class="plan ${state.plan === k ? 'on' : ''}" role="radio" aria-checked="${state.plan === k}" data-plan="${k}">
-            <span class="dot"></span><span class="pinfo"><b>${n}</b><small>${sub}</small>${tag ? `<em>${tag}</em>` : ''}</span><span class="pprice"><b>${p}</b><small>${per}</small></span></button>`).join('')}
-        </div>
-        <div class="recap">${state.plan === 'an' ? 'Aujourd\'hui : <b>79,99 €</b>, puis renouvelé chaque année.' : 'Aujourd\'hui : <b>9,99 €</b>, puis renouvelé chaque mois.'}<br>Résiliable à tout moment depuis « Gérer mon abonnement », sans frais.</div>
-        <a class="cta" ${payHref(state.plan)}>🔒 Continuer vers le paiement</a>
-        <p class="note">Paiement sécurisé par Stripe. L'abonnement s'arrête à la fin de la période payée si tu le résilies. En continuant, tu acceptes les <a href="cgv.html">conditions générales de vente</a>.</p>`}
-      ${PAY.portail && session ? `<a class="ghost" href="${PAY.portail}?prefilled_email=${encodeURIComponent(session.user.email)}" target="_blank" rel="noopener">Gérer mon abonnement</a>` : ''}
-      <button class="link" type="button" data-tab="look">Retour à l'accueil</button>
-    </section>`
-];
-// Liens de paiement Stripe (Payment Links) et espace client pour résilier
-const PAY = { mois: 'https://buy.stripe.com/dRm4gzbGU6tybcw1FO0sU00', an: 'https://buy.stripe.com/aFadR9h1eg48dkE2JS0sU01', portail: 'https://billing.stripe.com/p/login/dRm4gzbGU6tybcw1FO0sU00' };
-function payHref(k) {
-  if (!PAY[k]) return 'aria-disabled="true" title="Bientôt disponible"';
-  if (!session) return 'href="#" data-start="shop"';
-  return `href="${PAY[k]}?client_reference_id=${session.user.id}&prefilled_email=${encodeURIComponent(session.user.email)}"`;
-}
-function account() {
-  if (!sb) return `<p class="note"><button class="link" type="button" data-plus>Lookmiz+ : essais illimités dès 6,67 €/mois</button></p>`;
-  return session ? `<p class="note">Connecté : ${session.user.email.replace(/[<>&"]/g, '')} · <button class="link" type="button" data-plus>${state.quota && state.quota.pro ? 'Mon abonnement' : 'Lookmiz+'}</button> · <button class="link" type="button" data-logout>Se déconnecter</button></p>`
-    : `<p class="note"><button class="link" type="button" data-plus>Lookmiz+ : essais illimités dès 6,67 €/mois</button></p>`;
-}
-
-// Retour du téléphone : une entrée d'historique « sentinelle » ; chaque retour remonte à l'écran parent, jamais en avant
-let skipPop = false;
-const parentOf = st => st === 7 || st === 8 || st === 1 || st === 5 ? 0 : st === 9 ? (state.prev ?? 0) : st === 4 || st === 3 ? 2 : st === 6 ? 5 : Math.max(0, st - 1);
-function goUp() { state.step = parentOf(state.step); if (state.step === 8 && session) state.step = 0; }
-function syncHistory() {
-  const has = history.state && history.state.lk;
-  if (state.step !== 0 && !has) history.pushState({ lk: 1 }, '');
-  else if (state.step === 0 && has) { skipPop = true; history.back(); }   // de retour à l'accueil : on retire la sentinelle
-}
-addEventListener('popstate', () => {
-  if (skipPop) { skipPop = false; return; }
-  if (state.step !== 0) { goUp(); render(); }
-});
-let slideT;
-function startSlides() {
-  clearInterval(slideT); const im = document.querySelectorAll('.slides img'), dots = document.querySelectorAll('.sdots i'); if (!im.length) return;
-  let i = 0; slideT = setInterval(() => { if (!document.body.contains(im[0])) return clearInterval(slideT);
-    im[i].classList.remove('on'); dots[i].classList.remove('on'); i = (i + 1) % im.length; im[i].classList.add('on'); dots[i].classList.add('on');
-  }, 4500);
-}
-const wide = matchMedia('(min-width: 900px)');
-wide.addEventListener('change', () => render(true));
-function render(soft) {
-  const y = scrollY;
-  $('#app').innerHTML = S[state.step]();
-  const sc = $('#app .screen'), m = sc && sc.querySelector(':scope > .media');
-  if (wide.matches && m && !sc.classList.contains('solo')) {
-    const col = document.createElement('div'); col.className = 'col';
-    [...sc.children].filter(c => c !== m).forEach(c => col.appendChild(c));
-    sc.appendChild(col); sc.classList.add('split');
-  }
-  if (soft) { const sc = $('#app .screen'); if (sc) sc.style.animation = 'none'; scrollTo(0, y); } else scrollTo(0, 0);
-  $('#back').hidden = state.step === 0;
-  if (state.step === 0) { startSlides(); if (!soft && !window.__homeShown) { window.__homeShown = 1; $('#app .home').classList.add('first'); } }
-  syncHistory();
-
-
-}
-
-/* Analyse animée, puis lancement des essayages */
-let waitingTry = false;
-function say(html, cls = '') { const p = document.createElement('p'); p.className = cls; p.innerHTML = html; $('#log').appendChild(p); return p; }
-async function runAnalysis() {
-  const log = $('#log'), img = await imgOf(state.photo);
-  await new Promise(r => $('#simg').complete ? r() : $('#simg').onload = r);
-  const a = await Promise.race([analyse(img), wait(25000).then(() => ({ ok: false, slow: true }))]);
-  if (state.step !== 3) return;
-  log.innerHTML = '';
-  if (!a.ok) {
-    say('Je ne vois pas bien ta silhouette sur la photo. 👉 <b>Choisis celle qui te ressemble :</b>');
-    return askManual(a.g);
-  }
-  $('#sframe').classList.remove('scan');
-  const ctx = await drawScan($('#cv'), img, a);
-  say('Silhouette détectée'); await wait(450);
-  await drawMeasure(ctx, a, 'Épaules', a.geo.shY + (a.geo.hpY - a.geo.shY) * .06, a.geo.S, '#2f6bff');
-  await drawMeasure(ctx, a, 'Taille', a.geo.waY, a.geo.Wa, '#12b3a6');
-  await drawMeasure(ctx, a, 'Hanches', a.geo.hiY, a.geo.Hi, '#e8a23a');
-  say(`Épaules / hanches : <b>${a.ratio.toFixed(2).replace('.', ',')}</b>`); await wait(500);
-  say(`Silhouette : <b>${MORPHS[a.m].n}</b>, ${MORPHS[a.m].d}`); await wait(600);
-  say(`Allure : <b>${a.build}</b>${a.legs ? ` · ${a.legs}` : ''}`); await wait(600);
-  if (!a.legs) { say('⚠️ Tes jambes ne sont pas entièrement visibles : le bas des tenues sera moins précis. Pour un meilleur résultat, mets une photo en entier.'); await wait(900); }
-  state.m = a.m; state.info = [MORPHS[a.m].n, 'Allure ' + a.build, ...(a.legs ? [a.legs.charAt(0).toUpperCase() + a.legs.slice(1)] : [])];
-  if (!a.g) return askGender();
-  say(`Profil : <b>${a.g === 'f' ? 'Femme' : 'Homme'}</b> <button class="link" type="button" data-fix style="color:#bbb;font-size:12px">corriger</button>`);
-  state.g = a.g; await wait(500); startTries();
-}
-function askGender() {
-  const p = say('👉 <b>Touche ton profil pour continuer :</b> <span class="choice"><button type="button" data-gender="f">Femme</button><button type="button" data-gender="h">Homme</button></span>', 'wait');
-  p.dataset.ask = 1;
-}
-function askManual(g) {
-  say(`<span class="choice">${Object.entries(MORPHS).map(([k, v]) => `<button type="button" data-morph="${k}">${v.n}</button>`).join('')}</span>`, 'wait');
-  state.g = g || null;
-}
-function startTries() {
-  const L = looks();
-  say(`3 pièces choisies : <b>${L.map(x => x.n).join(', ')}</b>`);
-  const p = say('Essayage des 3 looks sur ta photo… <b id="secs">0 s</b>', 'wait'), t0 = Date.now();
-  lookGroup = 'look' + Date.now() + Math.random().toString(36).slice(2, 8);
-  waitingTry = true; L.forEach(tryOn);
-  const tick = setInterval(() => {
-    if (!waitingTry || state.step !== 3) return clearInterval(tick);
-    const s = Math.round((Date.now() - t0) / 1000), el = $('#secs'); if (el) el.textContent = s + ' s';
-    if (s >= 100) {   // trop long : on le dit clairement, avec une solution
-      clearInterval(tick); waitingTry = false;
-      say('Ça prend plus de temps que prévu. <span class="choice-row"><button type="button" class="link" data-restart-look>Réessayer</button></span>');
-    }
-  }, 1000);
-}
-function onTryDone() {
-  if (!waitingTry) return;
-  const st = looks().map(x => (tries[tkey(x)] || {}).st);
-  if (st.some(x => x && x !== 'run')) { waitingTry = false; state.step = 4; state.pick = Math.max(0, st.indexOf('ok')); render(); }
-}
-
-document.addEventListener('click', e => {
-  const t = e.target.closest('button'); if (!t) return;
-  if (t.id === 'back') goUp();
-  else if (t.dataset.tab) { state.mode = 'look'; state.step = 0; }
-  else if ('restartLook' in t.dataset) { for (const k in tries) if (tries[k].st !== 'ok') delete tries[k]; state.step = 2; }
-  else if ('delg' in t.dataset) { state.garment = null; render(true); return; }
-  else if (t.dataset.src) { state.src = t.dataset.src; render(true); return; }
-  else if ('forget' in t.dataset) { try { localStorage.removeItem('cabine-photo'); } catch (_) {} state.photo = null; state.saved = false; }
-  else if (t.dataset.mode) { state.mode = t.dataset.mode; state.step = 1; }
-  else if (t.dataset.start) { state.mode = t.dataset.start; if (sb && !session) { try { localStorage.setItem('cabine-next', state.mode); } catch (_) {} state.step = 8; } else state.step = 1; }
-  else if ('switch' in t.dataset) { state.signup = !state.signup; }
-  else if ('plus' in t.dataset) { state.prev = state.step === 9 ? state.prev : state.step; state.step = 9; }
-  else if (t.dataset.plan) { state.plan = t.dataset.plan; render(true); return; }
-  else if ('logout' in t.dataset) { sb.auth.signOut(); session = null; state.quota = null; }
-  else if ('trylook' in t.dataset) { const l = looks()[state.pick]; tryOn(l); if ((tries[tkey(l)] || {}).st === 'quota') { state.step = 9; render(); } else render(true); return; }
-  else if ('import' in t.dataset) { importLink(); return; }
-  else if ('shoptry' in t.dataset) { const k = 'shop' + state.pv + '-' + state.gid; delete tries[k]; runTry(k, state.garment, 'shop' + Date.now() + state.gid); state.step = tries[k].st === 'quota' ? 9 : 6; }
-  else if (t.dataset.go) { state.step = +t.dataset.go; if (t.dataset.newg) state.garment = null; if (state.step === 2) { loadPose().catch(() => {}); loadSeg().catch(() => {}); loadFace().catch(() => {}); } }
-  else if (t.dataset.occ) { state.o = t.dataset.occ; state.step = 3; render(); runAnalysis(); return; }
-  else if (t.dataset.gender) { state.g = t.dataset.gender; t.closest('p').remove(); say(`Profil : <b>${state.g === 'f' ? 'Femme' : 'Homme'}</b>`); if (!state.m) state.m = 'H'; startTries(); return; }
-  else if (t.dataset.morph) { state.m = t.dataset.morph; state.info = [MORPHS[state.m].n]; t.closest('p').remove(); say(`Silhouette : <b>${MORPHS[state.m].n}</b>`); if (state.g) { say(`Profil : <b>${state.g === 'f' ? 'Femme' : 'Homme'}</b>`); startTries(); } else askGender(); return; }
-  else if ('fix' in t.dataset) { state.g = state.g === 'f' ? 'h' : 'f'; for (const k in tries) delete tries[k]; waitingTry = false; t.closest('p').innerHTML = `Profil : <b>${state.g === 'f' ? 'Femme' : 'Homme'}</b>`; startTries(); return; }
-  else if (t.dataset.pick) { state.pick = +t.dataset.pick; render(true); return; }
-  else if ('retry' in t.dataset) { tryOn(looks()[state.pick]); render(true); return; }
-  else if ('restart' in t.dataset) { state.step = 2; }
-  else return;
-  render();
-});
-document.addEventListener('keydown', e => { if (e.target.matches('label[for=photo]') && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); $('#photo').click(); } });
-$('#photo').addEventListener('change', e => {
-  const f = e.target.files[0]; if (!f) return;
-  shrink(f).then(d => { e.target.value = ''; if (!d) return;
-    state.photo = d; state.pv++; state.g = state.m = null; for (const k in tries) delete tries[k];
-    try { localStorage.setItem('cabine-photo', d); state.saved = true; } catch (_) {}
-    if (state.step === 6) { runTry('shop' + state.pv + '-' + state.gid, state.garment, 'shop' + Date.now() + state.gid); render(); return; }
-    loadPose().catch(() => {}); loadSeg().catch(() => {}); loadFace().catch(() => {});
-    if (state.step === 4) { state.step = 3; render(); runAnalysis(); } else render(); });
-});
-['#garment', '#garment2'].forEach(id => $(id).addEventListener('change', e => {
-  const f = e.target.files[0]; if (!f) return;
-  shrink(f).then(d => { e.target.value = ''; if (!d) return; state.garment = d; state.gid++; render(); });
-}));
-async function importLink() {
-  const v = $('#glink').value.trim(), m = $('#gmsg'); if (!v) return;
-  if (!/(^|\.)vinted\.[a-z.]+\//i.test(v.replace(/^https?:\/\//, ''))) { m.textContent = 'Colle un lien d\'annonce Vinted. Pour un autre site, fais une capture de l\'habit et choisis « Image ».'; return; }
-  if (sb && !session) { state.step = 8; render(); return; }
-  m.textContent = 'Recherche de la photo…';
-  const r = await api({ action: 'preview', link: v }, 20000).catch(() => ({ error: 'pas de réponse' }));
-  if (!r.image) { m.textContent = `Impossible de lire cette annonce (${r.error || 'erreur'}). Fais une capture de l'habit et choisis « Image ».`; return; }
-  state.garment = r.image; state.gid++; render();
-}
-document.addEventListener('submit', async e => {
-  if (e.target.id !== 'login') return; e.preventDefault();
-  const m = $('#lmsg'), b = e.target.querySelector('button'); b.disabled = true;
-  const email = $('#email').value.trim(), password = $('#pass').value;
-  if (state.signup) {
-    const { data, error } = await sb.auth.signUp({ email, password });
-    m.textContent = error ? (/registered|already/i.test(error.message) ? 'Ce compte existe déjà : connecte-toi.' : /password/i.test(error.message) ? 'Mot de passe trop court (6 caractères minimum).' : 'Création impossible : ' + error.message)
-      : data.session ? '✅ Compte créé !' : 'Compte créé, mais il doit être confirmé par e-mail.';
-  } else {
-    const { error } = await sb.auth.signInWithPassword({ email, password });
-    m.textContent = error ? 'E-mail ou mot de passe incorrect.' : '✅ Connecté !';
-  }
-  b.disabled = false;
-});
-// Après le lien reçu par e-mail : on reprend là où la personne en était (ou au début du parcours)
-function afterLogin() {
-  let next = null; try { next = localStorage.getItem('cabine-next'); localStorage.removeItem('cabine-next'); } catch (_) {}
-  if (next || state.step === 8) { state.mode = next || state.mode || 'look'; state.step = state.mode === 'shop' && state.photo ? 5 : 1; render(); }
-  else render(true);
-}
-if (/[?&]paye=1/.test(location.search)) { state.step = 9; history.replaceState(null, '', location.pathname); setTimeout(() => refreshQuota().then(() => render(true)), 2500); }
-const authErr = new URLSearchParams(location.hash.slice(1)).get('error_description') || new URLSearchParams(location.search).get('error_description');
-if (sb) {
-  sb.auth.onAuthStateChange((ev, s) => {
-    const was = !!session; session = s;
-    if (s && !was) setTimeout(() => { afterLogin(); refreshQuota().then(() => render(true)); }, 0);
-    if (!s && was) render(true);
-  });
-  if (authErr) { state.step = 8; setTimeout(() => { const m = $('#lmsg'); if (m) m.textContent = 'Le lien n\'a pas marché (' + authErr + '). Redemande un lien.'; }, 50); }
-}
-document.addEventListener('keydown', e => { const l = e.target.closest && e.target.closest('label[for^=garment]'); if (l && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); $('#' + l.htmlFor).click(); } });
-render();
+  state.route = location.hash.slice(1); history.replaceState({ r: state.route }, '', location.href); render();
+})();
 </script>
 </body>
 </html>
