@@ -8,14 +8,14 @@
 <meta name="description" content="Crée des invitations et des cartes de vœux animées : anniversaire, mariage, baptême, Noël, Aïd… Une enveloppe qui s'ouvre, des réponses des invités, en quelques minutes.">
 <meta name="theme-color" content="#fbf6ef">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cinzel:wght@500;700&family=Fredoka:wght@500;700&family=Great+Vibes&family=Pacifico&family=Playfair+Display:ital,wght@0,500;0,700;1,500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&family=Cinzel:wght@500;700&family=Fredoka:wght@500;700&family=Great+Vibes&family=Pacifico&family=Playfair+Display:ital,wght@0,500;0,700;1,500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
 <style>
 /* Mise en page : une boutique de cartes. Accueil → catégorie → occasion (galerie de modèles) → personnalisation → partage.
    Le destinataire reçoit une enveloppe qui s'ouvre, puis la carte animée. */
 :root {
-  --bg: #f6f3ee; --paper: #ffffff; --ink: #151311; --muted: #6f6a63; --line: #e4ded5;
-  --acc: #9c7a43; --acc2: #151311; --gold: #9c7a43;
-  --ui: "Plus Jakarta Sans", system-ui, sans-serif; --title: "Playfair Display", Georgia, serif;
+  --bg: #f4f0ea; --paper: #ffffff; --ink: #0e0e10; --muted: #77716a; --line: #e2dcd2;
+  --acc: #b8965a; --acc2: #0e0e10; --gold: #b8965a; --night: #0e0e10; --champ: #d8bd8a;
+  --ui: "Inter", system-ui, sans-serif; --title: "Instrument Serif", "Playfair Display", Georgia, serif;
   color-scheme: light;
 }
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -26,16 +26,16 @@ img { display: block; max-width: 100%; }
 [hidden] { display: none !important; }
 .app { max-width: 1120px; margin: 0 auto; padding: calc(env(safe-area-inset-top, 0px) + 10px) max(20px, env(safe-area-inset-right, 0px)) calc(env(safe-area-inset-bottom, 0px) + 40px) max(20px, env(safe-area-inset-left, 0px)); }
 .top { display: flex; align-items: center; gap: 12px; height: 56px; margin-bottom: 10px; border-bottom: 1px solid var(--line); }
-.logo { font: 600 25px/1 var(--title); letter-spacing: .01em; color: var(--ink); background: none; border: 0; cursor: pointer; padding: 0; }
+.logo { font: 400 30px/1 var(--title); letter-spacing: 0; color: var(--ink); background: none; border: 0; cursor: pointer; padding: 0; }
 .logo span { font-style: italic; color: var(--acc); }
 .back { width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--line); background: var(--paper); cursor: pointer; font-size: 17px; }
 .top .sp { flex: 1; }
 .mine { border: 0; background: none; padding: 8px 2px; font-weight: 600; font-size: 14px; cursor: pointer; letter-spacing: .02em; border-bottom: 1px solid var(--ink); }
 .screen { display: grid; gap: 26px; animation: in .5s cubic-bezier(.2,.8,.2,1) both; }
 @keyframes in { from { opacity: 0; transform: translateY(10px); } }
-h1, h2 { font-family: var(--title); font-weight: 500; margin: 0; line-height: 1.04; letter-spacing: -.01em; text-wrap: balance; }
-h1 { font-size: clamp(44px, 11vw, 82px); }
-h2 { font-size: clamp(30px, 7vw, 44px); }
+h1, h2 { font-family: var(--title); font-weight: 400; margin: 0; line-height: 1; letter-spacing: -.015em; text-wrap: balance; }
+h1 { font-size: clamp(52px, 13vw, 104px); }
+h2 { font-size: clamp(36px, 8vw, 56px); }
 h1 i, h2 i { font-style: italic; color: var(--acc); }
 .sub { color: var(--muted); margin: 0; max-width: 44ch; font-size: 16.5px; }
 .kicker { font-size: 11.5px; font-weight: 700; letter-spacing: .22em; text-transform: uppercase; color: var(--muted); }
@@ -47,48 +47,66 @@ h1 i, h2 i { font-style: italic; color: var(--acc); }
 button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px solid var(--acc); outline-offset: 3px; }
 
 /* --- accueil --- */
-.hero { display: grid; gap: 28px; align-items: center; padding: 18px 0 8px; }
-.hero .txt { display: grid; gap: 18px; }
-.hero .acts { display: flex; gap: 10px; flex-wrap: wrap; }
-.hero .show { position: relative; height: 400px; display: grid; place-items: center; }
-.hero .show .card { width: 220px; position: absolute; box-shadow: 0 30px 60px rgba(21,19,17,.18); }
-.hero .show .card:nth-child(1) { transform: rotate(-9deg) translate(-78px, 16px); }
-.hero .show .card:nth-child(2) { transform: rotate(8deg) translate(78px, 22px); }
-.hero .show .card:nth-child(3) { z-index: 2; animation: floaty 6s ease-in-out infinite; }
-@keyframes floaty { 50% { transform: translateY(-12px); } }
-.feats { display: grid; grid-template-columns: repeat(2, 1fr); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
-.feats div { padding: 16px 6px; font-size: 13.5px; color: var(--muted); }
-.feats b { display: block; color: var(--ink); font: 500 17px var(--title); }
-.sec { display: grid; gap: 14px; }
+.bleed { margin-left: calc(50% - 50vw); margin-right: calc(50% - 50vw); }
+.home { gap: 56px; }
+.night { background: var(--night); color: #f4f0ea; margin-top: -86px; padding-top: 70px; overflow: hidden; position: relative; }
+.night::before { content: ""; position: absolute; inset: 0; background: radial-gradient(600px 400px at 80% 40%, rgba(216,189,138,.16), transparent 70%); pointer-events: none; }
+.nin { position: relative; max-width: 1120px; margin: 0 auto; padding: 44px max(20px, env(safe-area-inset-right, 0px)) 64px max(20px, env(safe-area-inset-left, 0px)); display: grid; gap: 40px; align-items: center; }
+.htxt { display: grid; gap: 20px; }
+.night .kicker { color: var(--champ); }
+.night h1 { color: #f8f4ec; } .night h1 i { color: var(--champ); }
+.night p { margin: 0; color: #b9b2a7; font-size: 17px; max-width: 36ch; }
+.acts { display: flex; gap: 10px; flex-wrap: wrap; }
+.cta.lt { background: var(--champ); color: #17130c; } .cta.lt:hover { background: #e6cfa2; }
+.ghost.lt { border-color: rgba(244,240,234,.4); color: #f4f0ea; }
+.from { font-size: 13px; color: #8c857a; letter-spacing: .04em; }
+.ishome .top { position: relative; z-index: 3; border-color: rgba(255,255,255,.12); }
+.ishome .logo { color: #f4f0ea; } .ishome .logo span { color: var(--champ); }
+.ishome .mine { color: #f4f0ea; border-color: rgba(244,240,234,.6); }
+body.ishome { background: linear-gradient(var(--night) 0 400px, var(--bg) 400px); }
+/* enveloppe de démonstration, qui s'ouvre en boucle */
+.loopenv { position: relative; width: min(84vw, 400px); aspect-ratio: 1.45; margin: 70px auto 10px; }
+.loopenv .eback, .loopenv .front, .loopenv .flap { position: absolute; inset: 0; background: var(--e-paper); border-radius: 8px; }
+.loopenv .eback { box-shadow: 0 40px 80px rgba(0,0,0,.5); }
+.loopenv .front { clip-path: polygon(0 0, 50% 55%, 100% 0, 100% 100%, 0 100%); z-index: 4; background: linear-gradient(170deg, color-mix(in srgb, var(--e-paper) 94%, #fff), var(--e-paper)); }
+.loopenv .flap { clip-path: polygon(0 0, 100% 0, 50% 58%); transform-origin: top; z-index: 5; background: color-mix(in srgb, var(--e-paper) 86%, #000); animation: lflap 7s cubic-bezier(.5,0,.3,1) infinite; }
+.loopenv .seal { position: absolute; left: 50%; top: 52%; width: 58px; height: 58px; margin: -29px 0 0 -29px; border-radius: 50%; z-index: 6; display: grid; place-items: center; font: 400 26px var(--title); color: #fff7e8; background: radial-gradient(circle at 35% 30%, color-mix(in srgb, var(--e-seal) 75%, #fff), var(--e-seal) 60%, color-mix(in srgb, var(--e-seal) 70%, #000)); box-shadow: 0 4px 10px rgba(0,0,0,.35); animation: lseal 7s ease infinite; }
+.loopenv .inner { position: absolute; left: 7%; right: 7%; top: 6%; bottom: 6%; z-index: 3; border-radius: 6px; overflow: hidden; animation: linner 7s cubic-bezier(.3,.7,.2,1) infinite; }
+@keyframes lseal { 0%, 12% { transform: scale(1); opacity: 1; } 20%, 86% { transform: scale(1.5); opacity: 0; } 96%, 100% { transform: scale(1); opacity: 1; } }
+@keyframes lflap { 0%, 16% { transform: rotateX(0); z-index: 5; } 30%, 84% { transform: rotateX(180deg); z-index: 1; } 96%, 100% { transform: rotateX(0); z-index: 5; } }
+@keyframes linner { 0%, 30% { transform: translateY(0); } 50%, 80% { transform: translateY(-62%); } 94%, 100% { transform: translateY(0); } }
+/* les deux choix */
+.cats { display: grid; gap: 18px; }
+.catc { position: relative; overflow: hidden; border: 0; padding: 0; border-radius: 22px; cursor: pointer; color: #fff; text-align: left; aspect-ratio: 4 / 4.4; isolation: isolate; }
+.catc .pic { position: absolute; inset: 0; z-index: -2; }
+.catc img { width: 100%; height: 100%; object-fit: cover; transition: transform 1.2s cubic-bezier(.2,.8,.2,1); }
+.catc::after { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(180deg, rgba(14,14,16,0) 35%, rgba(14,14,16,.82)); }
+.catc:hover img { transform: scale(1.06); }
+.catc .cap { position: absolute; left: 24px; right: 24px; bottom: 24px; display: grid; gap: 6px; }
+.catc b { font: 400 44px/1 var(--title); }
+.catc small { font-size: 14.5px; color: rgba(255,255,255,.82); }
+.catc .go { margin-top: 10px; width: max-content; font-size: 14px; font-weight: 600; padding: 11px 20px; border-radius: 99px; background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.4); backdrop-filter: blur(8px); transition: background .2s, color .2s; }
+.catc:hover .go { background: #fff; color: var(--ink); }
+/* défilement continu des modèles */
+.sec { display: grid; gap: 16px; }
 .sec .head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
-.sec h3 { margin: 0; font: 500 28px var(--title); }
-.cats { display: grid; gap: 16px; }
-.catc { position: relative; display: grid; grid-template-rows: auto auto; border: 0; padding: 0; background: none; text-align: left; cursor: pointer; color: var(--ink); }
-.catc .pic { overflow: hidden; border-radius: 4px; aspect-ratio: 4 / 3; background: #e9e4dc; }
-.catc img { width: 100%; height: 100%; object-fit: cover; transition: transform .9s cubic-bezier(.2,.8,.2,1); }
-.catc:hover img { transform: scale(1.04); }
-.catc .cap { display: grid; grid-template-columns: 1fr auto; align-items: end; gap: 4px 12px; padding: 14px 2px 0; }
-.catc .num { grid-column: 1 / -1; font-size: 11.5px; letter-spacing: .22em; color: var(--muted); font-weight: 700; }
-.catc b { font: 500 30px/1.05 var(--title); }
-.catc small { grid-column: 1; color: var(--muted); font-size: 14px; }
-.catc .go { grid-row: 2 / 4; grid-column: 2; align-self: center; width: 46px; height: 46px; border-radius: 50%; border: 1px solid var(--ink); display: grid; place-items: center; font-size: 18px; transition: background .2s, color .2s; }
-.catc:hover .go { background: var(--ink); color: #fff; }
-.picks { display: grid; grid-auto-flow: column; grid-auto-columns: 170px; gap: 14px; overflow-x: auto; padding-bottom: 6px; scroll-snap-type: x mandatory; }
-.picks .mdl { scroll-snap-align: start; }
-.steps { display: grid; gap: 0; border-top: 1px solid var(--line); }
-.steps div { display: grid; grid-template-columns: 54px 1fr; gap: 10px; padding: 16px 2px; border-bottom: 1px solid var(--line); }
-.steps span { font: 500 26px var(--title); color: var(--acc); }
-.steps b { display: block; font-weight: 700; }
-.steps small { color: var(--muted); font-size: 14px; }
-.price-band { background: var(--ink); color: #f6f3ee; border-radius: 4px; padding: 28px 22px; display: grid; gap: 10px; }
-.price-band h3 { margin: 0; font: 500 30px var(--title); color: #fff; }
-.price-band p { margin: 0; color: #cfc8bd; }
-.price-band .ghost { border-color: #f6f3ee; color: #f6f3ee; width: max-content; }
+.marq { overflow: hidden; margin: 0 calc(50% - 50vw); padding: 8px 0 14px; -webkit-mask: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); mask: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); }
+.mtrack { display: flex; gap: 18px; width: max-content; animation: marq 60s linear infinite; padding-left: 18px; }
+.marq:hover .mtrack { animation-play-state: paused; }
+.mtrack .mdl { width: 170px; }
+.mtrack .mdl b { font: 400 19px var(--title); }
+@keyframes marq { to { transform: translateX(-50%); } }
+.closing { text-align: center; display: grid; justify-items: center; gap: 16px; padding: 20px 0 10px; }
+/* apparition au défilement */
+.rv { opacity: 0; transform: translateY(26px); transition: opacity .9s cubic-bezier(.2,.8,.2,1) var(--d, 0ms), transform .9s cubic-bezier(.2,.8,.2,1) var(--d, 0ms); }
+.rv.on { opacity: 1; transform: none; }
+.mdl .card { box-shadow: 0 16px 34px rgba(14,14,16,.16); transition: transform .4s cubic-bezier(.2,.8,.2,1), box-shadow .4s; }
+.mdl:hover .card { transform: translateY(-8px); box-shadow: 0 26px 46px rgba(14,14,16,.22); }
 .occs { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
 .occ { border: 0; background: none; padding: 0; cursor: pointer; display: grid; gap: 8px; text-align: left; }
 .occ img { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; border-radius: 4px; transition: transform .6s; }
 .occ:hover img { transform: scale(1.03); }
-.occ b { font: 500 18px var(--title); }
+.occ b { font: 400 22px var(--title); }
 
 /* --- galerie --- */
 .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
@@ -253,10 +271,9 @@ footer a { color: inherit; }
   .hero { grid-template-columns: 1.1fr 1fr; }
   .hero .show { height: 500px; } .hero .show .card { width: 270px; }
   .occs { grid-template-columns: repeat(4, 1fr); }
-  .cats { grid-template-columns: 1fr 1fr; gap: 28px; }
-  .feats { grid-template-columns: repeat(4, 1fr); }
-  .picks { grid-auto-columns: 200px; }
-  .price-band { padding: 44px; grid-template-columns: 1fr auto; align-items: center; } .price-band .kicker { grid-column: 1 / -1; } .price-band .ghost { grid-row: 2 / 4; grid-column: 2; }
+  .cats { grid-template-columns: 1fr 1fr; gap: 24px; } .catc { aspect-ratio: 4 / 4.6; }
+  .nin { grid-template-columns: 1.05fr 1fr; padding-top: 80px; padding-bottom: 110px; } .loopenv { margin: 40px auto 0; }
+  .mtrack .mdl { width: 210px; }
   .grid { grid-template-columns: repeat(4, 1fr); }
   .editor { grid-template-columns: 360px 1fr; align-items: start; }
   .editor .prev { position: sticky; top: 20px; }
@@ -374,27 +391,26 @@ const EX = { anniversaire: ['Les 30 ans de Julie', 'Le Loft, Lyon'], 'anniversai
 const demo = (f, oid) => { const e = EX[oid || f.occ] || []; return { ...f, noms: f.noms || e[0] || '', date: f.date || '2026-06-20T18:00', lieu: f.lieu || e[1] || '' }; };
 
 function home() {
-  const show = ['mariage-1', 'noel-6', 'anniversaire-2'].map(id => { const m = mdlOf(id), o = occOf(m.occ); return cardHTML(m, demo(defaults(o), o.id), { live: true }); }).join('');
+  const env = mdlOf('mariage-1'), envO = occOf(env.occ);
+  const [, , acc, paper] = PAL[env.pal];
   const bg = { inv: DECORS.mariage[2], voeux: DECORS.noel[0] };
-  const picks = ['mariage-6', 'henne-1', 'anniversaire-1', 'noel-2', 'aid-6', 'bapteme-2', 'saint-valentin-1', 'nouvel-an-6'].map(mdlOf).filter(Boolean);
+  const picks = ['mariage-6', 'anniversaire-1', 'noel-2', 'bapteme-2', 'saint-valentin-1', 'nouvel-an-6', 'fiancailles-1', 'aid-6', 'naissance-1', 'joyeux-anniversaire-3'].map(mdlOf).filter(Boolean);
+  const pk = picks.map(m => `<button class="mdl" type="button" data-go="m-${m.id}">${cardHTML(m, demo(defaults(occOf(m.occ)), m.occ))}<b>${esc(occOf(m.occ).nom)}</b></button>`).join('');
   return `<section class="screen home">
-    <div class="hero">
-      <div class="txt"><span class="kicker">Invitations & cartes animées</span>
-        <h1>L'art de <i>recevoir</i>, en un lien.</h1>
-        <p class="sub">Des invitations et des vœux animés, glissés dans une enveloppe qui s'ouvre sous les yeux de vos proches. Prêts en deux minutes.</p>
-        <div class="acts"><button class="cta" type="button" data-go="cat-inv">Créer une invitation</button><button class="ghost" type="button" data-go="cat-voeux">Envoyer des vœux</button></div></div>
-      <div class="show">${show}</div>
-    </div>
-    <div class="feats"><div><b>Enveloppe animée</b>Elle s'ouvre à l'écran</div><div><b>Réponses des invités</b>Oui, non, peut-être</div><div><b>Plusieurs invités</b>Un lien pour chacun</div><div><b>Dès 1,20 €</b>Sans abonnement</div></div>
-    <div class="cats">${CATS.map((c, i) => `<button class="catc" type="button" data-go="cat-${c.id}"><span class="pic"><img src="${bg[c.id].u}&w=900&h=680&q=72&fm=jpg&fit=crop" alt=""></span>
-      <span class="cap"><span class="num">0${i + 1}</span><b>${c.nom}</b><small>${c.sous}</small><span class="go">→</span></span></button>`).join('')}</div>
-    <div class="sec"><div class="head"><h3>Les plus choisis</h3></div>
-      <div class="picks">${picks.map(m => `<button class="mdl" type="button" data-go="m-${m.id}">${cardHTML(m, demo(defaults(occOf(m.occ)), m.occ))}<b>${esc(occOf(m.occ).nom)}</b><small>${esc(m.nom)}</small></button>`).join('')}</div></div>
-    <div class="sec"><h3>Comment ça marche</h3><div class="steps">
-      <div><span>01</span><p style="margin:0"><b>Choisissez un modèle</b><small>${MODELES.length} cartes animées, pour chaque occasion.</small></p></div>
-      <div><span>02</span><p style="margin:0"><b>Personnalisez</b><small>Textes, date, lieu, et la liste de vos invités.</small></p></div>
-      <div><span>03</span><p style="margin:0"><b>Envoyez</b><small>Chacun reçoit son enveloppe et vous répond en un geste.</small></p></div></div></div>
-    <div class="price-band"><span class="kicker" style="color:#a9a196">Tarif</span><h3>1,20 € la carte</h3><p>Puis 0,60 € par personne ajoutée. Pas d'abonnement, vous payez seulement ce que vous envoyez.</p><button class="ghost" type="button" data-go="cat-inv">Commencer</button></div>
+    <div class="night bleed"><div class="nin">
+      <div class="htxt rv"><span class="kicker">Invitations & vœux animés</span>
+        <h1>Une enveloppe.<br><i>Un frisson.</i></h1>
+        <p>Créez une carte animée en deux minutes. Vos proches l'ouvrent comme une vraie lettre.</p>
+        <div class="acts"><button class="cta lt" type="button" data-go="cat-inv">Créer une invitation</button><button class="ghost lt" type="button" data-go="cat-voeux">Envoyer des vœux</button></div>
+        <span class="from">À partir de 1,20 €</span></div>
+      <div class="loopenv" style="--e-paper:${paper};--e-seal:${acc}" aria-hidden="true">
+        <div class="eback"></div><div class="inner">${cardHTML(env, demo(defaults(envO), envO.id))}</div><div class="front"></div><div class="flap"></div><div class="seal">C</div>
+      </div></div></div>
+    <div class="cats">${CATS.map((c, i) => `<button class="catc rv" type="button" data-go="cat-${c.id}" style="--d:${i * 120}ms"><span class="pic"><img src="${bg[c.id].u}&w=1000&h=1200&q=74&fm=jpg&fit=crop" alt=""></span>
+      <span class="cap"><b>${c.nom}</b><small>${c.sous}</small><span class="go">Découvrir</span></span></button>`).join('')}</div>
+    <div class="sec rv"><div class="head"><h3>Les plus choisis</h3><span class="kicker">Faites défiler</span></div>
+      <div class="marq"><div class="mtrack">${pk}${pk}</div></div></div>
+    <div class="closing rv"><h2>Prête en <i>deux minutes.</i></h2><p class="sub">1,20 € la carte, puis 0,60 € par personne ajoutée. Sans abonnement.</p><button class="cta" type="button" data-go="cat-inv">Commencer</button></div>
   </section>`;
 }
 function catPage(id) {
@@ -459,10 +475,12 @@ function render() {
   if (r.startsWith('ok-') && !state.share) { const x = (store.get('mine') || []).find(y => 'ok-' + y.id === r); if (x) state.share = [x.id, x.cle, x.url]; else r = state.route = ''; }
   $('#app').innerHTML = r.startsWith('cat-') ? catPage(r.slice(4)) : r.startsWith('o-') && occOf(r.slice(2)) ? occPage(r.slice(2)) : r.startsWith('m-') && mdlOf(r.slice(2)) ? editor(r.slice(2))
     : r.startsWith('ok-') ? sharePage(...state.share) : r === 'mes-cartes' ? myCards() : home();
-  $('#back').hidden = !r;
-  scrollTo(0, 0); liveCards();
+  $('#back').hidden = !r; document.body.classList.toggle('ishome', !r);
+  scrollTo(0, 0); liveCards(); reveal();
   if (r.startsWith('ok-')) { try { new QRCode($('#qr'), { text: state.share[2], width: 150, height: 150, correctLevel: QRCode.CorrectLevel.M }); } catch (_) { $('#qr').hidden = true; } loadResp(state.share[0], state.share[1]); }
 }
+const io = 'IntersectionObserver' in window ? new IntersectionObserver(es => es.forEach(x => { if (x.isIntersecting) { x.target.classList.add('on'); io.unobserve(x.target); } }), { threshold: .12 }) : null;
+function reveal() { document.querySelectorAll('.rv:not(.on)').forEach(el => io ? io.observe(el) : el.classList.add('on')); }
 function go(r) { if (r === state.route) return; state.route = r; history.pushState({ r }, '', r ? '#' + r : location.pathname); render(); }
 addEventListener('popstate', e => { const o = $('#open'); if (!o.hidden) { closeOpen(); return; } state.route = (e.state && e.state.r) || location.hash.slice(1); render(); });
 
