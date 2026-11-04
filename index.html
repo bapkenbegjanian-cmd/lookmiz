@@ -13,70 +13,82 @@
 /* Mise en page : une boutique de cartes. Accueil → catégorie → occasion (galerie de modèles) → personnalisation → partage.
    Le destinataire reçoit une enveloppe qui s'ouvre, puis la carte animée. */
 :root {
-  --bg: #fbf6ef; --paper: #ffffff; --ink: #1c1712; --muted: #7a6f63; --line: #eadfd2;
-  --acc: #c2643a; --acc2: #8a5cff; --gold: #c99a45;
-  --grad: linear-gradient(120deg, #e0794a, #c2643a 40%, #8a5cff);
+  --bg: #f6f3ee; --paper: #ffffff; --ink: #151311; --muted: #6f6a63; --line: #e4ded5;
+  --acc: #9c7a43; --acc2: #151311; --gold: #9c7a43;
   --ui: "Plus Jakarta Sans", system-ui, sans-serif; --title: "Playfair Display", Georgia, serif;
   color-scheme: light;
 }
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-html, body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.5 var(--ui); }
-body { background: radial-gradient(900px 600px at 0% -10%, #ffe6d4, transparent 60%), radial-gradient(800px 600px at 110% 20%, #ece4ff, transparent 60%), var(--bg); background-attachment: fixed; min-height: 100vh; }
+html, body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.55 var(--ui); }
+body { min-height: 100vh; }
 button, input, textarea, select { font: inherit; color: inherit; }
 img { display: block; max-width: 100%; }
 [hidden] { display: none !important; }
-.app { max-width: 1080px; margin: 0 auto; padding: calc(env(safe-area-inset-top, 0px) + 12px) max(18px, env(safe-area-inset-right, 0px)) calc(env(safe-area-inset-bottom, 0px) + 40px) max(18px, env(safe-area-inset-left, 0px)); }
-.top { display: flex; align-items: center; gap: 12px; height: 52px; margin-bottom: 8px; }
-.logo { font: 800 26px/1 var(--ui); letter-spacing: -.04em; text-decoration: none; color: var(--ink); background: none; border: 0; cursor: pointer; padding: 0; }
-.logo span { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
-.back { width: 42px; height: 42px; border-radius: 14px; border: 1px solid var(--line); background: var(--paper); cursor: pointer; font-size: 18px; }
+.app { max-width: 1120px; margin: 0 auto; padding: calc(env(safe-area-inset-top, 0px) + 10px) max(20px, env(safe-area-inset-right, 0px)) calc(env(safe-area-inset-bottom, 0px) + 40px) max(20px, env(safe-area-inset-left, 0px)); }
+.top { display: flex; align-items: center; gap: 12px; height: 56px; margin-bottom: 10px; border-bottom: 1px solid var(--line); }
+.logo { font: 600 25px/1 var(--title); letter-spacing: .01em; color: var(--ink); background: none; border: 0; cursor: pointer; padding: 0; }
+.logo span { font-style: italic; color: var(--acc); }
+.back { width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--line); background: var(--paper); cursor: pointer; font-size: 17px; }
 .top .sp { flex: 1; }
-.mine { border: 1px solid var(--line); background: var(--paper); border-radius: 99px; padding: 8px 14px; font-weight: 700; font-size: 14px; cursor: pointer; }
-.screen { display: grid; gap: 22px; animation: in .5s cubic-bezier(.2,.8,.2,1) both; }
-@keyframes in { from { opacity: 0; transform: translateY(12px); } }
-h1, h2 { font-family: var(--title); font-weight: 700; margin: 0; line-height: 1.05; letter-spacing: -.01em; text-wrap: balance; }
-h1 { font-size: clamp(40px, 10vw, 68px); }
-h2 { font-size: clamp(28px, 7vw, 40px); }
-h1 i, h2 i { font-style: italic; background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
-.sub { color: var(--muted); margin: 0; max-width: 46ch; }
-.kicker { font-size: 12px; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; color: var(--acc); }
-.cta { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 0; border-radius: 16px; padding: 16px 22px; font-weight: 800; font-size: 16px; color: #fff; background: var(--grad); cursor: pointer; text-decoration: none; box-shadow: 0 12px 28px rgba(194,100,58,.28); transition: transform .15s; }
+.mine { border: 0; background: none; padding: 8px 2px; font-weight: 600; font-size: 14px; cursor: pointer; letter-spacing: .02em; border-bottom: 1px solid var(--ink); }
+.screen { display: grid; gap: 26px; animation: in .5s cubic-bezier(.2,.8,.2,1) both; }
+@keyframes in { from { opacity: 0; transform: translateY(10px); } }
+h1, h2 { font-family: var(--title); font-weight: 500; margin: 0; line-height: 1.04; letter-spacing: -.01em; text-wrap: balance; }
+h1 { font-size: clamp(44px, 11vw, 82px); }
+h2 { font-size: clamp(30px, 7vw, 44px); }
+h1 i, h2 i { font-style: italic; color: var(--acc); }
+.sub { color: var(--muted); margin: 0; max-width: 44ch; font-size: 16.5px; }
+.kicker { font-size: 11.5px; font-weight: 700; letter-spacing: .22em; text-transform: uppercase; color: var(--muted); }
+.cta { display: inline-flex; align-items: center; justify-content: center; gap: 10px; border: 0; border-radius: 99px; padding: 16px 26px; font-weight: 600; font-size: 15.5px; letter-spacing: .02em; color: #fff; background: var(--ink); cursor: pointer; text-decoration: none; transition: transform .15s, background .2s; }
+.cta:hover { background: #2b2723; }
 .cta:active { transform: scale(.97); }
 .cta.full { width: 100%; }
-.ghost { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid var(--line); border-radius: 16px; padding: 14px 18px; font-weight: 700; background: var(--paper); cursor: pointer; text-decoration: none; color: var(--ink); }
-button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px solid var(--acc2); outline-offset: 2px; }
+.ghost { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid var(--ink); border-radius: 99px; padding: 14px 22px; font-weight: 600; background: transparent; cursor: pointer; text-decoration: none; color: var(--ink); }
+button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px solid var(--acc); outline-offset: 3px; }
 
 /* --- accueil --- */
-.hero { display: grid; gap: 22px; align-items: center; }
-.hero .show { position: relative; height: 360px; display: grid; place-items: center; }
-.hero .show .card { width: 210px; position: absolute; box-shadow: 0 24px 50px rgba(28,23,18,.22); transition: transform .6s; }
-.hero .show .card:nth-child(1) { transform: rotate(-10deg) translate(-70px, 14px); }
-.hero .show .card:nth-child(2) { transform: rotate(8deg) translate(70px, 20px); }
-.hero .show .card:nth-child(3) { transform: translateY(-6px); z-index: 2; animation: floaty 5s ease-in-out infinite; }
-@keyframes floaty { 50% { transform: translateY(-16px) rotate(1deg); } }
-.cats { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.catc { position: relative; overflow: hidden; border: 0; border-radius: 24px; padding: 22px 18px; text-align: left; cursor: pointer; color: #fff; min-height: 230px; display: grid; align-content: end; gap: 4px; transition: transform .2s; }
-.catc:active { transform: scale(.98); }
-.catc.inv { background: linear-gradient(150deg, #e0794a, #a8402a); }
-.catc.voeux { background: linear-gradient(150deg, #8a5cff, #4b2aa8); }
-.catc img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: -1; transition: transform .6s; }
-.catc { isolation: isolate; } .catc::before { content: ''; position: absolute; inset: 0; z-index: -1; }
-.catc.inv::before { background: linear-gradient(180deg, rgba(168,64,42,.35), rgba(120,40,24,.92) 70%); } .catc.voeux::before { background: linear-gradient(180deg, rgba(75,42,168,.35), rgba(50,24,120,.92) 70%); }
-.catc:hover img { transform: scale(1.05); }
-.catc .go { margin-top: 8px; width: max-content; background: #fff; color: var(--ink); font-weight: 800; font-size: 14px; padding: 9px 16px; border-radius: 99px; }
-.catc .big-old { position: absolute; top: 10px; right: 12px; font-size: 54px; filter: drop-shadow(0 6px 10px rgba(0,0,0,.2)); animation: floaty 4s ease-in-out infinite; }
-.catc b { font: 700 24px/1.05 var(--title); }
-.catc small { opacity: .9; font-size: 13px; }
-.sec h3 { margin: 0 0 10px; font: 700 22px var(--title); }
-.occs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-.occ { border: 1px solid var(--line); background: var(--paper); border-radius: 18px; padding: 14px 8px; cursor: pointer; display: grid; justify-items: center; gap: 4px; text-align: center; transition: transform .15s, box-shadow .2s; }
-.occ:hover { box-shadow: 0 10px 22px rgba(28,23,18,.08); transform: translateY(-2px); }
-.occ { padding: 0; overflow: hidden; gap: 0; } .occ img { width: 100%; aspect-ratio: 3 / 3.4; object-fit: cover; } .occ b { padding: 10px 6px 12px; font-size: 13.5px; }
-.occ b { font-size: 13px; line-height: 1.2; }
-.how { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-.how div { background: var(--paper); border: 1px solid var(--line); border-radius: 18px; padding: 14px 10px; text-align: center; font-size: 13px; }
-.how span { display: block; font-size: 26px; }
-.how b { display: block; font-size: 14px; }
+.hero { display: grid; gap: 28px; align-items: center; padding: 18px 0 8px; }
+.hero .txt { display: grid; gap: 18px; }
+.hero .acts { display: flex; gap: 10px; flex-wrap: wrap; }
+.hero .show { position: relative; height: 400px; display: grid; place-items: center; }
+.hero .show .card { width: 220px; position: absolute; box-shadow: 0 30px 60px rgba(21,19,17,.18); }
+.hero .show .card:nth-child(1) { transform: rotate(-9deg) translate(-78px, 16px); }
+.hero .show .card:nth-child(2) { transform: rotate(8deg) translate(78px, 22px); }
+.hero .show .card:nth-child(3) { z-index: 2; animation: floaty 6s ease-in-out infinite; }
+@keyframes floaty { 50% { transform: translateY(-12px); } }
+.feats { display: grid; grid-template-columns: repeat(2, 1fr); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.feats div { padding: 16px 6px; font-size: 13.5px; color: var(--muted); }
+.feats b { display: block; color: var(--ink); font: 500 17px var(--title); }
+.sec { display: grid; gap: 14px; }
+.sec .head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.sec h3 { margin: 0; font: 500 28px var(--title); }
+.cats { display: grid; gap: 16px; }
+.catc { position: relative; display: grid; grid-template-rows: auto auto; border: 0; padding: 0; background: none; text-align: left; cursor: pointer; color: var(--ink); }
+.catc .pic { overflow: hidden; border-radius: 4px; aspect-ratio: 4 / 3; background: #e9e4dc; }
+.catc img { width: 100%; height: 100%; object-fit: cover; transition: transform .9s cubic-bezier(.2,.8,.2,1); }
+.catc:hover img { transform: scale(1.04); }
+.catc .cap { display: grid; grid-template-columns: 1fr auto; align-items: end; gap: 4px 12px; padding: 14px 2px 0; }
+.catc .num { grid-column: 1 / -1; font-size: 11.5px; letter-spacing: .22em; color: var(--muted); font-weight: 700; }
+.catc b { font: 500 30px/1.05 var(--title); }
+.catc small { grid-column: 1; color: var(--muted); font-size: 14px; }
+.catc .go { grid-row: 2 / 4; grid-column: 2; align-self: center; width: 46px; height: 46px; border-radius: 50%; border: 1px solid var(--ink); display: grid; place-items: center; font-size: 18px; transition: background .2s, color .2s; }
+.catc:hover .go { background: var(--ink); color: #fff; }
+.picks { display: grid; grid-auto-flow: column; grid-auto-columns: 170px; gap: 14px; overflow-x: auto; padding-bottom: 6px; scroll-snap-type: x mandatory; }
+.picks .mdl { scroll-snap-align: start; }
+.steps { display: grid; gap: 0; border-top: 1px solid var(--line); }
+.steps div { display: grid; grid-template-columns: 54px 1fr; gap: 10px; padding: 16px 2px; border-bottom: 1px solid var(--line); }
+.steps span { font: 500 26px var(--title); color: var(--acc); }
+.steps b { display: block; font-weight: 700; }
+.steps small { color: var(--muted); font-size: 14px; }
+.price-band { background: var(--ink); color: #f6f3ee; border-radius: 4px; padding: 28px 22px; display: grid; gap: 10px; }
+.price-band h3 { margin: 0; font: 500 30px var(--title); color: #fff; }
+.price-band p { margin: 0; color: #cfc8bd; }
+.price-band .ghost { border-color: #f6f3ee; color: #f6f3ee; width: max-content; }
+.occs { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+.occ { border: 0; background: none; padding: 0; cursor: pointer; display: grid; gap: 8px; text-align: left; }
+.occ img { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; border-radius: 4px; transition: transform .6s; }
+.occ:hover img { transform: scale(1.03); }
+.occ b { font: 500 18px var(--title); }
 
 /* --- galerie --- */
 .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
@@ -87,7 +99,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .mdl small { color: var(--muted); font-size: 12px; }
 
 /* --- la carte --- */
-.card { position: relative; width: 100%; aspect-ratio: 3 / 4.2; border-radius: 18px; overflow: hidden; container-type: inline-size; background: var(--c-bg); color: var(--c-ink); isolation: isolate; }
+.card { position: relative; width: 100%; aspect-ratio: 3 / 4.2; border-radius: 6px; overflow: hidden; container-type: inline-size; background: var(--c-bg); color: var(--c-ink); isolation: isolate; }
 .card::before { content: ""; position: absolute; inset: 4.5cqw; border: .7cqw solid color-mix(in srgb, var(--c-acc) 70%, transparent); border-radius: 3cqw; pointer-events: none; z-index: 2; }
 .card::after { content: ""; position: absolute; inset: 6.5cqw; border: .25cqw solid color-mix(in srgb, var(--c-acc) 45%, transparent); border-radius: 2cqw; pointer-events: none; z-index: 2; }
 .card canvas { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
@@ -162,13 +174,13 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .switch { display: flex !important; align-items: center; justify-content: space-between; gap: 10px; background: var(--paper); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; color: var(--ink) !important; font-size: 15px !important; }
 .switch input { width: 46px; height: 26px; appearance: none; background: #ddd2c4; border-radius: 99px; position: relative; cursor: pointer; transition: background .2s; padding: 0; border: 0; flex: none; }
 .switch input::after { content: ""; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: #fff; transition: transform .2s; }
-.switch input:checked { background: var(--acc); }
+.switch input:checked { background: var(--ink); }
 .switch input:checked::after { transform: translateX(20px); }
 .others { display: flex; gap: 8px; overflow-x: auto; padding: 4px 2px 8px; }
 .others button { flex: none; width: 64px; padding: 0; border: 2px solid transparent; border-radius: 12px; background: none; cursor: pointer; }
-.others button[aria-pressed="true"] { border-color: var(--acc); }
+
 .others .card { border-radius: 10px; }
-.prev .openbtn { position: relative; display: block; margin: 12px auto 0; width: 100%; z-index: 5; border: 0; border-radius: 99px; padding: 12px 16px; font-weight: 800; font-size: 14px; color: #fff; background: var(--grad); box-shadow: 0 10px 24px rgba(194,100,58,.35); cursor: pointer; animation: bob 2.4s ease-in-out infinite; }
+.prev .openbtn { position: relative; display: block; margin: 14px auto 0; width: 100%; z-index: 5; border: 1px solid var(--ink); border-radius: 99px; padding: 13px 16px; font-weight: 600; font-size: 14.5px; color: var(--ink); background: transparent; cursor: pointer; }
 @keyframes bob { 50% { transform: translateY(-4px); } }
 .note { font-size: 13px; color: var(--muted); text-align: center; margin: 0; }
 
@@ -181,6 +193,17 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 #qr img, #qr canvas { width: 150px !important; height: 150px !important; }
 .resp { display: grid; gap: 8px; }
 .resp .r { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; background: var(--bg); border-radius: 12px; padding: 10px 12px; font-size: 14px; }
+.tagbox { display: grid; gap: 8px; } .tlab { font-size: 13px; font-weight: 700; color: var(--muted); }
+.tags { display: flex; flex-wrap: wrap; gap: 8px; } .tags:empty { display: none; }
+.tag { display: inline-flex; align-items: center; gap: 6px; background: var(--ink); color: #fff; border-radius: 99px; padding: 7px 8px 7px 14px; font-size: 14px; font-weight: 600; animation: in .3s both; }
+.tag button { width: 22px; height: 22px; border-radius: 50%; border: 0; background: rgba(255,255,255,.18); color: #fff; cursor: pointer; font-size: 14px; line-height: 1; padding: 0; }
+.tadd { display: grid; grid-template-columns: minmax(0, 1fr) 50px; gap: 8px; }
+.tadd input { width: 100%; padding: 13px 14px; border-radius: 14px; border: 1px solid var(--line); background: var(--paper); font-size: 15px; }
+.tadd .plus { border: 0; border-radius: 14px; background: var(--ink); color: #fff; font-size: 24px; cursor: pointer; }
+.tagbox small { color: var(--muted); font-size: 12.5px; font-weight: 500; }
+.total { display: flex; justify-content: space-between; align-items: baseline; padding: 16px 2px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.total small { display: block; color: var(--muted); font-size: 12.5px; }
+.total b { font: 500 30px var(--title); }
 .dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; } .dot.oui { background: #2fb36b; } .dot.non { background: #e0485a; } .dot.peut-etre { background: #f0a92b; }
 .guests { display: grid; gap: 8px; } .guest { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 8px; align-items: center; background: var(--bg); border-radius: 12px; padding: 8px 8px 8px 14px; font-weight: 700; } .guest button { border: 1px solid var(--line); background: #fff; border-radius: 10px; padding: 8px 12px; font-weight: 700; font-size: 13px; cursor: pointer; }
 .resp .tot { display: flex; gap: 10px; flex-wrap: wrap; font-weight: 800; }
@@ -228,12 +251,16 @@ footer a { color: inherit; }
 
 @media (min-width: 900px) {
   .hero { grid-template-columns: 1.1fr 1fr; }
-  .hero .show { height: 440px; } .hero .show .card { width: 250px; }
-  .occs { grid-template-columns: repeat(6, 1fr); }
+  .hero .show { height: 500px; } .hero .show .card { width: 270px; }
+  .occs { grid-template-columns: repeat(4, 1fr); }
+  .cats { grid-template-columns: 1fr 1fr; gap: 28px; }
+  .feats { grid-template-columns: repeat(4, 1fr); }
+  .picks { grid-auto-columns: 200px; }
+  .price-band { padding: 44px; grid-template-columns: 1fr auto; align-items: center; } .price-band .kicker { grid-column: 1 / -1; } .price-band .ghost { grid-row: 2 / 4; grid-column: 2; }
   .grid { grid-template-columns: repeat(4, 1fr); }
   .editor { grid-template-columns: 360px 1fr; align-items: start; }
   .editor .prev { position: sticky; top: 20px; }
-  .cats .catc { min-height: 300px; }
+
 }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01s !important; animation-iteration-count: 1 !important; transition-duration: .01s !important; } }
 </style>
@@ -260,7 +287,11 @@ const store = { get: k => { try { return JSON.parse(localStorage.getItem('lmz-' 
 /* ---------- dessin d'une carte ---------- */
 // occasions où l'on envoie la même carte à plusieurs personnes
 const GROUPE = new Set([...OCC.filter(o => o.cat === 'inv').map(o => o.id), 'noel', 'nouvel-an', 'aid', 'ramadan', 'paques', 'merci']);
-const destList = f => String(f.dest || '').split(/\n|,/).map(x => x.trim()).filter(Boolean).slice(0, 200);
+const destList = f => (Array.isArray(f.dest) ? f.dest : String(f.dest || '').split(/\n|,/)).map(x => String(x).trim()).filter(Boolean).slice(0, 200);
+// tarif : 1,20 € pour une personne, puis 0,60 € par personne ajoutée
+const prix = f => 1.2 + 0.6 * Math.max(0, destList(f).length - 1);
+const euros = v => v.toFixed(2).replace('.', ',') + ' €';
+const tagsHTML = f => destList(f).map((n, i) => `<span class="tag">${esc(n)}<button type="button" data-untag="${i}" aria-label="Retirer ${esc(n)}">×</button></span>`).join('');
 const linkFor = (url, nom) => url + (url.includes('?') ? '&' : '?') + 'n=' + encodeURIComponent(nom);
 function cardVars(m) { const [bg, ink, acc] = PAL[m.pal]; return `--c-bg:${bg};--c-ink:${ink};--c-acc:${acc}`; }
 function defaults(o) { return { titre: o.titre, noms: '', msg: o.msg, date: '', lieu: '', adresse: '', rsvp: o.cat === 'inv', de: '' }; }
@@ -334,7 +365,7 @@ function liveCards(root = document) {
 
 /* ---------- écrans ---------- */
 const state = { route: '', f: null, mid: null };
-const occGrid = list => `<div class="occs">${list.map(o => { const d = (DECORS[o.id] || [])[0]; return `<button class="occ" type="button" data-go="o-${o.id}">${d ? `<img src="${d.u}&w=320&h=420&q=60&fm=jpg&fit=crop" alt="" loading="lazy">` : ''}<b>${esc(o.nom)}</b></button>`; }).join('')}</div>`;
+const occGrid = list => `<div class="occs">${list.map(o => { const d = (DECORS[o.id] || [])[0]; return `<button class="occ" type="button" data-go="o-${o.id}">${d ? `<img src="${d.u}&w=420&h=520&q=62&fm=jpg&fit=crop" alt="" loading="lazy">` : ''}<b>${esc(o.nom)}</b></button>`; }).join('')}</div>`;
 const EX = { anniversaire: ['Les 30 ans de Julie', 'Le Loft, Lyon'], 'anniversaire-enfant': ['Les 6 ans de Lucas', 'À la maison'], mariage: ['Claire & Thomas', 'Domaine des Roses'], fiancailles: ['Emma & Louis', 'Restaurant Le Jardin'],
   henne: ['Le henné de Inès', 'Salle Les Jasmins'], bapteme: ['Le baptême de Louise', 'Église Saint-Jean'], 'baby-shower': ['Bébé Martin arrive', 'Chez Camille'], 'gender-reveal': ['Fille ou garçon ?', 'Au jardin'],
   soiree: ['Soirée chez Antoine', 'Rooftop Bellecour'], cremaillere: ['Chez Manon & Paul', '12 rue des Lilas'], evjf: ['Pour la future mariée Chloé', 'Barcelone'], diplome: ['Hugo est diplômé', 'Chez ses parents'],
@@ -345,14 +376,25 @@ const demo = (f, oid) => { const e = EX[oid || f.occ] || []; return { ...f, noms
 function home() {
   const show = ['mariage-1', 'noel-6', 'anniversaire-2'].map(id => { const m = mdlOf(id), o = occOf(m.occ); return cardHTML(m, demo(defaults(o), o.id), { live: true }); }).join('');
   const bg = { inv: DECORS.mariage[2], voeux: DECORS.noel[0] };
-  return `<section class="screen">
+  const picks = ['mariage-6', 'henne-1', 'anniversaire-1', 'noel-2', 'aid-6', 'bapteme-2', 'saint-valentin-1', 'nouvel-an-6'].map(mdlOf).filter(Boolean);
+  return `<section class="screen home">
     <div class="hero">
-      <div style="display:grid;gap:16px"><span class="kicker">Invitations & cartes animées</span>
-        <h1>Des cartes qui font <i>de l'effet.</i></h1>
-        <p class="sub">${MODELES.length} modèles animés, personnalisés en 2 minutes, envoyés dans une enveloppe qui s'ouvre comme une vraie.</p></div>
+      <div class="txt"><span class="kicker">Invitations & cartes animées</span>
+        <h1>L'art de <i>recevoir</i>, en un lien.</h1>
+        <p class="sub">Des invitations et des vœux animés, glissés dans une enveloppe qui s'ouvre sous les yeux de vos proches. Prêts en deux minutes.</p>
+        <div class="acts"><button class="cta" type="button" data-go="cat-inv">Créer une invitation</button><button class="ghost" type="button" data-go="cat-voeux">Envoyer des vœux</button></div></div>
       <div class="show">${show}</div>
     </div>
-    <div class="cats">${CATS.map(c => `<button class="catc ${c.id}" type="button" data-go="cat-${c.id}"><img src="${bg[c.id].u}&w=700&h=500&q=70&fm=jpg&fit=crop" alt=""><b>${c.nom}</b><small>${c.sous}</small><span class="go">Choisir</span></button>`).join('')}</div>
+    <div class="feats"><div><b>Enveloppe animée</b>Elle s'ouvre à l'écran</div><div><b>Réponses des invités</b>Oui, non, peut-être</div><div><b>Plusieurs invités</b>Un lien pour chacun</div><div><b>Dès 1,20 €</b>Sans abonnement</div></div>
+    <div class="cats">${CATS.map((c, i) => `<button class="catc" type="button" data-go="cat-${c.id}"><span class="pic"><img src="${bg[c.id].u}&w=900&h=680&q=72&fm=jpg&fit=crop" alt=""></span>
+      <span class="cap"><span class="num">0${i + 1}</span><b>${c.nom}</b><small>${c.sous}</small><span class="go">→</span></span></button>`).join('')}</div>
+    <div class="sec"><div class="head"><h3>Les plus choisis</h3></div>
+      <div class="picks">${picks.map(m => `<button class="mdl" type="button" data-go="m-${m.id}">${cardHTML(m, demo(defaults(occOf(m.occ)), m.occ))}<b>${esc(occOf(m.occ).nom)}</b><small>${esc(m.nom)}</small></button>`).join('')}</div></div>
+    <div class="sec"><h3>Comment ça marche</h3><div class="steps">
+      <div><span>01</span><p style="margin:0"><b>Choisissez un modèle</b><small>${MODELES.length} cartes animées, pour chaque occasion.</small></p></div>
+      <div><span>02</span><p style="margin:0"><b>Personnalisez</b><small>Textes, date, lieu, et la liste de vos invités.</small></p></div>
+      <div><span>03</span><p style="margin:0"><b>Envoyez</b><small>Chacun reçoit son enveloppe et vous répond en un geste.</small></p></div></div></div>
+    <div class="price-band"><span class="kicker" style="color:#a9a196">Tarif</span><h3>1,20 € la carte</h3><p>Puis 0,60 € par personne ajoutée. Pas d'abonnement, vous payez seulement ce que vous envoyez.</p><button class="ghost" type="button" data-go="cat-inv">Commencer</button></div>
   </section>`;
 }
 function catPage(id) {
@@ -379,8 +421,12 @@ function editor(mid) {
         <label>Adresse (pour le GPS)<input data-f="adresse" value="${esc(f.adresse)}" maxlength="120" placeholder="12 rue des Lilas, Lyon"></label>
         <label class="switch">Les invités répondent (je viens / je ne viens pas)<input type="checkbox" data-f="rsvp" ${f.rsvp ? 'checked' : ''}></label>`
       : `<label>Signature<input data-f="de" value="${esc(f.de)}" maxlength="40" placeholder="Bisous, Sarah"></label>`}
-      ${GROUPE.has(o.id) ? `<label>${inv ? 'Invités' : 'Destinataires'} (un prénom par ligne, facultatif)<textarea data-f="dest" maxlength="4000" placeholder="Camille&#10;Thomas et Julie&#10;Famille Durand">${esc(f.dest || '')}</textarea><small style="font-weight:500">Chacun reçoit son propre lien, avec son prénom sur l'enveloppe.</small></label>` : ''}
+      ${GROUPE.has(o.id) ? `<div class="tagbox"><span class="tlab">${inv ? 'Invités' : 'Destinataires'}</span>
+        <div class="tags" id="tags">${tagsHTML(f)}</div>
+        <div class="tadd"><input id="tagin" maxlength="60" placeholder="Prénom ou famille" aria-label="Ajouter une personne"><button type="button" class="plus" data-addtag aria-label="Ajouter">+</button></div>
+        <small>Chacun reçoit son propre lien, avec son prénom sur l'enveloppe.</small></div>` : ''}
       <label>De la part de (affiché sur l'enveloppe)<input data-f="exp" value="${esc(f.exp || '')}" maxlength="40" placeholder="Sarah"></label>
+      <div class="total"><span>Total <small id="pdet">${destList(f).length > 1 ? '1,20 € + ' + (destList(f).length - 1) + ' × 0,60 €' : 'pour 1 personne'}</small></span><b id="ptot">${euros(prix(f))}</b></div>
       <button class="cta full" type="button" data-save>Créer et envoyer</button>
       <p class="note" id="smsg" role="status"></p>
     </div></section>`;
@@ -421,6 +467,15 @@ function go(r) { if (r === state.route) return; state.route = r; history.pushSta
 addEventListener('popstate', e => { const o = $('#open'); if (!o.hidden) { closeOpen(); return; } state.route = (e.state && e.state.r) || location.hash.slice(1); render(); });
 
 /* ---------- personnalisation ---------- */
+function refreshTags() {
+  const f = state.f, n = destList(f).length; $('#tags').innerHTML = tagsHTML(f);
+  $('#ptot').textContent = euros(prix(f)); $('#pdet').textContent = n > 1 ? '1,20 € + ' + (n - 1) + ' × 0,60 €' : 'pour 1 personne';
+}
+function addTag() {
+  const i = $('#tagin'), v = i.value.trim(); if (!v) { i.focus(); return; }
+  const L = destList(state.f); if (L.length < 200 && !L.includes(v)) L.push(v); state.f.dest = L; i.value = ''; i.focus(); refreshTags();
+}
+document.addEventListener('keydown', e => { if (e.target.id === 'tagin' && e.key === 'Enter') { e.preventDefault(); addTag(); } });
 document.addEventListener('input', e => {
   const k = e.target.dataset.f; if (!k || !state.f) return;
   state.f[k] = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
@@ -512,6 +567,8 @@ document.addEventListener('click', async e => {
   if ('save' in t.dataset) { save(); return; }
   if ('copy' in t.dataset) { const i = $('#lnk'); try { await navigator.clipboard.writeText(i.value); t.textContent = 'Copié'; } catch (_) { i.select(); } return; }
   if ('share' in t.dataset) { const u = $('#lnk').value; if (navigator.share) navigator.share({ title: 'Tu as reçu une carte', text: 'Ouvre ton enveloppe :', url: u }).catch(() => {}); else { try { await navigator.clipboard.writeText(u); t.textContent = 'Lien copié'; } catch (_) {} } return; }
+  if ('addtag' in t.dataset) { addTag(); return; }
+  if (t.dataset.untag !== undefined) { const L = destList(state.f); L.splice(+t.dataset.untag, 1); state.f.dest = L; refreshTags(); return; }
   if (t.dataset.gcopy) { try { await navigator.clipboard.writeText(t.dataset.gcopy); t.textContent = 'Copié'; } catch (_) {} return; }
   if (t.dataset.gshare) { const u = t.dataset.gshare; if (navigator.share) navigator.share({ title: t.dataset.gname + ', tu as reçu une carte', url: u }).catch(() => {}); else { try { await navigator.clipboard.writeText(u); t.textContent = 'Copié'; } catch (_) {} } return; }
   if (t.dataset.reload) { const x = (store.get('mine') || []).find(y => y.id === t.dataset.reload); if (x) loadResp(x.id, x.cle); return; }
