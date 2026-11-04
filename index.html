@@ -343,7 +343,8 @@ footer { text-align: center; font-size: 12px; color: var(--muted); margin-top: 3
 .music.tap::before { content: "Touche pour la musique"; position: absolute; right: 0; top: 98px; font: 600 12px var(--ui); color: #fff; background: rgba(14,14,16,.7); padding: 5px 10px; border-radius: 99px; white-space: nowrap; }
 .opts { display: grid; gap: 14px; padding: 16px; border: 1px solid var(--line); border-radius: 16px; }
 .opts .tlab { font-weight: 700; font-size: 13px; }
-.seg { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.seg { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; } .seg.s3c { grid-template-columns: 1fr 1fr 1fr; }
+.s3bg { position: absolute; inset: -30px; background-size: cover; background-position: center; filter: blur(16px) saturate(1.1); opacity: .5; } .s3bg::after { content: ""; position: absolute; inset: 0; background: radial-gradient(closest-side, transparent 30%, var(--o-bgc, rgba(255,255,255,.5))); }
 .seg button { border: 1px solid var(--line); background: #fff; border-radius: 12px; padding: 12px 6px; font-weight: 700; cursor: pointer; font-family: var(--ui); }
 .seg button[aria-pressed="true"] { background: var(--ink); color: #fff; border-color: var(--ink); }
 .phrow { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
@@ -530,7 +531,7 @@ function editor(mid) {
         <div class="tadd"><input id="tagin" maxlength="60" placeholder="Prénom ou famille" aria-label="Ajouter une personne"><button type="button" class="plus" data-addtag aria-label="Ajouter">+</button></div>
         <small>Chacun reçoit son propre lien, avec son prénom sur l'enveloppe.</small></div>` : ''}
       <div class="opts"><span class="tlab">Ouverture</span>
-        <div class="seg"><button type="button" data-ouv="env" aria-pressed="${f.ouv !== 'coffret'}">Enveloppe</button><button type="button" data-ouv="coffret" aria-pressed="${f.ouv === 'coffret'}">Coffret 3D</button></div>
+        <div class="seg${hasScene(m) ? ' s3c' : ''}">${hasScene(m) ? `<button type="button" data-ouv="scene" aria-pressed="${!f.ouv || f.ouv === 'scene'}">${esc(m.nom)} 3D</button>` : ''}<button type="button" data-ouv="env" aria-pressed="${hasScene(m) ? f.ouv === 'env' : f.ouv !== 'coffret'}">Enveloppe</button><button type="button" data-ouv="coffret" aria-pressed="${f.ouv === 'coffret'}">Coffret</button></div>
         <span class="tlab">Ta photo (facultatif)</span>
         <div class="phrow">${okPhoto(f.photo) ? `<img src="${f.photo}" alt="Ta photo"><button type="button" data-nophoto>Retirer</button>` : ''}<label class="pick">${okPhoto(f.photo) ? 'Changer' : 'Ajouter une photo'}<input type="file" accept="image/*" id="phin"></label></div>
         <label>Musique YouTube (facultatif)<input data-f="yt" value="${esc(f.yt || '')}" maxlength="200" placeholder="Colle un lien YouTube" inputmode="url"></label>
@@ -780,6 +781,8 @@ function loopEnv() {
 }
 
 let POUR = '', TOK = '', CUR3 = null;
+const SCENES3 = new Set(['anniversaire-enfant']);
+const hasScene = m => !!m && SCENES3.has(m.occ);
 const hasGL = () => { try { const c = document.createElement('canvas'); return !!(window.WebGLRenderingContext && (c.getContext('webgl2') || c.getContext('webgl'))); } catch (_) { return false; } };
 const initials = f => { const parts = String(f.noms || f.exp || '').split(/\s*(?:&|\bet\b|\+)\s*/i).map(x => x.trim()).filter(Boolean);
   return (parts.length > 1 ? parts.slice(0, 2).map(x => x.charAt(0)).join('') : (parts[0] || 'L').charAt(0)).toUpperCase(); };
@@ -802,15 +805,18 @@ function openCard(data, { id = null, preview = false } = {}) {
   el.style.setProperty('--o-ink', ink);
   const ini = (f.exp || f.noms || 'L').trim().charAt(0).toUpperCase();
   const hint = POUR ? 'Pour ' + esc(POUR) + (f.exp ? ' · de la part de ' + esc(f.exp) : '') : f.exp ? 'De la part de ' + esc(f.exp) : 'Tu as reçu une carte';
-  const coffret = f.ouv === 'coffret', gl = !coffret && hasGL();
-  const stageHTML = coffret ? boxHTML(m, f, ini) : gl ? `<div class="estage s3" style="--e-seal:${acc}"><div class="e-rays"></div><div class="g3" role="button" tabindex="0" aria-label="Ouvrir l'enveloppe"></div><div class="e-flash"></div><div class="e-card">${cardHTML(m, f)}</div><canvas class="e-burst"></canvas></div>` : envHTML(m, f, ini);
-  el.innerHTML = `<div class="ostage">${stageHTML}<div class="e-hint">Touche ${coffret ? 'le coffret' : 'l\'enveloppe'} pour l'ouvrir<small>${hint}</small></div></div>
+  const sc = hasScene(m) && (!f.ouv || f.ouv === 'scene'), coffret = f.ouv === 'coffret', gl = !coffret && hasGL();
+  const bg = m.photo ? `<div class="s3bg" style="background-image:url('${m.photo.u}&w=700&q=60&fm=jpg&fit=crop')"></div>` : '';
+  const stageHTML = coffret ? boxHTML(m, f, ini) : gl ? `<div class="estage s3" style="--e-seal:${acc}">${sc ? bg : ''}<div class="e-rays"></div><div class="g3" role="button" tabindex="0" aria-label="Ouvrir l'enveloppe"></div><div class="e-flash"></div><div class="e-card">${cardHTML(m, f)}</div><canvas class="e-burst"></canvas></div>` : envHTML(m, f, ini);
+  el.innerHTML = `<div class="ostage">${stageHTML}<div class="e-hint">${sc && gl ? 'Touche pour ouvrir ta surprise' : `Touche ${coffret ? 'le coffret' : 'l\'enveloppe'} pour l'ouvrir`}<small>${hint}</small></div></div>
     ${preview ? '<button class="back" type="button" data-close style="position:fixed;top:calc(env(safe-area-inset-top,0px) + 14px);left:16px;z-index:60">×</button>' : ''}`;
   let stage = el.querySelector('.estage'), env = stage.querySelector('.g3, .env3d'), opened = false, g3 = null, want = false;
   const bind = () => { env.addEventListener('click', doOpen); env.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); doOpen(); } }); };
   if (gl) {
     const sealIni = initials(f);
-    import('./env3.js').then(M => M.mount(env, { paper, acc, seal: acc, ink, sheet: '#fbf7f0', liner: acc, ini: sealIni, title: f.titre || o.titre, pre: o.nom }))
+    const opts = { paper, acc, seal: acc, ink, sheet: '#fbf7f0', liner: acc, ini: sealIni, title: f.titre || o.titre, pre: o.nom, noms: f.noms || '' };
+    (sc ? Promise.all([import('./scene3.js'), import('./scenes/' + m.occ + '.js')]).then(([E, S]) => E.mount(env, opts, S.default[m.id.split('-').pop()]))
+      : import('./env3.js').then(M => M.mount(env, opts)))
       .then(h => { if (!document.body.contains(env)) return h.destroy(); g3 = h; CUR3 = h; if (want) { want = false; opened = false; doOpen(); } })
       .catch(() => { stage.outerHTML = envHTML(m, f, ini); stage = el.querySelector('.estage'); env = stage.querySelector('.env3d'); bind(); if (want) { opened = false; doOpen(); } });
   }
