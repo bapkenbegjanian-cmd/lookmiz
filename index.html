@@ -296,6 +296,60 @@ body.ishome { background: linear-gradient(var(--night) 0 400px, var(--bg) 400px)
 .made { font-size: 13px; color: var(--o-ink, #3b2a14); opacity: .8; text-align: center; }
 .made a { color: inherit; font-weight: 800; }
 footer { text-align: center; font-size: 12px; color: var(--muted); margin-top: 30px; }
+/* --- coffret 3D --- */
+.bstage { --W: min(60vw, 250px); --D: calc(var(--W) * .68); --H: calc(var(--W) * .42); --L: calc(var(--W) * .17);
+  --gold: color-mix(in srgb, var(--e-seal) 30%, #d6b46c); --gold-d: color-mix(in srgb, var(--gold) 62%, #3a2a10); --vel: color-mix(in srgb, var(--e-paper) 30%, #4a1020); }
+.bwrap:not(.go) .b-floor, .bwrap:not(.go) .b-glow, .bwrap:not(.go) .b-if, .bwrap:not(.go) .b-ib, .bwrap:not(.go) .b-il, .bwrap:not(.go) .b-ir, .bwrap:not(.go) .l-under { visibility: hidden; }
+.bwrap { position: relative; width: 0; height: 0; transform-style: preserve-3d; transform: translateY(calc(var(--H) * .3)) rotateX(-26deg) rotateY(-30deg); animation: bsway 7s ease-in-out infinite; cursor: pointer; }
+@keyframes bsway { 50% { transform: translateY(calc(var(--H) * .3 - 10px)) rotateX(-22deg) rotateY(-16deg); } }
+.b-lid, .l-front { transform-style: preserve-3d; }
+.bwrap .fc { position: absolute; left: 0; top: 0; backface-visibility: hidden; }
+.bwrap .o { background: linear-gradient(160deg, color-mix(in srgb, var(--e-paper) 88%, #fff), var(--e-paper) 55%, color-mix(in srgb, var(--e-paper) 90%, #000));
+  box-shadow: inset 0 0 0 calc(var(--W) * .018) var(--gold-d), inset 0 0 0 calc(var(--W) * .03) var(--gold), inset 0 0 0 calc(var(--W) * .04) color-mix(in srgb, var(--e-paper) 70%, var(--gold)); }
+.bwrap .o::before { content: ""; position: absolute; inset: 14%; border: 1px solid var(--gold); border-radius: 3px; opacity: .8; }
+.bwrap .sd { filter: brightness(.8); } .bwrap .sr { filter: brightness(.92); }
+.bwrap .v { background: radial-gradient(120% 90% at 50% 30%, color-mix(in srgb, var(--vel) 80%, #fff), var(--vel)); }
+.b-front, .b-back { width: var(--W); height: var(--H); margin: calc(var(--H) / -2) 0 0 calc(var(--W) / -2); }
+.b-left, .b-right { width: var(--D); height: var(--H); margin: calc(var(--H) / -2) 0 0 calc(var(--D) / -2); }
+.b-front { transform: translateZ(calc(var(--D) / 2)); } .b-back { transform: rotateY(180deg) translateZ(calc(var(--D) / 2)); }
+.b-left { transform: rotateY(-90deg) translateZ(calc(var(--W) / 2)); } .b-right { transform: rotateY(90deg) translateZ(calc(var(--W) / 2)); }
+.b-floor { width: calc(var(--W) * .94); height: calc(var(--D) * .92); margin: calc(var(--D) * -.46) 0 0 calc(var(--W) * -.47); transform: translateY(calc(var(--H) * -.12)) rotateX(90deg); }
+.b-glow { width: calc(var(--W) * .9); height: calc(var(--D) * .88); margin: calc(var(--D) * -.44) 0 0 calc(var(--W) * -.45); transform: translateY(calc(var(--H) * -.13)) rotateX(90deg); background: radial-gradient(closest-side, #fff, color-mix(in srgb, var(--gold) 70%, #fff) 45%, transparent); opacity: 0; }
+.b-if, .b-ib { width: calc(var(--W) * .94); height: calc(var(--H) * .38); margin: calc(var(--H) * -.19) 0 0 calc(var(--W) * -.47); }
+.b-il, .b-ir { width: calc(var(--D) * .92); height: calc(var(--H) * .38); margin: calc(var(--H) * -.19) 0 0 calc(var(--D) * -.46); }
+.b-if { transform: translate3d(0, calc(var(--H) * -.31), calc(var(--D) * .46)) rotateY(180deg); } .b-ib { transform: translate3d(0, calc(var(--H) * -.31), calc(var(--D) * -.46)); }
+.b-il { transform: translate3d(calc(var(--W) * -.47), calc(var(--H) * -.31), 0) rotateY(90deg); } .b-ir { transform: translate3d(calc(var(--W) * .47), calc(var(--H) * -.31), 0) rotateY(-90deg); }
+.b-shadow { position: absolute; width: calc(var(--W) * 1.5); height: calc(var(--D) * 1.3); margin: calc(var(--D) * -.65) 0 0 calc(var(--W) * -.75); transform: translateY(calc(var(--H) / 2 + 2px)) rotateX(90deg); background: radial-gradient(closest-side, rgba(0,0,0,.45), transparent); }
+.b-lid { position: absolute; left: 0; top: 0; transform: translate3d(0, calc(var(--H) / -2), calc(var(--D) / -2)); }
+.l-top { width: var(--W); height: var(--D); margin: calc(var(--D) / -2) 0 0 calc(var(--W) / -2); transform: translate3d(0, calc(var(--L) * -1), calc(var(--D) / 2)) rotateX(90deg); filter: brightness(1.06); display: grid; place-items: center; }
+.l-top b { font: 400 calc(var(--W) * .2) "Great Vibes", cursive; color: var(--gold-d); text-shadow: 0 1px 0 rgba(255,255,255,.6); }
+.l-under { width: var(--W); height: var(--D); margin: calc(var(--D) / -2) 0 0 calc(var(--W) / -2); transform: translate3d(0, -2px, calc(var(--D) / 2)) rotateX(-90deg); width: calc(var(--W) * .96); height: calc(var(--D) * .94); margin: calc(var(--D) * -.47) 0 0 calc(var(--W) * -.48); box-shadow: inset 0 0 0 calc(var(--W) * .03) var(--gold); }
+.l-front, .l-back { width: var(--W); height: var(--L); margin: calc(var(--L) / -2) 0 0 calc(var(--W) / -2); }
+.l-left, .l-right { width: var(--D); height: var(--L); margin: calc(var(--L) / -2) 0 0 calc(var(--D) / -2); }
+.l-front { transform: translate3d(0, calc(var(--L) / -2), var(--D)); } .l-back { transform: translate3d(0, calc(var(--L) / -2), 0) rotateY(180deg); }
+.l-left { transform: translate3d(calc(var(--W) / -2), calc(var(--L) / -2), calc(var(--D) / 2)) rotateY(-90deg); } .l-right { transform: translate3d(calc(var(--W) / 2), calc(var(--L) / -2), calc(var(--D) / 2)) rotateY(90deg); }
+.b-lid .o::before { inset: 22% 6%; }
+.clasp { position: absolute; left: 50%; top: 100%; width: calc(var(--W) * .14); height: calc(var(--W) * .14); margin-left: calc(var(--W) * -.07); margin-top: calc(var(--W) * -.07); border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #fff6dc, var(--gold) 45%, var(--gold-d)); box-shadow: 0 2px 6px rgba(0,0,0,.35); transform: translateZ(2px); display: grid; place-items: center; font: 700 calc(var(--W) * .06) "Playfair Display", serif; color: #fff8e6; }
+.b-front svg { position: absolute; inset: 22% 18%; width: 64%; height: 56%; color: var(--gold); }
+.bstage .e-hint { bottom: 6%; }
+.music { position: fixed; right: 16px; top: calc(env(safe-area-inset-top, 0px) + 14px); z-index: 70; display: flex; align-items: center; gap: 8px; }
+.music button { width: 44px; height: 44px; border-radius: 50%; border: 1px solid rgba(255,255,255,.5); background: rgba(14,14,16,.55); backdrop-filter: blur(10px); color: #fff; cursor: pointer; display: grid; place-items: center; }
+.music button svg { width: 18px; height: 18px; }
+.music .yt { width: 1px; height: 1px; opacity: .01; overflow: hidden; border-radius: 10px; }
+.music.tap .yt { width: 160px; height: 90px; opacity: 1; }
+.music.tap::before { content: "Touche pour la musique"; position: absolute; right: 0; top: 100px; font: 600 12px var(--ui); color: var(--o-ink, #222); white-space: nowrap; }
+.opts { display: grid; gap: 14px; padding: 16px; border: 1px solid var(--line); border-radius: 16px; }
+.opts .tlab { font-weight: 700; font-size: 13px; }
+.seg { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.seg button { border: 1px solid var(--line); background: #fff; border-radius: 12px; padding: 12px 6px; font-weight: 700; cursor: pointer; font-family: var(--ui); }
+.seg button[aria-pressed="true"] { background: var(--ink); color: #fff; border-color: var(--ink); }
+.phrow { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.phrow img { width: 52px; height: 52px; object-fit: cover; border-radius: 10px; }
+.phrow label.pick { border: 1px dashed var(--line); border-radius: 12px; padding: 12px 14px; font-weight: 700; cursor: pointer; }
+.phrow label.pick input { display: none; }
+.phrow button { border: 0; background: none; text-decoration: underline; cursor: pointer; color: var(--muted); }
+
 footer a { color: inherit; }
 
 @media (min-width: 900px) {
@@ -345,11 +399,13 @@ const linkFor = (url, nom) => url + (url.includes('?') ? '&' : '?') + 'n=' + enc
 function cardVars(m) { const [bg, ink, acc] = PAL[m.pal]; return `--c-bg:${bg};--c-ink:${ink};--c-acc:${acc}`; }
 function defaults(o) { return { titre: o.titre, noms: '', msg: o.msg, date: '', lieu: '', adresse: '', rsvp: o.cat === 'inv', de: '' }; }
 const ORN = '<svg class="orn" viewBox="0 0 160 16" aria-hidden="true"><path d="M2 8h52M106 8h52" stroke="currentColor" stroke-width="1.2"/><path d="M58 8c6-7 14-7 22 0c8 7 16 7 22 0c-6 7-14 7-22 0c-8-7-16-7-22 0z" fill="none" stroke="currentColor" stroke-width="1.2"/><circle cx="80" cy="8" r="2.2" fill="currentColor"/></svg>';
+const okPhoto = v => typeof v === 'string' && /^data:image\/jpeg;base64,[A-Za-z0-9+\/=]+$/.test(v);
+const ytId = v => { const r = /(?:v=|youtu\.be\/|shorts\/|embed\/|live\/)([\w-]{11})/.exec(v || ''); return r ? r[1] : (/^[\w-]{11}$/.test(v || '') ? v : ''); };
 function cardHTML(m, f, { live = false } = {}) {
   const o = occOf(m.occ), inv = o.cat === 'inv';
   const when = f.date ? new Date(f.date) : null;
   const dateTxt = when && !isNaN(when) ? when.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' }) + (f.date.includes('T') ? ' · ' + when.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : '') : '';
-  const ph = m.photo ? `${m.photo.u}&w=${live ? 900 : 500}&q=${live ? 78 : 62}&fm=jpg&fit=crop` : '';
+  const ph = okPhoto(f.photo) ? f.photo : m.photo ? `${m.photo.u}&w=${live ? 900 : 500}&q=${live ? 78 : 62}&fm=jpg&fit=crop` : '';
   return `<div class="card f-${m.font} l-${m.lay}" style="${cardVars(m)}" data-anim="${m.anim}">
     ${ph ? `<div class="ph"><img src="${ph}" alt="" loading="lazy"></div>` : ''}
     ${live ? '<canvas></canvas>' : ''}
@@ -470,6 +526,13 @@ function editor(mid) {
         <div class="tags" id="tags">${tagsHTML(f)}</div>
         <div class="tadd"><input id="tagin" maxlength="60" placeholder="Prénom ou famille" aria-label="Ajouter une personne"><button type="button" class="plus" data-addtag aria-label="Ajouter">+</button></div>
         <small>Chacun reçoit son propre lien, avec son prénom sur l'enveloppe.</small></div>` : ''}
+      <div class="opts"><span class="tlab">Ouverture</span>
+        <div class="seg"><button type="button" data-ouv="env" aria-pressed="${f.ouv !== 'coffret'}">Enveloppe</button><button type="button" data-ouv="coffret" aria-pressed="${f.ouv === 'coffret'}">Coffret 3D</button></div>
+        <span class="tlab">Ta photo (facultatif)</span>
+        <div class="phrow">${okPhoto(f.photo) ? `<img src="${f.photo}" alt="Ta photo"><button type="button" data-nophoto>Retirer</button>` : ''}<label class="pick">${okPhoto(f.photo) ? 'Changer' : 'Ajouter une photo'}<input type="file" accept="image/*" id="phin"></label></div>
+        <label>Musique YouTube (facultatif)<input data-f="yt" value="${esc(f.yt || '')}" maxlength="200" placeholder="Colle un lien YouTube" inputmode="url"></label>
+        <small id="ytmsg" class="note" style="text-align:left">${f.yt ? (ytId(f.yt) ? 'Musique ajoutée : elle démarre à l\'ouverture.' : 'Ce lien n\'est pas un lien YouTube.') : 'La musique démarre quand on ouvre la carte.'}</small>
+      </div>
       <label>De la part de (affiché sur l'enveloppe)<input data-f="exp" value="${esc(f.exp || '')}" maxlength="40" placeholder="Julie"></label>
       ${inv ? '' : `<label>Signature (en bas de la carte, facultatif)<input data-f="de" value="${esc(f.de)}" maxlength="40" placeholder="Bisous, Julie"></label>`}
       <div class="total"><span>Total <small id="pdet">${destList(f).length > 1 ? '1,20 € + ' + (destList(f).length - 1) + ' × 0,60 €' : 'pour 1 personne'}</small></span><b id="ptot">${euros(prix(f))}</b></div>
@@ -530,7 +593,21 @@ document.addEventListener('keydown', e => { if (e.target.id === 'tagin' && e.key
 document.addEventListener('input', e => {
   const k = e.target.dataset.f; if (!k || !state.f) return;
   state.f[k] = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
+  if (k === 'yt') { const x = $('#ytmsg'); if (x) x.textContent = !e.target.value ? 'La musique démarre quand on ouvre la carte.' : ytId(e.target.value) ? 'Musique ajoutée : elle démarre à l\'ouverture.' : 'Ce lien n\'est pas un lien YouTube.'; return; }
   const m = mdlOf(state.mid); $('#pv').innerHTML = cardHTML(m, state.f, { live: true }); liveCards($('#pv'));
+});
+
+const rerender = () => { const y = scrollY; render(); scrollTo(0, y); };
+// photo : réduite à 1000 px max et compressée en JPEG avant d'être gardée dans la carte
+document.addEventListener('change', e => {
+  if (e.target.id !== 'phin' || !state.f) return; const file = e.target.files[0]; if (!file) return;
+  const img = new Image(), u = URL.createObjectURL(file);
+  img.onload = () => { const k = Math.min(1, 1000 / Math.max(img.width, img.height)), c = document.createElement('canvas');
+    c.width = Math.round(img.width * k); c.height = Math.round(img.height * k); c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(u);
+    let q = .82, d = c.toDataURL('image/jpeg', q); while (d.length > 260000 && q > .4) { q -= .1; d = c.toDataURL('image/jpeg', q); }
+    state.f.photo = d; rerender(); };
+  img.onerror = () => { URL.revokeObjectURL(u); alert('Cette image ne peut pas être lue. Essaie une photo JPG ou PNG.'); };
+  img.src = u;
 });
 const rid = n => Array.from(crypto.getRandomValues(new Uint8Array(n)), b => 'abcdefghjkmnpqrstuvwxyz23456789'[b % 31]).join('');
 const b64 = o => btoa(unescape(encodeURIComponent(JSON.stringify(o)))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
@@ -539,12 +616,12 @@ async function save() {
   const m = mdlOf(state.mid), f = state.f, data = { mid: m.id, f }, msg = $('#smsg'), base = location.origin + location.pathname;
   msg.textContent = 'Création de ta carte…';
   const id = rid(12), cle = rid(16), url = base + '?c=' + id, btn = $('[data-save]');
-  data.f = { ...f, dest: destList(f) };
+  data.f = { ...f, dest: destList(f) }; if (!okPhoto(data.f.photo)) delete data.f.photo; if (data.f.yt) data.f.yt = ytId(data.f.yt) || undefined;
   const invites = (data.f.dest.length ? data.f.dest : ['']).map(n => ({ t: rid(10), n }));
   btn.disabled = true;
   try { const r = await sb('cartes', { id, cle, data, invites }); if (!r.ok) throw 0; }
   catch (_) { msg.textContent = 'La création n\'a pas marché. Vérifie ta connexion et réessaie.'; btn.disabled = false; return; }
-  const L = store.get('mine') || []; L.unshift({ id, cle, mid: m.id, occ: m.occ, f: { ...data.f }, invites, rsvp: !!f.rsvp, url, paid: false, at: Date.now() }); store.set('mine', L.slice(0, 50));
+  const L = store.get('mine') || []; L.unshift({ id, cle, mid: m.id, occ: m.occ, f: { ...data.f, photo: undefined }, invites, rsvp: !!f.rsvp, url, paid: false, at: Date.now() }); store.set('mine', L.slice(0, 50));
   msg.textContent = 'Ouverture du paiement sécurisé…';
   pay(id, cle, msg, btn);
 }
@@ -632,6 +709,61 @@ function resetEnv(stage) {
   stage.querySelectorAll('.env3d, .e-seal, .e-flap, .e-sheet, .e-card, .e-flash, .e-rays').forEach(el => el.getAnimations().forEach(a => a.cancel()));
   stage.querySelector('.e-flap').style.zIndex = ''; stage.querySelector('.env3d').classList.remove('go');
 }
+
+const FILI = '<svg viewBox="0 0 160 80" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><path d="M80 40c-14-22-38-22-46-8s6 26 18 18-2-20-10-10M80 40c14-22 38-22 46-8s-6 26-18 18 2-20 10-10M80 40c-10 14-30 22-52 22M80 40c10 14 30 22 52 22M80 18v44"/><circle cx="80" cy="40" r="4" fill="currentColor"/></svg>';
+function boxHTML(m, f, ini) {
+  const [, , acc, paper] = PAL[m.pal];
+  return `<div class="estage bstage" style="--e-paper:${paper};--e-seal:${acc}">
+    <div class="e-rays"></div><div class="e-glow"></div>
+    <div class="bwrap env3d" role="button" tabindex="0" aria-label="Ouvrir le coffret">
+      <div class="b-shadow"></div>
+      <div class="fc v b-floor"></div><div class="fc b-glow"></div>
+      <div class="fc v b-if"></div><div class="fc v b-ib"></div><div class="fc v b-il"></div><div class="fc v b-ir"></div>
+      <div class="fc o b-front">${FILI}</div><div class="fc o b-back"></div><div class="fc o sd b-left"></div><div class="fc o sr b-right"></div>
+      <div class="b-lid"><div class="fc o l-top"><b>${esc(ini)}</b></div><div class="fc v l-under"></div>
+        <div class="fc o l-front"><span class="clasp">${esc(ini)}</span></div><div class="fc o l-back"></div><div class="fc o sd l-left"></div><div class="fc o sr l-right"></div></div>
+    </div>
+    <div class="e-flash"></div>
+    <div class="e-card">${cardHTML(m, f)}</div>
+    <canvas class="e-burst"></canvas>
+  </div>`;
+}
+function playBox(stage) {
+  const wrap = stage.querySelector('.bwrap'), lid = stage.querySelector('.b-lid'), clasp = stage.querySelector('.clasp'), glow = stage.querySelector('.b-glow');
+  const card = stage.querySelector('.e-card'), flash = stage.querySelector('.e-flash'), rays = stage.querySelector('.e-rays'), cv = stage.querySelector('.e-burst');
+  const acc = getComputedStyle(stage).getPropertyValue('--e-seal').trim() || '#c9a96e';
+  const A = (el, k, o) => el.animate(k, { fill: 'forwards', ...o });
+  wrap.classList.add('go'); const base = getComputedStyle(wrap).transform; wrap.style.animation = 'none'; wrap.style.transform = base;
+  A(wrap, [{ transform: base }, { transform: 'translateY(0) rotateX(-34deg) rotateY(-6deg) scale(1.06)' }], { duration: 1100, easing: 'cubic-bezier(.5,0,.2,1)' });
+  A(clasp, [{ transform: 'translateZ(3px) scale(1)' }, { transform: 'translateZ(6px) scale(1.3)', offset: .4 }, { transform: 'translateZ(3px) scale(1)' }], { duration: 420 });
+  const L = 'translate3d(0, calc(var(--H) / -2), calc(var(--D) / -2))';
+  A(lid, [{ transform: L + ' rotateX(0deg)' }, { transform: L + ' rotateX(-8deg)', offset: .12 }, { transform: L + ' rotateX(112deg)', offset: .8 }, { transform: L + ' rotateX(104deg)' }], { duration: 1500, delay: 380, easing: 'cubic-bezier(.6,0,.2,1)' });
+  A(glow, [{ opacity: 0 }, { opacity: 1 }], { duration: 700, delay: 800 });
+  setTimeout(() => burst(cv, [acc, '#ffffff', '#ffe7a8'], 50), 900);
+  return new Promise(res => setTimeout(() => {
+    A(flash, [{ opacity: 0 }, { opacity: 1, offset: .35 }, { opacity: 0 }], { duration: 900, easing: 'ease-out' });
+    A(rays, [{ opacity: 0 }, { opacity: .55 }], { duration: 900 });
+    A(wrap, [{ opacity: 1 }, { opacity: 0 }], { duration: 600, easing: 'ease-in' });
+    A(card, [{ transform: 'translate(-50%,-10%) scale(.3)', opacity: 0 }, { transform: 'translate(-50%,-54%) scale(1.06)', opacity: 1, offset: .7 }, { transform: 'translate(-50%,-50%) scale(1)', opacity: 1 }], { duration: 1000, easing: 'cubic-bezier(.2,.9,.3,1.2)' });
+    burst(cv, [acc, '#ffffff', '#ffd166', '#f3d9a4'], 130);
+    setTimeout(res, 1050);
+  }, 2100));
+}
+// musique YouTube : le lecteur se prépare avant le toucher, et démarre au toucher
+let YTP = null, ytWant = false;
+function musicSetup(id) {
+  document.querySelector('.music')?.remove(); YTP = null; ytWant = false; if (!id) return;
+  const box = document.createElement('div'); box.className = 'music'; box.innerHTML = '<div class="yt"><div id="ytp"></div></div><button type="button" data-mute aria-label="Couper la musique" hidden><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 9v6h4l5 4V5L8 9H4zm12.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4z"/></svg></button>';
+  document.body.appendChild(box);
+  const make = () => { YTP = new YT.Player('ytp', { width: 160, height: 90, videoId: id, playerVars: { playsinline: 1, controls: 0, loop: 1, playlist: id, rel: 0 },
+    events: { onReady: () => { if (ytWant) musicPlay(); }, onStateChange: e => { if (e.data === 1) { box.classList.remove('tap'); box.querySelector('[data-mute]').hidden = false; } } } }); };
+  if (window.YT && YT.Player) make(); else { window.onYouTubeIframeAPIReady = make; if (!document.querySelector('script[src*="iframe_api"]')) { const sc = document.createElement('script'); sc.src = 'https://www.youtube.com/iframe_api'; document.head.appendChild(sc); } }
+}
+function musicPlay() {
+  ytWant = true; if (!YTP || !YTP.playVideo) return;
+  try { YTP.unMute(); YTP.setVolume(80); YTP.playVideo(); } catch (_) {}
+  setTimeout(() => { const box = document.querySelector('.music'); try { if (box && YTP.getPlayerState() !== 1) box.classList.add('tap'); } catch (_) {} }, 2500);
+}
 // accueil : l'enveloppe s'ouvre seule, en boucle
 let loopT = 0;
 function loopEnv() {
@@ -653,12 +785,14 @@ function openCard(data, { id = null, preview = false } = {}) {
   el.style.setProperty('--o-ink', ink);
   const ini = (f.exp || f.noms || 'L').trim().charAt(0).toUpperCase();
   const hint = POUR ? 'Pour ' + esc(POUR) + (f.exp ? ' · de la part de ' + esc(f.exp) : '') : f.exp ? 'De la part de ' + esc(f.exp) : 'Tu as reçu une carte';
-  el.innerHTML = `<div class="ostage">${envHTML(m, f, ini)}<div class="e-hint">Touche l'enveloppe pour l'ouvrir<small>${hint}</small></div></div>
+  const coffret = f.ouv === 'coffret';
+  el.innerHTML = `<div class="ostage">${coffret ? boxHTML(m, f, ini) : envHTML(m, f, ini)}<div class="e-hint">Touche ${coffret ? 'le coffret' : 'l\'enveloppe'} pour l'ouvrir<small>${hint}</small></div></div>
     ${preview ? '<button class="back" type="button" data-close style="position:fixed;top:calc(env(safe-area-inset-top,0px) + 14px);left:16px;z-index:60">×</button>' : ''}`;
   const stage = el.querySelector('.estage'), env = stage.querySelector('.env3d'); let opened = false;
   const doOpen = () => {
     if (opened) return; opened = true; const h = el.querySelector('.e-hint'); if (h) h.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 300, fill: 'forwards' });
-    playEnv(stage).then(() => {
+    musicPlay();
+    (coffret ? playBox : playEnv)(stage).then(() => {
       const when = f.date ? new Date(f.date) : null, addr = f.adresse || f.lieu;
       el.innerHTML = `${preview ? '<button class="back" type="button" data-close style="position:fixed;top:calc(env(safe-area-inset-top,0px) + 14px);left:16px;z-index:60">×</button>' : ''}
         <div class="reveal">${cardHTML(m, f, { live: true })}
@@ -675,10 +809,11 @@ function openCard(data, { id = null, preview = false } = {}) {
       liveCards(el); tickCount(when);
     });
   };
+  musicSetup(ytId(f.yt));
   env.addEventListener('click', doOpen); env.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); doOpen(); } });
   return true;
 }
-function closeOpen() { const el = $('#open'); el.hidden = true; el.innerHTML = ''; document.body.style.overflow = ''; document.querySelector('.app').hidden = false; liveCards(); }
+function closeOpen() { musicSetup(''); const el = $('#open'); el.hidden = true; el.innerHTML = ''; document.body.style.overflow = ''; document.querySelector('.app').hidden = false; liveCards(); }
 let cntT;
 function tickCount(when) {
   clearInterval(cntT); if (!when || isNaN(when)) return;
@@ -699,6 +834,9 @@ document.addEventListener('click', async e => {
   if (t.id === 'back') { history.back(); return; }
   if (t.dataset.go !== undefined) { go(t.dataset.go); return; }
   if (t.dataset.swap) { state.route = 'm-' + t.dataset.swap; history.replaceState({ r: state.route }, '', '#' + state.route); render(); return; }
+  if (t.dataset.ouv && state.f) { state.f.ouv = t.dataset.ouv; t.parentNode.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b === t)); return; }
+  if ('nophoto' in t.dataset && state.f) { delete state.f.photo; rerender(); return; }
+  if ('mute' in t.dataset && YTP) { try { if (YTP.isMuted()) { YTP.unMute(); t.style.opacity = 1; } else { YTP.mute(); t.style.opacity = .5; } } catch (_) {} return; }
   if ('preview' in t.dataset) { openCard({ mid: state.mid, f: state.f }, { preview: true }); history.pushState({ r: state.route, open: 1 }, ''); return; }
   if ('close' in t.dataset) { history.back(); return; }
   if ('save' in t.dataset) { save(); return; }
