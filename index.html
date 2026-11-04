@@ -326,7 +326,7 @@ footer a { color: inherit; }
 <script>
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-const PAYFN = 'https://ctgjnpxdaqdnrcxjwnkp.supabase.co/functions/v1/paiement';
+const PAYFN = 'https://ctgjnpxdaqdnrcxjwnkp.supabase.co/functions/v1/paiement-';
 const SB = 'https://ctgjnpxdaqdnrcxjwnkp.supabase.co/rest/v1/', SBK = 'sb_publishable_mz--wiLicR1GMDd2b3Fd2g_ewLTbr9h';
 const sb = (path, body) => fetch(SB + path, { method: 'POST', headers: { apikey: SBK, 'Content-Type': 'application/json', Prefer: 'return=minimal' }, body: JSON.stringify(body) });
 const occOf = id => OCC.find(o => o.id === id);
