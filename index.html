@@ -326,6 +326,7 @@ footer a { color: inherit; }
 <script>
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const PAYFN = 'https://ctgjnpxdaqdnrcxjwnkp.supabase.co/functions/v1/paiement';
 const SB = 'https://ctgjnpxdaqdnrcxjwnkp.supabase.co/rest/v1/', SBK = 'sb_publishable_mz--wiLicR1GMDd2b3Fd2g_ewLTbr9h';
 const sb = (path, body) => fetch(SB + path, { method: 'POST', headers: { apikey: SBK, 'Content-Type': 'application/json', Prefer: 'return=minimal' }, body: JSON.stringify(body) });
 const occOf = id => OCC.find(o => o.id === id);
@@ -471,15 +472,16 @@ function editor(mid) {
         <small>Chacun reçoit son propre lien, avec son prénom sur l'enveloppe.</small></div>` : ''}
       <label>De la part de (affiché sur l'enveloppe)<input data-f="exp" value="${esc(f.exp || '')}" maxlength="40" placeholder="Sarah"></label>
       <div class="total"><span>Total <small id="pdet">${destList(f).length > 1 ? '1,20 € + ' + (destList(f).length - 1) + ' × 0,60 €' : 'pour 1 personne'}</small></span><b id="ptot">${euros(prix(f))}</b></div>
-      <button class="cta full" type="button" data-save>Créer et envoyer</button>
+      <button class="cta full" type="button" data-save>Payer et envoyer</button><p class="note">Paiement sécurisé par Stripe.</p>
       <p class="note" id="smsg" role="status"></p>
     </div></section>`;
 }
 function sharePage(id, cle, url) {
   const mine = (store.get('mine') || []).find(x => x.id === id), inv = mine && occOf(mine.occ).cat === 'inv' && mine.rsvp;
   return `<section class="screen" style="max-width:620px;margin:0 auto;width:100%">
-    <span class="kicker">C'est prêt</span><h2>Envoie ta <i>carte</i></h2>
-    <div class="sharebox">
+    ${mine && !mine.paid ? `<span class="kicker">Paiement en attente</span><h2>Finalise ta <i>carte</i></h2><p class="sub">Ta carte est prête. Elle s'ouvrira chez tes invités dès que le paiement de ${euros(prix(mine.f))} sera fait.</p><button class="cta full" type="button" data-pay="${id}">Payer ${euros(prix(mine.f))}</button><p class="note" id="pmsg"></p>` : ''}
+    ${mine && !mine.paid ? '' : `<span class="kicker">C'est prêt</span><h2>Envoie ta <i>carte</i></h2>`}
+    <div class="sharebox" ${mine && !mine.paid ? 'hidden' : ''}>
       <div class="linkrow"><input id="lnk" readonly value="${esc(url)}" aria-label="Lien de la carte"><button class="cta" type="button" data-copy>Copier</button></div>
       <div class="btns"><button class="ghost" type="button" data-share>Partager</button><a class="ghost" href="mailto:?subject=${encodeURIComponent('Tu as reçu une carte')}&body=${encodeURIComponent('Ouvre ton enveloppe : ' + url)}">Par e-mail</a></div>
       <a class="ghost" href="${esc(url)}" target="_blank" rel="noopener">Voir comme l'invité</a>
@@ -533,11 +535,28 @@ const unb64 = s => JSON.parse(decodeURIComponent(escape(atob(s.replace(/-/g, '+'
 async function save() {
   const m = mdlOf(state.mid), f = state.f, data = { mid: m.id, f }, msg = $('#smsg'), base = location.origin + location.pathname;
   msg.textContent = 'Création de ta carte…';
-  const id = rid(12), cle = rid(16); let url;
-  try { const r = await sb('cartes', { id, cle, data }); if (!r.ok) throw 0; url = base + '?c=' + id; }
-  catch (_) { url = base + '?d=' + b64(data); }   // sans serveur : la carte voyage dans le lien
-  const L = store.get('mine') || []; L.unshift({ id, cle, mid: m.id, occ: m.occ, f: { ...f }, rsvp: !!f.rsvp && url.includes('?c='), url, at: Date.now() }); store.set('mine', L.slice(0, 50));
-  state.share = [id, cle, url]; go('ok-' + id);
+  const id = rid(12), cle = rid(16), url = base + '?c=' + id, btn = $('[data-save]');
+  data.f = { ...f, dest: destList(f) };
+  btn.disabled = true;
+  try { const r = await sb('cartes', { id, cle, data }); if (!r.ok) throw 0; }
+  catch (_) { msg.textContent = 'La création n\'a pas marché. Vérifie ta connexion et réessaie.'; btn.disabled = false; return; }
+  const L = store.get('mine') || []; L.unshift({ id, cle, mid: m.id, occ: m.occ, f: { ...data.f }, rsvp: !!f.rsvp, url, paid: false, at: Date.now() }); store.set('mine', L.slice(0, 50));
+  msg.textContent = 'Ouverture du paiement sécurisé…';
+  pay(id, cle, msg, btn);
+}
+// paiement Stripe : 1,20 € + 0,60 € par personne ajoutée
+async function pay(id, cle, msg, btn) {
+  try {
+    const r = await fetch(PAYFN, { method: 'POST', headers: { 'Content-Type': 'application/json', apikey: SBK, Authorization: 'Bearer ' + SBK }, body: JSON.stringify({ action: 'checkout', id, cle }) });
+    const d = await r.json();
+    if (d.paid) { markPaid(id); return; }
+    if (!d.url) throw new Error(d.error || 'erreur');
+    location.href = d.url;
+  } catch (e) { if (msg) msg.textContent = 'Le paiement n\'a pas pu s\'ouvrir (' + e.message + '). Réessaie depuis « Mes cartes ».'; if (btn) btn.disabled = false; }
+}
+function markPaid(id) {
+  const L = store.get('mine') || [], x = L.find(y => y.id === id); if (!x) return go('');
+  x.paid = true; store.set('mine', L); state.share = [x.id, x.cle, x.url]; go('ok-' + x.id);
 }
 async function loadResp(id, cle) {
   const box = $('#resp'); if (!box) return;
@@ -681,6 +700,7 @@ document.addEventListener('click', async e => {
   if ('save' in t.dataset) { save(); return; }
   if ('copy' in t.dataset) { const i = $('#lnk'); try { await navigator.clipboard.writeText(i.value); t.textContent = 'Copié'; } catch (_) { i.select(); } return; }
   if ('share' in t.dataset) { const u = $('#lnk').value; if (navigator.share) navigator.share({ title: 'Tu as reçu une carte', text: 'Ouvre ton enveloppe :', url: u }).catch(() => {}); else { try { await navigator.clipboard.writeText(u); t.textContent = 'Lien copié'; } catch (_) {} } return; }
+  if (t.dataset.pay) { const x = (store.get('mine') || []).find(y => y.id === t.dataset.pay); if (x) { t.disabled = true; $('#pmsg').textContent = 'Ouverture du paiement…'; pay(x.id, x.cle, $('#pmsg'), t); } return; }
   if ('addtag' in t.dataset) { addTag(); return; }
   if (t.dataset.untag !== undefined) { const L = destList(state.f); L.splice(+t.dataset.untag, 1); state.f.dest = L; refreshTags(); return; }
   if (t.dataset.gcopy) { try { await navigator.clipboard.writeText(t.dataset.gcopy); t.textContent = 'Copié'; } catch (_) {} return; }
@@ -701,7 +721,13 @@ document.addEventListener('click', async e => {
 /* ---------- démarrage ---------- */
 (async () => {
   const q = new URLSearchParams(location.search);
-  if (q.get('d')) { try { if (openCard(unb64(q.get('d')))) return; } catch (_) {} }
+  if (q.get('paye')) {   // retour de Stripe : on vérifie le paiement avant d'activer la carte
+    const id = q.get('paye'); history.replaceState(null, '', location.pathname);
+    $('#app').innerHTML = '<section class="screen"><h2>Vérification du <i>paiement</i>…</h2></section>';
+    try { const r = await fetch(PAYFN, { method: 'POST', headers: { 'Content-Type': 'application/json', apikey: SBK, Authorization: 'Bearer ' + SBK }, body: JSON.stringify({ action: 'verify', id, sid: q.get('sid') }) });
+      const d = await r.json(); if (d.paid) { markPaid(id); return; } } catch (_) {}
+    state.route = 'mes-cartes'; render(); return;
+  }
   if (q.get('c')) {
     try { const r = await fetch(SB + 'rpc/lire_carte', { method: 'POST', headers: { apikey: SBK, 'Content-Type': 'application/json' }, body: JSON.stringify({ p_id: q.get('c') }) });
       const data = await r.json(); if (data && openCard(data, { id: q.get('c') })) return; } catch (_) {}
