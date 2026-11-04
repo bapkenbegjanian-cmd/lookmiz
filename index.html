@@ -90,6 +90,7 @@ body.ishome { background: linear-gradient(var(--night) 0 400px, var(--bg) 400px)
 /* défilement continu des modèles */
 .sec { display: grid; gap: 16px; }
 .sec .head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.home .sec h3 { margin: 0; font: 400 clamp(34px, 7vw, 46px)/1 var(--title); }
 .marq { overflow: hidden; margin: 0 calc(50% - 50vw); padding: 8px 0 14px; -webkit-mask: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); mask: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); }
 .mtrack { display: flex; gap: 18px; width: max-content; animation: marq 60s linear infinite; padding-left: 18px; }
 .marq:hover .mtrack { animation-play-state: paused; }
