@@ -460,17 +460,18 @@ function editor(mid) {
       <button class="openbtn" type="button" data-preview>Voir l'ouverture</button></div>
     <div class="form"><span class="kicker">${esc(o.nom)} · ${esc(m.nom)}</span><h2>Personnalise <i>ta carte</i></h2>
       <label>Titre<input data-f="titre" value="${esc(f.titre)}" maxlength="60"></label>
-      <label>${inv ? 'Qui invite ? (ex. Sarah fête ses 30 ans)' : 'Pour qui ? (ex. Pour Maman)'}<input data-f="noms" value="${esc(f.noms)}" maxlength="60" placeholder="${inv ? 'Sarah & Yanis' : 'Pour toi'}"></label>
+      <label>${inv ? 'Qui invite ? (ex. Sarah fête ses 30 ans)' : 'Pour qui ? (ex. Pour Maman)'}<input data-f="noms" value="${esc(f.noms)}" maxlength="60" placeholder="${esc((EX[o.id] || [''])[0])}"></label>
       <label>Message<textarea data-f="msg" maxlength="300">${esc(f.msg)}</textarea></label>
       ${inv ? `<div class="row2"><label>Date et heure<input type="datetime-local" data-f="date" value="${esc(f.date)}"></label><label>Lieu<input data-f="lieu" value="${esc(f.lieu)}" maxlength="60" placeholder="Salle des fêtes"></label></div>
         <label>Adresse (pour le GPS)<input data-f="adresse" value="${esc(f.adresse)}" maxlength="120" placeholder="12 rue des Lilas, Lyon"></label>
         <label class="switch">Les invités répondent (je viens / je ne viens pas)<input type="checkbox" data-f="rsvp" ${f.rsvp ? 'checked' : ''}></label>`
-      : `<label>Signature<input data-f="de" value="${esc(f.de)}" maxlength="40" placeholder="Bisous, Sarah"></label>`}
+      : ''}
       ${GROUPE.has(o.id) ? `<div class="tagbox"><span class="tlab">${inv ? 'Invités' : 'Destinataires'}</span>
         <div class="tags" id="tags">${tagsHTML(f)}</div>
         <div class="tadd"><input id="tagin" maxlength="60" placeholder="Prénom ou famille" aria-label="Ajouter une personne"><button type="button" class="plus" data-addtag aria-label="Ajouter">+</button></div>
         <small>Chacun reçoit son propre lien, avec son prénom sur l'enveloppe.</small></div>` : ''}
-      <label>De la part de (affiché sur l'enveloppe)<input data-f="exp" value="${esc(f.exp || '')}" maxlength="40" placeholder="Sarah"></label>
+      <label>De la part de (affiché sur l'enveloppe)<input data-f="exp" value="${esc(f.exp || '')}" maxlength="40" placeholder="Julie"></label>
+      ${inv ? '' : `<label>Signature (en bas de la carte, facultatif)<input data-f="de" value="${esc(f.de)}" maxlength="40" placeholder="Bisous, Julie"></label>`}
       <div class="total"><span>Total <small id="pdet">${destList(f).length > 1 ? '1,20 € + ' + (destList(f).length - 1) + ' × 0,60 €' : 'pour 1 personne'}</small></span><b id="ptot">${euros(prix(f))}</b></div>
       <button class="cta full" type="button" data-save>Payer et envoyer</button><p class="note">Paiement sécurisé par Stripe.</p>
       <p class="note" id="smsg" role="status"></p>
@@ -478,15 +479,17 @@ function editor(mid) {
 }
 function sharePage(id, cle, url) {
   const mine = (store.get('mine') || []).find(x => x.id === id), inv = mine && occOf(mine.occ).cat === 'inv' && mine.rsvp;
+  const links = mine && mine.invites ? mine.invites.map(x => ({ n: x.n || 'Invité', u: url + '&t=' + x.t })) : [];
   return `<section class="screen" style="max-width:620px;margin:0 auto;width:100%">
     ${mine && !mine.paid ? `<span class="kicker">Paiement en attente</span><h2>Finalise ta <i>carte</i></h2><p class="sub">Ta carte est prête. Elle s'ouvrira chez tes invités dès que le paiement de ${euros(prix(mine.f))} sera fait.</p><button class="cta full" type="button" data-pay="${id}">Payer ${euros(prix(mine.f))}</button><p class="note" id="pmsg"></p>` : ''}
     ${mine && !mine.paid ? '' : `<span class="kicker">C'est prêt</span><h2>Envoie ta <i>carte</i></h2>`}
     <div class="sharebox" ${mine && !mine.paid ? 'hidden' : ''}>
-      <div class="linkrow"><input id="lnk" readonly value="${esc(url)}" aria-label="Lien de la carte"><button class="cta" type="button" data-copy>Copier</button></div>
-      <div class="btns"><button class="ghost" type="button" data-share>Partager</button><a class="ghost" href="mailto:?subject=${encodeURIComponent('Tu as reçu une carte')}&body=${encodeURIComponent('Ouvre ton enveloppe : ' + url)}">Par e-mail</a></div>
-      <a class="ghost" href="${esc(url)}" target="_blank" rel="noopener">Voir comme l'invité</a>
-      ${mine && destList(mine.f).length ? `<h3 style="margin:6px 0 0;font:700 20px var(--title)">Un lien par invité</h3><div class="guests">${destList(mine.f).map(n => `<div class="guest"><span>${esc(n)}</span><button type="button" data-gcopy="${esc(linkFor(url, n))}">Copier</button><button type="button" data-gshare="${esc(linkFor(url, n))}" data-gname="${esc(n)}">Envoyer</button></div>`).join('')}</div>` : ''}
-      <div id="qr" aria-label="QR code de la carte"></div><p class="note">QR code à imprimer ou à afficher le jour J.</p>
+      ${links.length > 1 ? `<h3 style="margin:0;font:400 26px var(--title)">Un lien par invité</h3><p class="note" style="text-align:left">Chaque lien est personnel : il affiche le prénom de l'invité et ne s'ouvre que sur 2 appareils.</p>
+        <div class="guests">${links.map(x => `<div class="guest"><span>${esc(x.n)}</span><button type="button" data-gcopy="${esc(x.u)}">Copier</button><button type="button" data-gshare="${esc(x.u)}" data-gname="${esc(x.n)}">Envoyer</button></div>`).join('')}</div>`
+      : `<div class="linkrow"><input id="lnk" readonly value="${esc(links[0] ? links[0].u : url)}" aria-label="Lien de la carte"><button class="cta" type="button" data-copy>Copier</button></div>
+        <div class="btns"><button class="ghost" type="button" data-share>Partager</button><a class="ghost" href="mailto:?subject=${encodeURIComponent('Tu as reçu une carte')}&body=${encodeURIComponent('Ouvre ton enveloppe : ' + (links[0] ? links[0].u : url))}">Par e-mail</a></div>
+        <div id="qr" aria-label="QR code de la carte"></div><p class="note">Ce lien est personnel : il ne s'ouvre que sur 2 appareils.</p>`}
+      <button class="ghost" type="button" data-selfview="${id}">Voir l'ouverture</button>
     </div>
     ${inv ? `<div class="sharebox"><h3 style="margin:0;font:700 22px var(--title)">Réponses des invités</h3><div class="resp" id="resp"><p class="note">Chargement…</p></div><button class="ghost" type="button" data-reload="${id}">Actualiser</button></div>` : ''}
     <button class="ghost" type="button" data-go="">Créer une autre carte</button>
@@ -507,7 +510,7 @@ function render() {
     : r.startsWith('ok-') ? sharePage(...state.share) : r === 'mes-cartes' ? myCards() : home();
   $('#back').hidden = !r; document.body.classList.toggle('ishome', !r);
   scrollTo(0, 0); liveCards(); reveal(); if (!r) loopEnv(); else loopT++;
-  if (r.startsWith('ok-')) { try { new QRCode($('#qr'), { text: state.share[2], width: 150, height: 150, correctLevel: QRCode.CorrectLevel.M }); } catch (_) { $('#qr').hidden = true; } loadResp(state.share[0], state.share[1]); }
+  if (r.startsWith('ok-')) { if ($('#qr')) try { new QRCode($('#qr'), { text: $('#lnk') ? $('#lnk').value : state.share[2], width: 150, height: 150, correctLevel: QRCode.CorrectLevel.M }); } catch (_) { $('#qr').hidden = true; } loadResp(state.share[0], state.share[1]); }
 }
 const io = 'IntersectionObserver' in window ? new IntersectionObserver(es => es.forEach(x => { if (x.isIntersecting) { x.target.classList.add('on'); io.unobserve(x.target); } }), { threshold: .12 }) : null;
 function reveal() { document.querySelectorAll('.rv:not(.on)').forEach(el => io ? io.observe(el) : el.classList.add('on')); }
@@ -537,10 +540,11 @@ async function save() {
   msg.textContent = 'Création de ta carte…';
   const id = rid(12), cle = rid(16), url = base + '?c=' + id, btn = $('[data-save]');
   data.f = { ...f, dest: destList(f) };
+  const invites = (data.f.dest.length ? data.f.dest : ['']).map(n => ({ t: rid(10), n }));
   btn.disabled = true;
-  try { const r = await sb('cartes', { id, cle, data }); if (!r.ok) throw 0; }
+  try { const r = await sb('cartes', { id, cle, data, invites }); if (!r.ok) throw 0; }
   catch (_) { msg.textContent = 'La création n\'a pas marché. Vérifie ta connexion et réessaie.'; btn.disabled = false; return; }
-  const L = store.get('mine') || []; L.unshift({ id, cle, mid: m.id, occ: m.occ, f: { ...data.f }, rsvp: !!f.rsvp, url, paid: false, at: Date.now() }); store.set('mine', L.slice(0, 50));
+  const L = store.get('mine') || []; L.unshift({ id, cle, mid: m.id, occ: m.occ, f: { ...data.f }, invites, rsvp: !!f.rsvp, url, paid: false, at: Date.now() }); store.set('mine', L.slice(0, 50));
   msg.textContent = 'Ouverture du paiement sécurisé…';
   pay(id, cle, msg, btn);
 }
@@ -640,7 +644,7 @@ function loopEnv() {
   run();
 }
 
-const POUR = (new URLSearchParams(location.search).get('n') || '').slice(0, 60);
+let POUR = '', TOK = '';
 function openCard(data, { id = null, preview = false } = {}) {
   const m = mdlOf(data.mid); if (!m) return false;
   const o = occOf(m.occ), f = data.f, [, ink, acc, paper] = PAL[m.pal], inv = o.cat === 'inv';
@@ -703,6 +707,7 @@ document.addEventListener('click', async e => {
   if (t.dataset.pay) { const x = (store.get('mine') || []).find(y => y.id === t.dataset.pay); if (x) { t.disabled = true; $('#pmsg').textContent = 'Ouverture du paiement…'; pay(x.id, x.cle, $('#pmsg'), t); } return; }
   if ('addtag' in t.dataset) { addTag(); return; }
   if (t.dataset.untag !== undefined) { const L = destList(state.f); L.splice(+t.dataset.untag, 1); state.f.dest = L; refreshTags(); return; }
+  if (t.dataset.selfview) { const x = (store.get('mine') || []).find(y => y.id === t.dataset.selfview); if (x) { openCard({ mid: x.mid, f: x.f }, { preview: true }); history.pushState({ r: state.route, open: 1 }, ''); } return; }
   if (t.dataset.gcopy) { try { await navigator.clipboard.writeText(t.dataset.gcopy); t.textContent = 'Copié'; } catch (_) {} return; }
   if (t.dataset.gshare) { const u = t.dataset.gshare; if (navigator.share) navigator.share({ title: t.dataset.gname + ', tu as reçu une carte', url: u }).catch(() => {}); else { try { await navigator.clipboard.writeText(u); t.textContent = 'Copié'; } catch (_) {} } return; }
   if (t.dataset.reload) { const x = (store.get('mine') || []).find(y => y.id === t.dataset.reload); if (x) loadResp(x.id, x.cle); return; }
@@ -712,7 +717,7 @@ document.addEventListener('click', async e => {
     const nom = $('#rn').value.trim(), rep = (document.querySelector('[data-rv][aria-pressed="true"]') || {}).dataset?.rv, m = $('#rmsg');
     if (!nom) { m.textContent = 'Indique ton prénom.'; return; } if (!rep) { m.textContent = 'Choisis Oui, Peut-être ou Non.'; return; }
     t.disabled = true; m.textContent = 'Envoi…';
-    try { const r = await sb('reponses', { carte: t.dataset.sendRsvp, nom, reponse: rep, nb: Math.max(1, Math.min(20, +$('#rnb').value || 1)), message: $('#rm').value.trim() || null }); if (!r.ok) throw 0;
+    try { const r = await sb('reponses', { carte: t.dataset.sendRsvp, t: TOK || null, nom, reponse: rep, nb: Math.max(1, Math.min(20, +$('#rnb').value || 1)), message: $('#rm').value.trim() || null }); if (r.status === 409) { m.textContent = 'Tu as déjà répondu avec ce lien.'; t.disabled = false; return; } if (!r.ok) throw 0;
       $('#rsvp').innerHTML = `<h3>Merci ${esc(nom)} !</h3><p style="margin:0">Ta réponse a bien été envoyée.</p>`; }
     catch (_) { m.textContent = 'L\'envoi n\'a pas marché. Réessaie dans un instant.'; t.disabled = false; }
   }
@@ -729,8 +734,11 @@ document.addEventListener('click', async e => {
     state.route = 'mes-cartes'; render(); return;
   }
   if (q.get('c')) {
-    try { const r = await fetch(SB + 'rpc/lire_carte', { method: 'POST', headers: { apikey: SBK, 'Content-Type': 'application/json' }, body: JSON.stringify({ p_id: q.get('c') }) });
-      const data = await r.json(); if (data && openCard(data, { id: q.get('c') })) return; } catch (_) {}
+    let dev = store.get('dev'); if (!dev) { dev = rid(16); store.set('dev', dev); }
+    try { const r = await fetch(SB + 'rpc/ouvrir_carte', { method: 'POST', headers: { apikey: SBK, 'Content-Type': 'application/json' }, body: JSON.stringify({ p_id: q.get('c'), p_t: q.get('t') || '', p_dev: dev }) });
+      const d = await r.json();
+      if (d && d.erreur === 'limite') { $('#app').innerHTML = '<section class="screen"><h2>Lien déjà <i>utilisé</i></h2><p class="sub">Cette carte a déjà été ouverte sur 2 appareils. Chaque invité a son propre lien : demande à la personne qui t\'a invité de t\'envoyer le tien.</p></section>'; return; }
+      if (d && d.data) { POUR = d.nom || ''; TOK = q.get('t') || ''; if (openCard(d.data, { id: q.get('c') })) return; } } catch (_) {}
     $('#app').innerHTML = '<section class="screen"><h2>Carte <i>introuvable</i></h2><p class="sub">Le lien est peut-être incomplet. Demande à la personne de te le renvoyer.</p><button class="cta" type="button" data-go="">Découvrir Lookmiz</button></section>';
     return;
   }

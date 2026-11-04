@@ -29,17 +29,18 @@ Deno.serve(async (req) => {
     if (carte.cle !== cle) return json({ error: 'refusé' }, 403);
     if (carte.paid) return json({ paid: true });
     const dest = Array.isArray(carte.data?.f?.dest) ? carte.data.f.dest.length : 0;
-    const qty = 2 + Math.max(0, dest - 1);           // 0,60 € l'unité : 2 pour la première personne, +1 par personne ajoutée
+    const extra = Math.max(0, dest - 1);            // 1,20 € la carte, puis 0,60 € par personne ajoutée
     const p = new URLSearchParams({
       mode: 'payment',
-      'line_items[0][quantity]': String(qty),
+      'line_items[0][quantity]': '1',
       'line_items[0][price_data][currency]': 'eur',
-      'line_items[0][price_data][unit_amount]': '60',
-      'line_items[0][price_data][product_data][name]': dest > 1 ? `Carte Lookmiz pour ${dest} personnes` : 'Carte Lookmiz',
+      'line_items[0][price_data][unit_amount]': '120',
+      'line_items[0][price_data][product_data][name]': 'Carte Lookmiz animée',
       success_url: SITE + '?paye=' + id + '&sid={CHECKOUT_SESSION_ID}',
       cancel_url: SITE + '#mes-cartes',
       'metadata[carte]': id,
     });
+    if (extra) { p.set('line_items[1][quantity]', String(extra)); p.set('line_items[1][price_data][currency]', 'eur'); p.set('line_items[1][price_data][unit_amount]', '60'); p.set('line_items[1][price_data][product_data][name]', 'Personne supplémentaire'); }
     const s = await stripe('checkout/sessions', p);
     if (!s.url) return json({ error: s.error?.message || 'Stripe a refusé' }, 502);
     return json({ url: s.url });

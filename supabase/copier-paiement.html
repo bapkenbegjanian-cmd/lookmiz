@@ -32,17 +32,18 @@ Deno.serve(async (req) =&gt; {
     if (carte.cle !== cle) return json({ error: &#x27;refusé&#x27; }, 403);
     if (carte.paid) return json({ paid: true });
     const dest = Array.isArray(carte.data?.f?.dest) ? carte.data.f.dest.length : 0;
-    const qty = 2 + Math.max(0, dest - 1);           // 0,60 € l&#x27;unité : 2 pour la première personne, +1 par personne ajoutée
+    const extra = Math.max(0, dest - 1);            // 1,20 € la carte, puis 0,60 € par personne ajoutée
     const p = new URLSearchParams({
       mode: &#x27;payment&#x27;,
-      &#x27;line_items[0][quantity]&#x27;: String(qty),
+      &#x27;line_items[0][quantity]&#x27;: &#x27;1&#x27;,
       &#x27;line_items[0][price_data][currency]&#x27;: &#x27;eur&#x27;,
-      &#x27;line_items[0][price_data][unit_amount]&#x27;: &#x27;60&#x27;,
-      &#x27;line_items[0][price_data][product_data][name]&#x27;: dest &gt; 1 ? `Carte Lookmiz pour ${dest} personnes` : &#x27;Carte Lookmiz&#x27;,
+      &#x27;line_items[0][price_data][unit_amount]&#x27;: &#x27;120&#x27;,
+      &#x27;line_items[0][price_data][product_data][name]&#x27;: &#x27;Carte Lookmiz animée&#x27;,
       success_url: SITE + &#x27;?paye=&#x27; + id + &#x27;&amp;sid={CHECKOUT_SESSION_ID}&#x27;,
       cancel_url: SITE + &#x27;#mes-cartes&#x27;,
       &#x27;metadata[carte]&#x27;: id,
     });
+    if (extra) { p.set(&#x27;line_items[1][quantity]&#x27;, String(extra)); p.set(&#x27;line_items[1][price_data][currency]&#x27;, &#x27;eur&#x27;); p.set(&#x27;line_items[1][price_data][unit_amount]&#x27;, &#x27;60&#x27;); p.set(&#x27;line_items[1][price_data][product_data][name]&#x27;, &#x27;Personne supplémentaire&#x27;); }
     const s = await stripe(&#x27;checkout/sessions&#x27;, p);
     if (!s.url) return json({ error: s.error?.message || &#x27;Stripe a refusé&#x27; }, 502);
     return json({ url: s.url });

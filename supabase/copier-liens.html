@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="fr" translate="no" class="notranslate"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="google" content="notranslate"><meta name="robots" content="noindex">
+<title>Code paiement</title><style>body{margin:0;font:16px system-ui;background:#f4f0ea;padding:16px}button{width:100%;padding:20px;font:700 20px system-ui;border:0;border-radius:16px;background:#0e0e10;color:#fff}textarea{width:100%;height:50vh;font:12px monospace;margin-top:12px;box-sizing:border-box}</style></head>
+<body><button id="b">Copier le code</button><p id="m">Touche le bouton, puis colle dans Supabase.</p><textarea id="t" readonly translate="no">-- Un lien personnel par invité : la carte ne s&#x27;ouvre qu&#x27;avec un lien valide,
+-- sur 2 appareils maximum par lien, et une seule réponse par lien.
+alter table public.cartes add column if not exists invites jsonb;
+alter table public.reponses add column if not exists t text;
+create unique index if not exists reponses_un_par_lien on public.reponses (carte, t);
+create table if not exists public.ouvertures (
+  carte text not null references public.cartes on delete cascade,
+  t text not null, appareil text not null, created_at timestamptz default now(),
+  primary key (carte, t, appareil)
+);
+alter table public.ouvertures enable row level security;
+
+create or replace function public.ouvrir_carte(p_id text, p_t text, p_dev text) returns jsonb
+language plpgsql security definer set search_path = public as $$
+declare c record; inv jsonb; nb int; maxi int;
+begin
+  select * into c from cartes where id = p_id and paid;
+  if not found then return null; end if;
+  if c.invites is null then return jsonb_build_object(&#x27;data&#x27;, c.data); end if;          -- anciennes cartes
+  maxi := greatest(1, coalesce(jsonb_array_length(c.data-&gt;&#x27;f&#x27;-&gt;&#x27;dest&#x27;), 0));             -- autant de liens que de personnes payées
+  select e into inv from jsonb_array_elements(c.invites) with ordinality as x(e, i) where e-&gt;&gt;&#x27;t&#x27; = p_t and i &lt;= maxi;
+  if inv is null then return jsonb_build_object(&#x27;erreur&#x27;, &#x27;lien&#x27;); end if;
+  if not exists (select 1 from ouvertures where carte = p_id and t = p_t and appareil = p_dev) then
+    select count(*) into nb from ouvertures where carte = p_id and t = p_t;
+    if nb &gt;= 2 then return jsonb_build_object(&#x27;erreur&#x27;, &#x27;limite&#x27;); end if;
+    insert into ouvertures (carte, t, appareil) values (p_id, p_t, left(p_dev, 40));
+  end if;
+  return jsonb_build_object(&#x27;data&#x27;, c.data, &#x27;nom&#x27;, inv-&gt;&gt;&#x27;n&#x27;);
+end $$;
+grant execute on function public.ouvrir_carte(text, text, text) to anon, authenticated;
+</textarea>
+<script>document.getElementById('b').onclick=async()=>{const t=document.getElementById('t');try{await navigator.clipboard.writeText(t.value)}catch(_){t.select();document.execCommand('copy')}document.getElementById('m').textContent='Code copié !'};</script></body></html>
