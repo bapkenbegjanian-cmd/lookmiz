@@ -51,7 +51,9 @@ class View {
     const fill = new THREE.DirectionalLight(0xe4ecff, .7); fill.position.set(4, 2, 4);
     scene.add(key, fill, new THREE.AmbientLight(0xffffff, .3));
     const C = c => new THREE.Color(c);
-    const mat = (color, p = {}) => new THREE.MeshPhysicalMaterial({ color: C(color), roughness: p.r ?? .5, metalness: p.m ?? 0, clearcoat: p.cc ?? 0, clearcoatRoughness: p.ccr ?? .3,
+    // verre et liquides : transparence simple (la « transmission » WebGL est peu fiable sur téléphone et en vignettes)
+    const mat = (color, p = {}) => { if (p.tr) { p = { ...p, op: p.op != null && p.op < 1 ? Math.min(p.op, .55) : (opt.lite ? .3 : .26), tr: 0, dw: false, cc: p.cc ?? 1, ccr: .05 }; } return mat0(color, p); };
+    const mat0 = (color, p = {}) => new THREE.MeshPhysicalMaterial({ color: C(color), roughness: p.r ?? .5, metalness: p.m ?? 0, clearcoat: p.cc ?? 0, clearcoatRoughness: p.ccr ?? .3,
       transmission: p.tr ?? 0, thickness: p.th ?? 0, ior: p.ior ?? 1.45, iridescence: p.ir ?? 0, sheen: p.sh ?? 0, sheenRoughness: p.shr ?? .6, sheenColor: C(p.shc ?? '#ffffff'),
       transparent: p.op != null && p.op < 1, opacity: p.op ?? 1, emissive: C(p.em ?? '#000000'), emissiveIntensity: p.ei ?? 1, side: p.ds ? THREE.DoubleSide : p.bk ? THREE.BackSide : THREE.FrontSide,
       flatShading: !!p.flat, map: p.map || null, bumpMap: p.bump || null, bumpScale: p.bs ?? 1, roughnessMap: p.rmap || null, depthWrite: p.dw ?? true });
@@ -106,7 +108,29 @@ class View {
       M(geo.cap(.065, .3), skin, 0, -.2, 0, armL); M(geo.cap(.065, .3), skin, 0, -.2, 0, armR); armL.rotation.z = -.35; armR.rotation.z = .35;
       return { g, headG, armL, armR, body };
     };
-    const ctx = this.ctx = { THREE, scene, cam, key, fill, o, opt, C, mat, gold, M, G, geo, heart, star, heartShape: heart, starShape: star, shape, textTex, floor, wall, blob, sparkles, burst3, doll, canvasTex, grain,
+    // flamme de bougie : cœur lumineux, halo, petite lumière qui vacille
+    let GLOW = null; const glowTex = () => GLOW || (GLOW = canvasTex(128, 128, g => { const R = g.createRadialGradient(64, 64, 0, 64, 64, 64); R.addColorStop(0, 'rgba(255,240,200,1)'); R.addColorStop(.25, 'rgba(255,190,90,.55)'); R.addColorStop(1, 'rgba(255,150,40,0)'); g.fillStyle = R; g.fillRect(0, 0, 128, 128); }));
+    const flame = (parent, x = 0, y = 0, z = 0, s = 1, light = true) => {
+      const g = G(parent, x, y, z); const core = M(geo.lathe([[0, 0], [.035, .03], [.045, .08], [.03, .14], [0, .2]], 16), mat('#fff6d8', { em: '#ffc35a', ei: 2.2 }), 0, 0, 0, g); core.castShadow = false;
+      const halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex(), color: 0xffd08a, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending })); halo.scale.set(.55, .7, 1); halo.position.y = .1; g.add(halo);
+      const pl = light ? new THREE.PointLight(0xffb45a, 1.2, 3, 2) : null; if (pl) { pl.position.y = .15; g.add(pl); }
+      g.scale.setScalar(s); g.userData = { core, halo, pl, on: 1 };
+      g.tick = t => { const f = 1 + Math.sin(t * 17 + x * 9) * .06 + Math.sin(t * 29 + z * 7) * .04, on = g.userData.on; core.scale.set(on, f * on, on); core.rotation.z = Math.sin(t * 7 + x) * .06; halo.material.opacity = .9 * on * f; if (pl) pl.intensity = 1.2 * on * f; };
+      return g; };
+    // ballon en latex brillant, avec son nœud et sa ficelle
+    const balloon = (parent, color, x = 0, y = 0, z = 0, s = 1, str = 1.1) => {
+      const g = G(parent, x, y, z); const b = M(geo.lathe([[0, -.42], [.08, -.4], [.24, -.3], [.33, -.1], [.34, .08], [.29, .26], [.17, .38], [0, .42]], 40), mat(color, { r: .18, cc: 1, ccr: .08, sh: .2 }), 0, 0, 0, g);
+      M(geo.cone(.05, .07, 16), mat(color, { r: .3 }), 0, -.46, 0, g).rotation.x = Math.PI;
+      if (str) { const pts = []; for (let i = 0; i <= 12; i++) pts.push([Math.sin(i * .9) * .03, -.5 - i / 12 * str, 0]); M(geo.tube(pts, .005, 40), mat('#f4f1ea', { r: .6 }), 0, 0, 0, g); }
+      g.scale.setScalar(s); return g; };
+    // nœud de ruban satiné
+    const bow = (parent, color, x = 0, y = 0, z = 0, s = 1) => {
+      const g = G(parent, x, y, z), m = mat(color, { r: .35, sh: 1, shc: '#ffffff', cc: .4 });
+      for (const d of [-1, 1]) { const loop = M(geo.tor(.16, .05, Math.PI * 2, 48), m, d * .17, .03, 0, g); loop.scale.set(1.15, .7, .55); loop.rotation.z = d * .35;
+        const tail = M(geo.box(.09, .34, .02, .01), m, d * .1, -.2, .02, g); tail.rotation.z = d * .4; }
+      M(geo.sph(.07, 24), m, 0, .02, .02, g).scale.set(1, .9, .7); g.scale.setScalar(s); return g; };
+    const glass = (p = {}) => mat('#ffffff', { r: .03, tr: 1, ds: true, m: .1, ...p });
+    const ctx = this.ctx = { flame, balloon, bow, glass, THREE, scene, cam, key, fill, o, opt, C, mat, gold, M, G, geo, heart, star, heartShape: heart, starShape: star, shape, textTex, floor, wall, blob, sparkles, burst3, doll, canvasTex, grain,
       clamp, ease, out, inq, back, seg, lerp, bounce, spring, look: new THREE.Vector3(0, .9, 0), camPos: new THREE.Vector3(0, 2.2, 7), fitW: 3.6, fitH: 3.2, fov: 30 };
     this.scene = scene; this.cam = cam;
     this.S = this.build(ctx);
