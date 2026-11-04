@@ -333,6 +333,8 @@ footer { text-align: center; font-size: 12px; color: var(--muted); margin-top: 3
   background: radial-gradient(circle at 35% 30%, #fff6dc, var(--gold) 45%, var(--gold-d)); box-shadow: 0 2px 6px rgba(0,0,0,.35); transform: translateZ(2px); display: grid; place-items: center; font: 700 calc(var(--W) * .06) "Playfair Display", serif; color: #fff8e6; }
 .b-front svg { position: absolute; inset: 22% 18%; width: 64%; height: 56%; color: var(--gold); }
 .bstage .e-hint { bottom: 6%; }
+.g3 { position: absolute; inset: 0; cursor: pointer; } .g3 canvas { display: block; width: 100% !important; height: 100% !important; }
+.estage.s3 { height: 100vh; height: 100dvh; }
 .music { position: fixed; right: 16px; top: calc(env(safe-area-inset-top, 0px) + 14px); z-index: 70; display: flex; align-items: center; gap: 8px; }
 .music button { width: 44px; height: 44px; border-radius: 50%; border: 1px solid rgba(255,255,255,.5); background: rgba(14,14,16,.55); backdrop-filter: blur(10px); color: #fff; cursor: pointer; display: grid; place-items: center; }
 .music button svg { width: 18px; height: 18px; }
@@ -376,6 +378,7 @@ footer a { color: inherit; }
 </div>
 <div class="open" id="open" hidden></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.min.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
 <script src="cartes.js"></script>
 <script>
 const $ = s => document.querySelector(s);
@@ -776,7 +779,21 @@ function loopEnv() {
   run();
 }
 
-let POUR = '', TOK = '';
+let POUR = '', TOK = '', CUR3 = null;
+const hasGL = () => { try { const c = document.createElement('canvas'); return !!(window.WebGLRenderingContext && (c.getContext('webgl2') || c.getContext('webgl'))); } catch (_) { return false; } };
+const initials = f => { const parts = String(f.noms || f.exp || '').split(/\s*(?:&|\bet\b|\+)\s*/i).map(x => x.trim()).filter(Boolean);
+  return (parts.length > 1 ? parts.slice(0, 2).map(x => x.charAt(0)).join('') : (parts[0] || 'L').charAt(0)).toUpperCase(); };
+// fin de l'ouverture 3D : éclat de lumière, la carte vient au premier plan
+function finale3(stage) {
+  const card = stage.querySelector('.e-card'), flash = stage.querySelector('.e-flash'), rays = stage.querySelector('.e-rays'), cv = stage.querySelector('.e-burst'), g = stage.querySelector('.g3');
+  const acc = getComputedStyle(stage).getPropertyValue('--e-seal').trim() || '#c9a96e', A = (el, k, o) => el.animate(k, { fill: 'forwards', ...o });
+  A(flash, [{ opacity: 0 }, { opacity: 1, offset: .35 }, { opacity: 0 }], { duration: 900, easing: 'ease-out' });
+  A(rays, [{ opacity: 0 }, { opacity: .5 }], { duration: 900 });
+  A(g, [{ opacity: 1 }, { opacity: 0 }], { duration: 500 });
+  A(card, [{ transform: 'translate(-50%,-62%) scale(.62)', opacity: 0 }, { transform: 'translate(-50%,-50%) scale(1.04)', opacity: 1, offset: .7 }, { transform: 'translate(-50%,-50%) scale(1)', opacity: 1 }], { duration: 900, easing: 'cubic-bezier(.2,.9,.3,1.2)' });
+  burst(cv, [acc, '#ffffff', '#ffd166', '#f3d9a4'], 120);
+  return new Promise(r => setTimeout(r, 950));
+}
 function openCard(data, { id = null, preview = false } = {}) {
   const m = mdlOf(data.mid); if (!m) return false;
   const o = occOf(m.occ), f = data.f, [, ink, acc, paper] = PAL[m.pal], inv = o.cat === 'inv';
@@ -785,14 +802,24 @@ function openCard(data, { id = null, preview = false } = {}) {
   el.style.setProperty('--o-ink', ink);
   const ini = (f.exp || f.noms || 'L').trim().charAt(0).toUpperCase();
   const hint = POUR ? 'Pour ' + esc(POUR) + (f.exp ? ' · de la part de ' + esc(f.exp) : '') : f.exp ? 'De la part de ' + esc(f.exp) : 'Tu as reçu une carte';
-  const coffret = f.ouv === 'coffret';
-  el.innerHTML = `<div class="ostage">${coffret ? boxHTML(m, f, ini) : envHTML(m, f, ini)}<div class="e-hint">Touche ${coffret ? 'le coffret' : 'l\'enveloppe'} pour l'ouvrir<small>${hint}</small></div></div>
+  const coffret = f.ouv === 'coffret', gl = !coffret && hasGL();
+  const stageHTML = coffret ? boxHTML(m, f, ini) : gl ? `<div class="estage s3" style="--e-seal:${acc}"><div class="e-rays"></div><div class="g3" role="button" tabindex="0" aria-label="Ouvrir l'enveloppe"></div><div class="e-flash"></div><div class="e-card">${cardHTML(m, f)}</div><canvas class="e-burst"></canvas></div>` : envHTML(m, f, ini);
+  el.innerHTML = `<div class="ostage">${stageHTML}<div class="e-hint">Touche ${coffret ? 'le coffret' : 'l\'enveloppe'} pour l'ouvrir<small>${hint}</small></div></div>
     ${preview ? '<button class="back" type="button" data-close style="position:fixed;top:calc(env(safe-area-inset-top,0px) + 14px);left:16px;z-index:60">×</button>' : ''}`;
-  const stage = el.querySelector('.estage'), env = stage.querySelector('.env3d'); let opened = false;
+  let stage = el.querySelector('.estage'), env = stage.querySelector('.g3, .env3d'), opened = false, g3 = null, want = false;
+  const bind = () => { env.addEventListener('click', doOpen); env.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); doOpen(); } }); };
+  if (gl) {
+    const sealIni = initials(f);
+    import('./env3.js').then(M => M.mount(env, { paper, acc, seal: acc, ink, sheet: '#fbf7f0', liner: acc, ini: sealIni, title: f.titre || o.titre, pre: o.nom }))
+      .then(h => { if (!document.body.contains(env)) return h.destroy(); g3 = h; CUR3 = h; if (want) { want = false; opened = false; doOpen(); } })
+      .catch(() => { stage.outerHTML = envHTML(m, f, ini); stage = el.querySelector('.estage'); env = stage.querySelector('.env3d'); bind(); if (want) { opened = false; doOpen(); } });
+  }
   const doOpen = () => {
     if (opened) return; opened = true; const h = el.querySelector('.e-hint'); if (h) h.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 300, fill: 'forwards' });
     musicPlay();
-    (coffret ? playBox : playEnv)(stage).then(() => {
+    if (gl && !g3 && stage.classList.contains('s3')) { want = true; return; }
+    (coffret ? playBox : g3 ? s => g3.open().then(() => finale3(s)) : playEnv)(stage).then(() => {
+      if (g3) { g3.destroy(); g3 = CUR3 = null; }
       const when = f.date ? new Date(f.date) : null, addr = f.adresse || f.lieu;
       el.innerHTML = `${preview ? '<button class="back" type="button" data-close style="position:fixed;top:calc(env(safe-area-inset-top,0px) + 14px);left:16px;z-index:60">×</button>' : ''}
         <div class="reveal">${cardHTML(m, f, { live: true })}
@@ -810,10 +837,10 @@ function openCard(data, { id = null, preview = false } = {}) {
     });
   };
   musicSetup(ytId(f.yt));
-  env.addEventListener('click', doOpen); env.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); doOpen(); } });
+  bind();
   return true;
 }
-function closeOpen() { musicSetup(''); const el = $('#open'); el.hidden = true; el.innerHTML = ''; document.body.style.overflow = ''; document.querySelector('.app').hidden = false; liveCards(); }
+function closeOpen() { if (CUR3) { CUR3.destroy(); CUR3 = null; } musicSetup(''); const el = $('#open'); el.hidden = true; el.innerHTML = ''; document.body.style.overflow = ''; document.querySelector('.app').hidden = false; liveCards(); }
 let cntT;
 function tickCount(when) {
   clearInterval(cntT); if (!when || isNaN(when)) return;
