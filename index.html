@@ -218,7 +218,6 @@ footer { text-align: center; font-size: 12.5px; color: var(--muted); margin-top:
 
 /* --- ouverture (destinataire) --- */
 .open { position: fixed; inset: 0; z-index: 50; overflow-y: auto; background: var(--o-bg, #efe8de); color: var(--o-ink, #1d1915); }
-.open > .gl3 { z-index: 0 !important; }
 .ostage { position: relative; z-index: 1; height: 100vh; height: 100dvh; }
 .ostage .v3 { position: absolute; inset: 0; cursor: pointer; }
 .o-hint { position: absolute; left: 0; right: 0; bottom: calc(env(safe-area-inset-bottom, 0px) + 5%); text-align: center; pointer-events: none; display: grid; gap: 4px; justify-items: center; padding: 0 20px; }
@@ -276,7 +275,7 @@ const store = { get: k => { try { return JSON.parse(localStorage.getItem('lmz-' 
 // occasions où l'on envoie la même carte à plusieurs personnes
 const GROUPE = new Set([...OCC.filter(o => o.cat === 'inv').map(o => o.id), 'noel', 'nouvel-an', 'aid', 'ramadan', 'paques', 'merci']);
 // occasions dont les 6 modèles ont leur propre scène 3D (les autres s'ouvrent dans l'enveloppe 3D)
-const SCENES3 = new Set(['anniversaire-enfant', 'mariage', 'fiancailles', 'anniversaire']);
+const SCENES3 = new Set(['anniversaire-enfant', 'mariage', 'fiancailles', 'anniversaire', 'henne']);
 const hasScene = m => !!m && SCENES3.has(m.occ);
 const destList = f => (Array.isArray(f.dest) ? f.dest : String(f.dest || '').split(/\n|,/)).map(x => String(x).trim()).filter(Boolean).slice(0, 200);
 // tarif : 1,20 € pour une personne, puis 0,60 € par personne ajoutée
@@ -671,7 +670,7 @@ function openCard(data, { id = null, preview = false } = {}) {
   const finale = () => new Promise(res => {
     const A = (n, k, op) => n.animate(k, { fill: 'forwards', ...op });
     A(el.querySelector('.o-flash'), [{ opacity: 0 }, { opacity: 1, offset: .35 }, { opacity: 0 }], { duration: 900, easing: 'ease-out' });
-    if (OPENL) A(OPENL.cv, [{ opacity: 1 }, { opacity: 0 }], { duration: 500 });
+    const c3 = el.querySelector('#ov3 canvas'); if (c3) A(c3, [{ opacity: 1 }, { opacity: 0 }], { duration: 500 });
     A(el.querySelector('.o-card'), [{ transform: 'translate(-50%,-56%) scale(.7)', opacity: 0 }, { transform: 'translate(-50%,-50%) scale(1.03)', opacity: 1, offset: .7 }, { transform: 'translate(-50%,-50%) scale(1)', opacity: 1 }], { duration: 900, easing: 'cubic-bezier(.2,.9,.3,1.15)' });
     burst(el.querySelector('.o-burst'), [PAL[m.pal][2], '#ffffff', '#ffd98a', '#f3d9a4'], 110);
     setTimeout(res, 1250);

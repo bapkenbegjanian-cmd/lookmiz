@@ -165,40 +165,44 @@ class View {
   }
   open() { if (this.openAt) return Promise.resolve(); this.openAt = performance.now(); this.S.start && this.S.start(); return new Promise(r => { this.done = r; }); }
   reset() { dispose(this.scene); this.make(); }
-  destroy() { this.alive = false; dispose(this.scene); this.layer.views.delete(this); }
+  destroy() { this.alive = false; dispose(this.scene); this.layer.views.delete(this); if (this.c2) this.c2.remove(); }
 }
 
-/* ---------- un calque = un canvas fixe derrière le contenu ---------- */
+/* ---------- un calque = un rendu WebGL hors écran ----------
+   Chaque vue a son propre petit canvas 2D posé DANS sa vignette : il défile avec la page, sans décalage.
+   Le moteur dessine la scène hors écran puis la recopie dans ce canvas, image par image. */
 class Layer {
-  constructor(host, { dpr = 2, z = 0 } = {}) {
-    const cv = this.cv = document.createElement('canvas'); cv.className = 'gl3';
-    cv.style.cssText = `position:fixed;left:0;top:0;width:100%;height:100%;pointer-events:none;z-index:${z}`;
-    host.prepend(cv);
+  constructor(host, { dpr = 2 } = {}) {
+    this.dpr = Math.min(dpr, devicePixelRatio || 1); this.W = 0; this.H = 0;
+    const cv = this.cv = document.createElement('canvas');
     const r = this.r = new THREE.WebGLRenderer({ canvas: cv, antialias: true, alpha: true, powerPreference: 'high-performance' });
-    r.setPixelRatio(Math.min(dpr, devicePixelRatio || 1)); r.shadowMap.enabled = true; r.shadowMap.type = THREE.PCFSoftShadowMap;
+    r.setPixelRatio(1); r.shadowMap.enabled = true; r.shadowMap.type = THREE.PCFSoftShadowMap;
     r.toneMapping = THREE.ACESFilmicToneMapping; r.toneMappingExposure = 1.05; r.outputColorSpace = THREE.SRGBColorSpace; r.setClearColor(0x000000, 0);
     const pm = new THREE.PMREMGenerator(r); this.env = pm.fromScene(new RoomEnvironment(), .04).texture; pm.dispose();
     this.views = new Set(); this.raf = 0; this.loop = this.loop.bind(this); this.raf = requestAnimationFrame(this.loop);
   }
-  add(el, build, o = {}, opt = {}) { const v = new View(this, el, build, o, { shadows: true, ...opt }); this.views.add(v); return v; }
+  add(el, build, o = {}, opt = {}) {
+    const v = new View(this, el, build, o, { shadows: true, ...opt });
+    const c2 = document.createElement('canvas'); c2.className = 'c3'; c2.style.cssText = 'position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;display:block';
+    el.prepend(c2); v.c2 = c2; v.g2 = c2.getContext('2d'); this.views.add(v); return v;
+  }
   loop(now) {
     this.raf = requestAnimationFrame(this.loop);
-    const cv = this.cv, W = cv.clientWidth, H = cv.clientHeight; if (!W || !H) return;
-    if (cv.width !== Math.round(W * this.r.getPixelRatio()) || cv.height !== Math.round(H * this.r.getPixelRatio())) this.r.setSize(W, H, false);
-    this.r.setScissorTest(false); this.r.setClearColor(0x000000, 0); this.r.clear();
-    this.r.setScissorTest(true);
+    const VW = innerWidth, VH = innerHeight;
     for (const v of this.views) {
       if (!v.el.isConnected) { v.destroy(); continue; }
-      const b = v.el.getBoundingClientRect(); if (b.bottom < 0 || b.top > H || b.right < 0 || b.left > W || b.width < 2) continue;
+      const b = v.el.getBoundingClientRect(); if (b.bottom < -20 || b.top > VH + 20 || b.right < 0 || b.left > VW || b.width < 2) continue;
+      const w = Math.max(1, Math.round(b.width * this.dpr)), h = Math.max(1, Math.round(b.height * this.dpr));
+      if (w > this.W || h > this.H) { this.W = Math.max(w, this.W); this.H = Math.max(h, this.H); this.r.setSize(this.W, this.H, false); }
+      if (v.c2.width !== w || v.c2.height !== h) { v.c2.width = w; v.c2.height = h; }
       v.frame(now, b.width, b.height);
-      const y = H - b.bottom; this.r.setViewport(b.left, y, b.width, b.height);
-      const sx = Math.max(0, b.left), sy = Math.max(0, y), sw = Math.min(W, b.right) - sx, sh = Math.min(H, H - b.top) - sy; if (sw <= 0 || sh <= 0) continue;
-      this.r.setScissor(sx, sy, sw, sh);
-      this.r.render(v.scene, v.cam);
+      this.r.setViewport(0, 0, w, h); this.r.setScissor(0, 0, w, h); this.r.setScissorTest(true);
+      this.r.setClearColor(0x000000, 0); this.r.clear(); this.r.render(v.scene, v.cam);
+      v.g2.clearRect(0, 0, w, h); v.g2.drawImage(this.cv, 0, this.H - h, w, h, 0, 0, w, h);
     }
   }
   clear() { [...this.views].forEach(v => v.destroy()); }
-  destroy() { cancelAnimationFrame(this.raf); this.clear(); this.r.dispose(); this.cv.remove(); }
+  destroy() { cancelAnimationFrame(this.raf); this.clear(); this.r.dispose(); this.r.forceContextLoss && this.r.forceContextLoss(); }
 }
 
 export function createLayer(host, opt) { return new Layer(host, opt); }
