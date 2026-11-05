@@ -5,6 +5,16 @@
 import * as THREE from 'three';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+// modèles 3D réalistes (Poly Haven, licence CC0), chargés une seule fois puis copiés
+const BASE = new URL('./', import.meta.url).href, MODELS = {}, gltf = new GLTFLoader();
+export function loadModels(names = []) {
+  return Promise.all(names.map(n => MODELS[n] || (MODELS[n] = new Promise(res => gltf.load(BASE + 'assets/' + n + '.glb', g => res(g.scene), undefined, () => res(null))))));
+}
+let STUDIO = null;
+const loadStudio = () => STUDIO || (STUDIO = new Promise(res => new RGBELoader().load(BASE + 'assets/studio.hdr', t => res(t), undefined, () => res(null))));
 
 export const clamp = t => Math.max(0, Math.min(1, t));
 export const ease = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
@@ -130,7 +140,13 @@ class View {
         const tail = M(geo.box(.09, .34, .02, .01), m, d * .1, -.2, .02, g); tail.rotation.z = d * .4; }
       M(geo.sph(.07, 24), m, 0, .02, .02, g).scale.set(1, .9, .7); g.scale.setScalar(s); return g; };
     const glass = (p = {}) => mat('#ffffff', { r: .03, tr: 1, ds: true, m: .1, ...p });
-    const ctx = this.ctx = { flame, balloon, bow, glass, THREE, scene, cam, key, fill, o, opt, C, mat, gold, M, G, geo, heart, star, heartShape: heart, starShape: star, shape, textTex, floor, wall, blob, sparkles, burst3, doll, canvasTex, grain,
+    const model = (name, p = {}) => {
+      const src = MODELS[name] && MODELS[name].v; const g = G(p.parent || scene, ...(p.pos || [0, 0, 0]));
+      if (!src) return g;
+      const m = src.clone(true); m.traverse(o => { if (o.isMesh) { o.castShadow = o.receiveShadow = !!opt.shadows; if (p.tint && o.material) { o.material = o.material.clone(); o.material.color.lerp(C(p.tint), p.tintK ?? .5); } } });
+      const box = new THREE.Box3().setFromObject(m), size = box.getSize(new THREE.Vector3()), k = p.h ? p.h / size.y : p.w ? p.w / Math.max(size.x, size.z) : 1;
+      m.scale.setScalar(k); const c0 = box.getCenter(new THREE.Vector3()); m.position.set(-c0.x * k, -box.min.y * k, -c0.z * k); g.add(m); g.userData.size = size.multiplyScalar(k); return g; };
+    const ctx = this.ctx = { model, flame, balloon, bow, glass, THREE, scene, cam, key, fill, o, opt, C, mat, gold, M, G, geo, heart, star, heartShape: heart, starShape: star, shape, textTex, floor, wall, blob, sparkles, burst3, doll, canvasTex, grain,
       clamp, ease, out, inq, back, seg, lerp, bounce, spring, look: new THREE.Vector3(0, .9, 0), camPos: new THREE.Vector3(0, 2.2, 7), fitW: 3.6, fitH: 3.2, fov: 30 };
     this.scene = scene; this.cam = cam;
     this.S = this.build(ctx);
@@ -178,7 +194,8 @@ class Layer {
     const r = this.r = new THREE.WebGLRenderer({ canvas: cv, antialias: true, alpha: true, powerPreference: 'high-performance' });
     r.setPixelRatio(1); r.shadowMap.enabled = true; r.shadowMap.type = THREE.PCFSoftShadowMap;
     r.toneMapping = THREE.ACESFilmicToneMapping; r.toneMappingExposure = 1.05; r.outputColorSpace = THREE.SRGBColorSpace; r.setClearColor(0x000000, 0);
-    const pm = new THREE.PMREMGenerator(r); this.env = pm.fromScene(new RoomEnvironment(), .04).texture; pm.dispose();
+    const pm = new THREE.PMREMGenerator(r); this.env = pm.fromScene(new RoomEnvironment(), .04).texture;
+    loadStudio().then(t => { if (!t) return; t.mapping = THREE.EquirectangularReflectionMapping; this.env = pm.fromEquirectangular(t).texture; pm.dispose(); this.views.forEach(v => v.scene.environment = this.env); });
     this.views = new Set(); this.raf = 0; this.loop = this.loop.bind(this); this.raf = requestAnimationFrame(this.loop);
   }
   add(el, build, o = {}, opt = {}) {
@@ -210,7 +227,8 @@ export function createLayer(host, opt) { return new Layer(host, opt); }
 // trouve la scène d'un modèle (fichier scenes/<occasion>.js), sinon l'enveloppe
 const cache = {};
 export async function builderFor(occ, idx, useEnvelope) {
-  if (!useEnvelope) { try { const S = cache[occ] || (cache[occ] = await import('./scenes/' + occ + '.js')); if (S.default[idx]) return S.default[idx]; } catch (_) {} }
+  if (!useEnvelope) { try { const S = cache[occ] || (cache[occ] = await import('./scenes/' + occ + '.js'));
+    if (S.default[idx]) { const need = (S.models && S.models[idx]) || []; const L = await loadModels(need); need.forEach((n, i) => { MODELS[n].v = L[i]; }); return S.default[idx]; } } catch (_) {} }
   const E = cache._env || (cache._env = await import('./scenes/enveloppe.js')); return E.default;
 }
 export async function fontsReady() { try { await Promise.race([document.fonts.ready, new Promise(r => setTimeout(r, 1500))]); } catch (_) {} }

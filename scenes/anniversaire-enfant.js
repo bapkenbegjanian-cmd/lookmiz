@@ -1,77 +1,57 @@
 // Anniversaire enfant : 6 scènes 3D, chacune avec son personnage ou son jouet et sa propre ouverture.
 const PASTEL = ['#ffb3c7', '#ffd59e', '#fff3a6', '#b8f2c9', '#a8d8ff', '#cdb8ff'];
 
-// 1. Licorne : la licorne saute, tourne sur elle-même, un arc-en-ciel se lève derrière elle
+// 1. Licorne : une licorne de porcelaine cabrée sur son socle tournant ; elle s'élève, l'arc-en-ciel se lève derrière elle
 function licorne(c) {
-  const { THREE, M, G, geo, mat, gold, seg, ease, out, back, bounce } = c;
-  c.floor(0, .22); c.look.set(0, 1.05, 0); c.camPos.set(0, 1.9, 7); c.fitW = 3.8;
-  const white = mat('#fffafc', { r: .65, sh: 1, shc: '#ffe4f2' });
-  const ped = G(); M(geo.cyl(1.15, 1.25, .32), mat('#f6e9ff', { r: .4, cc: .6 }), 0, .16, 0, ped); M(geo.tor(1.18, .035), gold(), 0, .32, 0, ped).rotation.x = Math.PI / 2;
-  const U = G(ped, 0, .32, 0), body = G(U, 0, .62, 0);
-  M(geo.cap(.36, .62), white, 0, 0, 0, body).rotation.z = Math.PI / 2;
-  const legs = [[-.32, .2], [-.32, -.2], [.3, .2], [.3, -.2]].map(([x, z]) => { const l = G(body, x, -.15, z); M(geo.cap(.1, .3), white, 0, -.2, 0, l); M(geo.cyl(.11, .12, .08), mat('#d8b4ff', { r: .3, cc: 1 }), 0, -.42, 0, l); return l; });
-  const neck = G(body, .42, .22, 0); neck.rotation.z = -.5; M(geo.cap(.2, .35), white, 0, .25, 0, neck);
-  const head = G(neck, 0, .58, 0); head.rotation.z = .5;
-  M(geo.sph(.3), white, 0, 0, 0, head); const snout = M(geo.sph(.2), white, .24, -.08, 0, head); snout.scale.set(1.2, .85, .95);
-  const eye = mat('#2b1d33', { r: .1, cc: 1 }); for (const z of [-.2, .2]) { M(geo.sph(.05, 16), eye, .13, .07, z, head); const lash = M(geo.tor(.05, .008, Math.PI), eye, .14, .11, z, head); lash.rotation.y = Math.PI / 2; }
-  for (const z of [-.13, .13]) { const ear = M(geo.cone(.07, .2), white, -.06, .3, z, head); ear.rotation.z = .3; }
-  const horn = G(head, .05, .38, 0); horn.rotation.z = -.25; M(geo.cone(.075, .42, 32), gold({ r: .2 }), 0, .2, 0, horn);
-  for (let i = 0; i < 4; i++) M(geo.tor(.06 - i * .012, .012), gold(), 0, .06 + i * .09, 0, horn).rotation.x = Math.PI / 2;
-  const mane = []; for (let i = 0; i < 9; i++) { const s = M(geo.sph(.12 - i * .004), mat(PASTEL[i % 6], { r: .5, sh: .8 }), -.12 - i * .03, .25 - i * .1, 0, head); mane.push(s); }
-  const tail = G(body, -.6, .1, 0); for (let i = 0; i < 6; i++) M(geo.sph(.13 - i * .012), mat(PASTEL[(i + 2) % 6], { r: .5, sh: .8 }), -i * .09, -i * .07, 0, tail);
-  // arc-en-ciel
-  const rain = G(c.scene, 0, .3, -1.2); const arcs = PASTEL.map((col, i) => M(geo.tor(2.2 - i * .17, .085, Math.PI), mat(col, { r: .45, cc: .4, em: col, ei: .15 }), 0, 0, 0, rain)); rain.scale.setScalar(.001);
-  const clouds = [-1.9, 1.9].map(x => { const g = G(c.scene, x, .35, -1.1); for (const [dx, dy, r] of [[0, 0, .32], [.3, .05, .26], [-.3, .02, .25], [.12, .22, .25]]) M(geo.sph(r), mat('#ffffff', { r: .8, sh: 1 }), dx, dy, 0, g); g.scale.setScalar(.001); return g; });
-  const sp = c.sparkles(40, '#fff1b8', [4.5, 2.6, 2], 1.4);
+  const { THREE, M, G, geo, mat, gold, seg, ease, out, back } = c;
+  c.floor(0, .22); c.look.set(0, 1.2, 0); c.camPos.set(0, 1.7, 7); c.fitW = 3.6; c.fitH = 3.2;
+  const ped = G(); M(geo.lathe([[0, 0], [.95, 0], [1.0, .05], [1.0, .2], [.92, .26], [0, .26]], 72), mat('#f7f0fb', { r: .25, cc: 1 }), 0, 0, 0, ped);
+  M(geo.tor(.99, .025, Math.PI * 2, 96), gold(), 0, .13, 0, ped).rotation.x = Math.PI / 2;
+  const U = G(ped, 0, .26, 0), horse = c.model('horse_statue_01', { h: 2.05, parent: U }); horse.rotation.y = -.5;
+  const sz = horse.userData.size || new THREE.Vector3(1, 1.7, .5);
+  const horn = G(horse, sz.x * .1, sz.y * .94, 0); horn.rotation.z = -.55; M(geo.cone(.035, .3, 32), gold({ r: .18 }), 0, .15, 0, horn);
+  for (let i = 0; i < 4; i++) M(geo.tor(.03 - i * .006, .006), gold(), 0, .04 + i * .065, 0, horn).rotation.x = Math.PI / 2;
+  const PASTEL = ['#f9c6d3', '#ffdcae', '#fff2b0', '#c8f0d4', '#bfe0fb', '#d9c8fb'];
+  const rain = G(c.scene, 0, .2, -1.3); PASTEL.forEach((col, i) => M(geo.tor(2.3 - i * .16, .075, Math.PI, 96), mat(col, { r: .35, cc: .6 }), 0, 0, 0, rain)); rain.scale.setScalar(.001);
+  const clouds = [-2, 2].map(x => { const g = G(c.scene, x, .35, -1.2); for (const [dx, dy, r] of [[0, 0, .32], [.3, .05, .26], [-.3, .02, .25], [.12, .22, .25]]) M(geo.sph(r, 24), mat('#ffffff', { r: .9, sh: 1 }), dx, dy, 0, g); g.scale.setScalar(.001); return g; });
+  const sp = c.sparkles(40, '#fff1c8', [4.5, 2.8, 2], 1.5, .1);
   return {
     dur: 3.4,
-    idle(t) { sp.tick(t); body.position.y = .62 + Math.sin(t * 2.2) * .015; head.rotation.x = Math.sin(t * 1.1) * .08; tail.rotation.x = Math.sin(t * 2) * .2; ped.rotation.y = Math.sin(t * .5) * .35; },
+    idle(t) { sp.tick(t); ped.rotation.y = t * .35; U.position.y = .26 + Math.sin(t * 1.6) * .03; },
     open(k, t) {
-      sp.tick(t);
-      const crouch = Math.sin(seg(k, 0, .35) * Math.PI) * .18; const j = seg(k, .35, 1.25), jy = Math.sin(j * Math.PI) * 1.1;
-      U.position.y = .32 + jy - crouch * .4; body.scale.set(1 + crouch * .3, 1 - crouch, 1);
-      U.rotation.y = ease(j) * Math.PI * 2 + Math.sin(t * .5) * .2; legs.forEach((l, i) => l.rotation.z = Math.sin(j * Math.PI) * (i < 2 ? .6 : -.6));
-      ped.rotation.y += (0 - ped.rotation.y) * .1;
-      const r = back(seg(k, .9, 1.9)); rain.scale.setScalar(Math.max(.001, r)); clouds.forEach(g => g.scale.setScalar(Math.max(.001, back(seg(k, 1.2, 2)))));
-      if (k > 1.25 && !this.b) { this.b = 1; c.burst3([0, 1.6, 0], PASTEL.concat(['#ffffff', '#ffd76a']), 140, { geo: new THREE.ExtrudeGeometry(c.starShape(.06), { depth: .015, bevelEnabled: false }), speed: 4, up: .5, metal: .4 }); }
-      head.rotation.x = Math.sin(t * 6) * .1 * seg(k, 1.3, 2);
+      sp.tick(t); ped.rotation.y = t * .35 + ease(seg(k, 0, 1.6)) * Math.PI * 2; U.position.y = .26 + Math.sin(seg(k, 0, 1.6) * Math.PI) * .7;
+      rain.scale.setScalar(Math.max(.001, back(seg(k, .9, 1.9)))); clouds.forEach(g => g.scale.setScalar(Math.max(.001, back(seg(k, 1.2, 2)))));
+      if (k > 1.2 && !this.b) { this.b = 1; c.burst3([0, 2, 0], PASTEL.concat(['#ffffff', '#ffd76a']), 130, { geo: new THREE.ExtrudeGeometry(c.star(.06), { depth: .015, bevelEnabled: false }), speed: 3.6, up: .5, metal: .5, g: 2.5 }); }
     },
-    zoom: k => ease(seg(k, 2, 3.4)),
+    zoom: k => ease(seg(k, 2.2, 3.4)) * .6,
   };
 }
 
-// 2. Bulles : un canard dans un bain moussant ; il fait « coin », et des dizaines de bulles irisées s'envolent
+// 2. Bulles : un canard en caoutchouc dans un bain moussant ; il se dandine et des dizaines de bulles irisées s'envolent
 function bulles(c) {
   const { THREE, M, G, geo, mat, seg, ease, out } = c;
-  c.floor(0, .2); c.look.set(0, .9, 0); c.camPos.set(0, 2.6, 7); c.fitW = 3.6;
-  const tub = M(geo.lathe([[0, 0], [1.25, 0], [1.42, .2], [1.5, .75], [1.56, .82], [1.5, .86], [1.38, .3], [0, .3]]), mat('#ffffff', { r: .15, cc: 1, ccr: .05 }), 0, 0, 0);
-  for (const [x, z] of [[-.9, .9], [.9, .9], [-.9, -.9], [.9, -.9]]) M(geo.sph(.16), c.gold(), x * .95, .05, z * .95);
-  const water = M(geo.cyl(1.4, 1.4, .05), mat('#8fd3ff', { r: .05, tr: .6, th: .5, cc: 1 }), 0, .66, 0);
-  const foam = G(c.scene, 0, .7, 0); for (let i = 0; i < 46; i++) { const a = Math.random() * 6.28, r = .55 + Math.random() * .8; M(geo.sph(.1 + Math.random() * .14, 20), mat('#ffffff', { r: .9, sh: 1 }), Math.cos(a) * r, Math.random() * .08, Math.sin(a) * r, foam); }
-  const duck = G(c.scene, 0, .72, .1), yel = mat('#ffd23f', { r: .25, cc: 1, ccr: .1 });
-  const db = M(geo.sph(.42), yel, 0, .18, 0, duck); db.scale.set(1.25, .8, 1);
-  M(geo.sph(.16), yel, -.5, .32, 0, duck).scale.set(1, .6, .7);
-  const dh = G(duck, .32, .62, 0); M(geo.sph(.27), yel, 0, 0, 0, dh);
-  const beak = G(dh, .25, -.04, 0); const bt = M(geo.sph(.13), mat('#ff8a1e', { r: .3, cc: 1 }), .06, .02, 0, beak); bt.scale.set(1.3, .45, 1); const bb = M(geo.sph(.12), mat('#f07010', { r: .3, cc: 1 }), .05, -.05, 0, beak); bb.scale.set(1.2, .35, .9);
-  for (const z of [-.15, .15]) { M(geo.sph(.05, 16), mat('#1c1c1c', { cc: 1 }), .17, .09, z, dh); M(geo.sph(.018, 8), mat('#ffffff'), .21, .11, z * 1.05, dh); }
-  for (const z of [-.33, .33]) M(geo.sph(.17), yel, -.05, .2, z, duck).scale.set(1.2, .55, .4);
-  const bubM = () => mat('#ffffff', { r: 0, tr: 1, th: .05, ir: 1, op: .9, ior: 1.2 });
-  const B = []; const mk = (big) => { const s = M(geo.sph(big ? .6 : .08 + Math.random() * .16, 32), bubM(), (Math.random() - .5) * 2, .8, (Math.random() - .5) * 1.4); s.castShadow = false; s.userData = { v: .5 + Math.random() * .8, ph: Math.random() * 6, x: s.position.x }; B.push(s); return s; };
-  for (let i = 0; i < 5; i++) { const s = mk(); s.position.y = .8 + Math.random() * 2; }
+  c.floor(0, .2); c.look.set(0, .95, 0); c.camPos.set(0, 2.4, 7); c.fitW = 3.4; c.fitH = 3;
+  M(geo.lathe([[0, 0], [1.2, 0], [1.38, .2], [1.46, .75], [1.52, .82], [1.46, .86], [1.34, .3], [0, .3]], 72), mat('#ffffff', { r: .12, cc: 1, ccr: .05 }), 0, 0, 0);
+  for (const [x, z] of [[-.9, .9], [.9, .9], [-.9, -.9], [.9, -.9]]) M(geo.sph(.15, 24), c.gold(), x * .93, .05, z * .93);
+  const water = M(geo.cyl(1.37, 1.37, .04, 72), mat('#9fdcff', { r: .04, op: .75, cc: 1 }), 0, .66, 0); water.castShadow = false;
+  const foam = G(c.scene, 0, .7, 0); for (let i = 0; i < 60; i++) { const a = Math.random() * 6.28, r = .55 + Math.random() * .78; M(geo.sph(.08 + Math.random() * .13, 20), mat('#ffffff', { r: .85, sh: 1 }), Math.cos(a) * r, Math.random() * .08, Math.sin(a) * r, foam); }
+  const duck = c.model('rubber_duck_toy', { h: .85, pos: [0, .6, .1] }); duck.rotation.y = .5;
+  const B = []; const bubM = () => mat('#ffffff', { r: 0, ir: 1, op: .32, m: .2, cc: 1, dw: false });
+  const mk = (big) => { const s = M(geo.sph(big ? .55 : .06 + Math.random() * .14, 32), bubM(), (Math.random() - .5) * 2.2, .8, (Math.random() - .5) * 1.4); s.castShadow = false; s.userData = { v: .5 + Math.random() * .8, ph: Math.random() * 6, x: s.position.x }; B.push(s); return s; };
+  for (let i = 0; i < 7; i++) { const s = mk(); s.position.y = .8 + Math.random() * 2; }
   let big = null;
   return {
-    dur: 3.3,
-    idle(t, dt) { duck.position.y = .72 + Math.sin(t * 2) * .03; duck.rotation.z = Math.sin(t * 2) * .05; duck.rotation.y = Math.sin(t * .6) * .5;
+    dur: 3.2,
+    idle(t, dt) { duck.position.y = .6 + Math.sin(t * 2) * .03; duck.rotation.z = Math.sin(t * 2) * .06; duck.rotation.y = .5 + Math.sin(t * .6) * .5;
       B.forEach(b => { b.position.y += b.userData.v * dt * .4; b.position.x = b.userData.x + Math.sin(t * 2 + b.userData.ph) * .1; if (b.position.y > 3.4) b.position.y = .8; }); },
-    start() { for (let i = 0; i < 45; i++) mk(); big = mk(true); big.position.set(0, 1, .2); big.scale.setScalar(.01); },
+    start() { for (let i = 0; i < 40; i++) mk(); big = mk(true); big.position.set(0, 1.1, .3); big.scale.setScalar(.01); },
     open(k, t, dt) {
-      const q = Math.sin(seg(k, 0, .5) * Math.PI); duck.scale.set(1 + q * .15, 1 - q * .2, 1 + q * .15); beak.rotation.z = q * .5; duck.rotation.y += (0 - duck.rotation.y) * .1;
-      duck.position.y = .72 + Math.sin(t * 6) * .04 * seg(k, .3, 1);
+      const w = Math.sin(k * 9) * .18 * (1 - seg(k, 1, 2)); duck.rotation.z = w; duck.rotation.y += (.2 - duck.rotation.y) * .08; duck.position.y = .6 + Math.abs(Math.sin(k * 9)) * .06 * (1 - seg(k, 1, 2));
       B.forEach(b => { if (b === big) return; b.position.y += b.userData.v * dt * 1.5; b.position.x = b.userData.x + Math.sin(t * 3 + b.userData.ph) * .25; });
-      if (big) { const g = out(seg(k, .6, 2.2)); big.scale.setScalar(Math.max(.01, g)); big.position.y = 1 + g * .9;
-        if (k > 2.4 && big.visible) { big.visible = false; c.burst3([0, 1.9, .2], ['#ffffff', '#bfe6ff', '#ffd6f5'], 90, { geo: new THREE.SphereGeometry(.035, 8, 8), speed: 3, g: 2 }); } }
+      if (big) { const g = out(seg(k, .5, 2.1)); big.scale.setScalar(Math.max(.01, g)); big.position.y = 1.1 + g * .9;
+        if (k > 2.3 && big.visible) { big.visible = false; c.burst3([0, 2, .3], ['#ffffff', '#cfeeff', '#ffe0f5'], 90, { geo: new THREE.SphereGeometry(.03, 8, 8), speed: 3, g: 2 }); } }
     },
-    zoom: k => ease(seg(k, 2.2, 3.3)),
+    zoom: k => ease(seg(k, 2.2, 3.2)) * .6,
   };
 }
 
@@ -128,8 +108,7 @@ function train(c) {
   // animaux en peluche dans les wagons : un lion et un éléphant
   const lion = G(wag[0], 0, .95, 0); M(geo.sph(.3), mat('#f4a531', { r: .7, sh: .8 }), 0, 0, 0, lion); for (let i = 0; i < 12; i++) { const a = i / 12 * 6.28; M(geo.sph(.12), mat('#b5651d', { r: .8, sh: .8 }), Math.cos(a) * .3, Math.sin(a) * .3, -.05, lion); }
   for (const x of [-.1, .1]) M(geo.sph(.04, 12), mat('#1c1c1c', { cc: 1 }), x, .06, .27, lion); M(geo.sph(.06, 12), mat('#5a2d0c'), 0, -.05, .29, lion);
-  const ele = G(wag[1], 0, .95, 0), grey = mat('#a9b4c2', { r: .7, sh: .8 }); M(geo.sph(.3), grey, 0, 0, 0, ele); const trunk = G(ele, 0, -.05, .25); M(geo.cap(.07, .3), grey, 0, -.15, .05, trunk); trunk.rotation.x = .5;
-  for (const x of [-.3, .3]) { const e = M(geo.sph(.2), mat('#c7a6b6', { r: .7 }), x, .05, -.05, ele); e.scale.set(.4, 1, 1); } for (const x of [-.1, .1]) M(geo.sph(.04, 12), mat('#1c1c1c', { cc: 1 }), x, .08, .27, ele);
+  const ele = c.model('carved_wooden_elephant', { w: .85, pos: [0, .75, 0], parent: wag[1] }); ele.rotation.y = Math.PI / 2; const trunk = G(ele);
   // ballons attachés
   const balloons = [['#ff5d8f', -1.55, -.2], ['#ffd23f', -1.35, .2], ['#2c7be5', -.35, -.1], ['#1f9d6b', -.15, .25], ['#9b5de5', -1.75, .1]].map(([col, x, z], i) => {
     const b = G(T, x, 1.9 + (i % 2) * .25, z); const s = M(geo.sph(.26), mat(col, { r: .15, cc: 1, ccr: .05 }), 0, 0, 0, b); s.scale.y = 1.2; M(geo.cone(.05, .08), mat(col), 0, -.33, 0, b).rotation.x = Math.PI;
@@ -141,87 +120,72 @@ function train(c) {
   return {
     dur: 3.6,
     idle(t, dt) { pt += dt; if (pt > .8) { pt = 0; puff(); } balloons.forEach(b => { b.position.y = b.userData.y + Math.sin(t * 1.5 + b.userData.ph) * .05; b.rotation.z = Math.sin(t + b.userData.ph) * .08; });
-      puffs.forEach(s => { s.userData.a += dt; s.position.y += dt * .5; s.scale.setScalar(1 + s.userData.a * 1.5); s.material.opacity = Math.max(0, .85 - s.userData.a * .45); }); lion.rotation.z = Math.sin(t * 2) * .08; trunk.rotation.x = .5 + Math.sin(t * 2.4) * .25; },
+      puffs.forEach(s => { s.userData.a += dt; s.position.y += dt * .5; s.scale.setScalar(1 + s.userData.a * 1.5); s.material.opacity = Math.max(0, .85 - s.userData.a * .45); }); lion.rotation.z = Math.sin(t * 2) * .08; ele.rotation.z = Math.sin(t * 2.4) * .06; },
     open(k, t, dt) {
       pt += dt; if (pt > .18) { pt = 0; puff(); }
       const go = ease(seg(k, .2, 2.4)); T.position.x = .2 + go * 1.2; T.rotation.y = -.25 + go * .25; wheels.forEach(w => w.rotation.y = -go * 18);
       T.position.y = Math.abs(Math.sin(k * 14)) * .03 * seg(k, .2, 2.2);
       balloons.forEach((b, i) => { const r = seg(k, 1 + i * .12, 3); b.position.y = b.userData.y + out(r) * 3.5 + Math.sin(t * 1.5 + i) * .05; b.position.x = b.userData.x + Math.sin(t + i) * .3 * r; });
       puffs.forEach(s => { s.userData.a += dt; s.position.y += dt * .6; s.scale.setScalar(1 + s.userData.a * 1.5); s.material.opacity = Math.max(0, .85 - s.userData.a * .45); });
-      lion.rotation.z = Math.sin(t * 7) * .15; trunk.rotation.x = .5 - seg(k, .4, .9) * 1.4 + Math.sin(t * 6) * .1;
+      lion.rotation.z = Math.sin(t * 7) * .15; ele.rotation.z = Math.sin(t * 7) * .12;
       if (k > 1.2 && !this.b) { this.b = 1; c.burst3([1, 1.8, 0], ['#2f9e5b', '#7ed957', '#ffd23f', '#ff5d8f'], 120, { geo: new THREE.CircleGeometry(.06, 5), speed: 4, up: .6 }); }
     },
     zoom: k => ease(seg(k, 2.5, 3.6)),
   };
 }
 
-// 5. Princesse : un château rose ; la porte s'ouvre et la princesse sort en tournant comme dans une boîte à musique
+// 5. Princesse : un miroir magique doré ; il s'illumine, scintille, et une couronne s'élève devant lui
 function princesse(c) {
   const { THREE, M, G, geo, mat, gold, seg, ease, out, back } = c;
-  c.floor(0, .22); c.look.set(0, 1.2, 0); c.camPos.set(0, 1.9, 7); c.fitW = 3.9;
-  const pink = mat('#f7c3d6', { r: .5, sh: .6 }), roof = mat('#c55bd0', { r: .35, cc: .8 }), cream = mat('#fff3f8', { r: .6 });
-  const K = G(c.scene, 0, 0, -.6);
-  M(geo.box(2.2, 1.3, .7, .05), pink, 0, .65, 0, K);
-  for (let i = 0; i < 6; i++) M(geo.box(.22, .2, .72, .02), pink, -.95 + i * .38, 1.4, 0, K);
-  const flags = [];
-  for (const [x, h, r] of [[-1.25, 2, .34], [1.25, 2, .34], [0, 2.5, .3]]) { M(geo.cyl(r, r, h, 40), pink, x, h / 2, x ? .1 : -.25, K); M(geo.cone(r * 1.3, .8, 40), roof, x, h + .4, x ? .1 : -.25, K); M(geo.sph(.06), gold(), x, h + .85, x ? .1 : -.25, K);
-    const pole = M(geo.cyl(.012, .012, .4), gold(), x, h + 1, x ? .1 : -.25, K); const fg = new THREE.PlaneGeometry(.3, .18, 8, 2); const f = M(fg, mat('#ff5d8f', { ds: true, r: .6 }), x + .16, h + 1.1, x ? .1 : -.25, K); flags.push([fg, fg.attributes.position.array.slice()]);
-    for (let w = 0; w < 2; w++) M(geo.box(.14, .22, .02, .05), mat('#7b3fa0', { r: .3, cc: 1 }), x, h * .55 + w * .5, (x ? .1 : -.25) + r, K); }
-  // porte (deux battants)
-  const doorL = G(K, -.32, 0, .36), doorR = G(K, .32, 0, .36); M(geo.box(.32, .8, .05, .02), mat('#b97ad8', { r: .4, cc: .6 }), .16, .4, 0, doorL); M(geo.box(.32, .8, .05, .02), mat('#b97ad8', { r: .4, cc: .6 }), -.16, .4, 0, doorR);
-  M(geo.box(.7, .84, .04, .02), mat('#3b1a4a'), 0, .42, .34, K);
-  // la princesse
-  const P = c.doll(c.scene, { pos: [0, 0, -.25], cloth: '#ff8fbf', hair: '#f3c35a' }); P.g.scale.setScalar(.75);
-  const skirt = M(geo.lathe([[0, .5], [.3, .5], [.55, .02], [0, 0]]), mat('#ffc6dd', { r: .6, sh: 1, shc: '#ffffff' }), 0, 0, 0, P.g);
-  const crown = G(P.headG, 0, .33, 0); M(geo.cyl(.16, .16, .08, 32, 1, true), gold(), 0, 0, 0, crown); for (let i = 0; i < 5; i++) { const a = i / 5 * 6.28; M(geo.cone(.035, .12, 12), gold(), Math.cos(a) * .15, .09, Math.sin(a) * .15, crown); M(geo.sph(.02, 8), mat('#ff5d8f', { cc: 1 }), Math.cos(a) * .15, .16, Math.sin(a) * .15, crown); }
-  const wand = G(P.armR, 0, -.38, 0); M(geo.cyl(.012, .012, .35), gold(), 0, -.12, 0, wand); M(new THREE.ExtrudeGeometry(c.starShape(.08), { depth: .02, bevelEnabled: false }), gold({ em: '#ffd76a', ei: .4 }), 0, -.32, 0, wand);
-  const stand = M(geo.cyl(.45, .5, .12), mat('#ffffff', { r: .3, cc: 1 }), 0, .06, 0, P.g); P.g.visible = false;
-  const sp = c.sparkles(30, '#ffe0f0', [4, 3, 2], 1.6);
+  c.floor(0, .22); c.look.set(0, 1.2, 0); c.camPos.set(0, 1.5, 6.8); c.fitW = 2.8; c.fitH = 3;
+  const mir = c.model('ornate_mirror_01', { h: 2.1, pos: [0, 0, -.2] }); const sz = mir.userData.size || new THREE.Vector3(1.2, 2.1, .1);
+  const glowM = new THREE.MeshBasicMaterial({ color: 0xffd6ec, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false });
+  const glow = M(new THREE.PlaneGeometry(sz.x * .72, sz.y * .78), glowM, 0, sz.y * .5, -.2 + sz.z / 2 + .02); glow.castShadow = false;
+  const pl = new THREE.PointLight(0xffb8dc, 0, 4); pl.position.set(0, 1.1, .6); c.scene.add(pl);
+  const crown = G(c.scene, 0, .2, .55); const cg = gold({ r: .2 });
+  M(geo.cyl(.22, .2, .14, 48, true), new THREE.MeshPhysicalMaterial({ color: '#d8b15c', metalness: 1, roughness: .2, side: THREE.DoubleSide }), 0, 0, 0, crown);
+  for (let i = 0; i < 7; i++) { const a = i / 7 * Math.PI * 2; M(geo.cone(.045, .18, 12), cg, Math.cos(a) * .21, .15, Math.sin(a) * .21, crown); M(geo.sph(.028, 12), mat(['#e0115f', '#ffffff', '#5b8cff'][i % 3], { r: .05, cc: 1, m: .2 }), Math.cos(a) * .21, .26, Math.sin(a) * .21, crown); }
+  crown.scale.setScalar(.001);
+  const sp = c.sparkles(40, '#ffe0f0', [2.4, 2.6, 1.4], 1.3, .1);
   return {
-    dur: 3.6,
-    idle(t) { sp.tick(t); flags.forEach(([g, o]) => { const a = g.attributes.position.array; for (let i = 0; i < a.length; i += 3) a[i + 2] = Math.sin(t * 5 + o[i] * 12) * .03 * (o[i] + .15); g.attributes.position.needsUpdate = true; }); K.rotation.y = Math.sin(t * .4) * .12; },
+    dur: 3.2,
+    idle(t) { sp.tick(t); glowM.opacity = .08 + Math.sin(t * 1.6) * .05; mir.rotation.y = Math.sin(t * .5) * .12; },
     open(k, t) {
-      this.idle(t); const d = back(seg(k, .1, .8)); doorL.rotation.y = -d * 1.7; doorR.rotation.y = d * 1.7;
-      if (k > .5) { P.g.visible = true; const w = ease(seg(k, .5, 1.6)); P.g.position.set(0, .02, -.25 + w * 1.25); P.g.rotation.y = w * Math.PI * 4 + (k > 1.6 ? (k - 1.6) * 3 : 0);
-        P.armR.rotation.z = .4 + 2.2 * out(seg(k, 1.3, 1.8)); P.armL.rotation.z = -.4 - .8 * out(seg(k, 1.3, 1.8)); P.g.position.y = .02 + Math.sin(seg(k, 1.6, 2.3) * Math.PI) * .25; }
-      if (k > 1.7 && !this.b) { this.b = 1; c.burst3([0, 1.8, .8], ['#ff5d8f', '#ffc6dd', '#f3c35a', '#ffffff'], 110, { geo: new THREE.ExtrudeGeometry(c.heartShape(.06), { depth: .02, bevelEnabled: false }), speed: 3.6, up: .6 }); }
+      sp.tick(t); const g = out(seg(k, 0, 1)); glowM.opacity = .1 + g * .55 + Math.sin(t * 6) * .05 * g; pl.intensity = g * 6; mir.rotation.y += (0 - mir.rotation.y) * .05;
+      const r = back(seg(k, .7, 1.7)); crown.scale.setScalar(Math.max(.001, r * 1.2)); crown.position.y = .2 + ease(seg(k, .7, 2.2)) * 1.1; crown.rotation.y = t * 1.4;
+      if (k > 1.6 && !this.b) { this.b = 1; c.burst3([0, 1.4, .6], ['#ff8fbf', '#ffd6ec', '#ffffff', '#d8b15c'], 110, { geo: new THREE.ExtrudeGeometry(c.heart(.05), { depth: .015, bevelEnabled: false }), speed: 3, up: .5, g: 1.5 }); }
     },
-    zoom: k => ease(seg(k, 2.5, 3.6)),
+    zoom: k => ease(seg(k, 2.2, 3.2)) * .6,
   };
 }
 
-// 6. Pirate : un coffre au trésor sur le sable ; le cadenas saute, le couvercle s'ouvre, l'or jaillit
+// 6. Pirate : un vrai coffre au trésor sur le sable ; le couvercle s'ouvre, une lumière dorée jaillit avec les pièces
 function pirate(c) {
   const { THREE, M, G, geo, mat, gold, seg, ease, out, back } = c;
-  c.floor(0, .22); c.look.set(0, .8, 0); c.camPos.set(0, 2.5, 7); c.fitW = 3.6;
-  const sand = M(geo.cyl(2.1, 2.3, .12, 64), mat('#e9cf98', { r: .95, bump: c.canvasTex(256, 256, (g, w, h) => { g.fillStyle = '#888'; g.fillRect(0, 0, w, h); for (let i = 0; i < 4000; i++) { g.fillStyle = Math.random() < .5 ? '#fff' : '#000'; g.globalAlpha = .25; g.fillRect(Math.random() * w, Math.random() * h, 2, 2); } }, false), bs: 2 }), 0, -.06, 0);
-  const woodTex = c.canvasTex(256, 256, (g, w, h) => { g.fillStyle = '#7a4a24'; g.fillRect(0, 0, w, h); for (let i = 0; i < 70; i++) { g.strokeStyle = `rgba(${40 + Math.random() * 40},${20 + Math.random() * 20},10,.5)`; g.lineWidth = 1 + Math.random() * 2; g.beginPath(); const y = Math.random() * h; g.moveTo(0, y); g.bezierCurveTo(w / 3, y + Math.random() * 8 - 4, w * 2 / 3, y + Math.random() * 8 - 4, w, y); g.stroke(); } for (let y = 0; y < h; y += 64) { g.fillStyle = 'rgba(0,0,0,.35)'; g.fillRect(0, y, w, 3); } });
-  const wood = mat('#ffffff', { map: woodTex, r: .7 }), band = gold({ r: .35 });
-  const chest = G(c.scene, 0, .55, 0); chest.rotation.y = -.35;
-  M(geo.box(1.7, .9, 1.05, .06), wood, 0, .45, 0, chest); for (const x of [-.6, .6]) M(geo.box(.1, .92, 1.08, .02), band, x, .45, 0, chest);
-  const lid = G(chest, 0, .9, -.52); const lidGeo = new THREE.CylinderGeometry(.52, .52, 1.7, 40, 1, false, 0, Math.PI); const lm = M(lidGeo, wood, 0, 0, .52, lid); lm.rotation.z = Math.PI / 2;
-  for (const x of [-.6, .6]) { const b = M(new THREE.CylinderGeometry(.54, .54, .1, 40, 1, false, 0, Math.PI), band, x, 0, .52, lid); b.rotation.z = Math.PI / 2; }
-  const lock = G(chest, 0, .85, .55); M(geo.box(.24, .28, .08, .03), band, 0, 0, 0, lock); const shack = M(geo.tor(.08, .02, Math.PI), band, 0, .15, 0, lock);
-  const glow = new THREE.PointLight(0xffc35a, 0, 4); glow.position.set(0, 1.2, 0); chest.add(glow);
-  const pile = G(chest, 0, .85, 0); for (let i = 0; i < 40; i++) { const cn = M(geo.cyl(.07, .07, .02, 20), gold({ r: .22 }), (Math.random() - .5) * 1.4, Math.random() * .1, (Math.random() - .5) * .8, pile); cn.rotation.set(Math.random(), Math.random(), Math.random()); }
-  for (let i = 0; i < 6; i++) M(geo.sph(.06, 12), mat(['#e0115f', '#1fb36b', '#2c7be5'][i % 3], { r: .05, cc: 1, tr: .3 }), (Math.random() - .5) * 1.2, .1, (Math.random() - .5) * .6, pile);
-  pile.visible = false;
-  for (let i = 0; i < 9; i++) { const cn = M(geo.cyl(.07, .07, .02, 20), gold({ r: .22 }), Math.cos(i) * 1.5, .04 + Math.random() * .03, Math.sin(i * 2) * .8 + .6); cn.rotation.x = .1; }
-  // drapeau pirate
-  const fl = G(c.scene, -1.55, 0, -.5); M(geo.cyl(.03, .03, 2.4), mat('#5a3a1e', { r: .7 }), 0, 1.2, 0, fl);
+  c.floor(0, .22); c.look.set(0, .75, 0); c.camPos.set(0, 2.3, 6.6); c.fitW = 3.2; c.fitH = 2.8;
+  M(geo.cyl(2.1, 2.3, .1, 72), mat('#e7cd96', { r: .95, bump: c.grain('sand'), bs: 2 }), 0, -.05, 0);
+  const chest = c.model('treasure_chest', { w: 1.7, pos: [0, 0, 0] }); chest.rotation.y = -.35;
+  const lid = chest.getObjectByName('treasure_chest_lid'), lock = chest.getObjectByName('treasure_chest_lock');
+  const comp = c.model('seadogs_compass', { w: .45, pos: [1.25, 0, .6] }); comp.rotation.y = .6;
+  const glow = new THREE.PointLight(0xffc35a, 0, 4); glow.position.set(0, 1.1, 0); c.scene.add(glow);
+  const pile = G(c.scene, 0, .55, 0); for (let i = 0; i < 40; i++) { const cn = M(geo.cyl(.06, .06, .015, 24), gold({ r: .2 }), (Math.random() - .5) * 1.1, Math.random() * .12, (Math.random() - .5) * .5, pile); cn.rotation.set(Math.random(), Math.random(), Math.random()); } pile.rotation.y = -.35; pile.visible = false;
+  for (let i = 0; i < 9; i++) { const cn = M(geo.cyl(.06, .06, .015, 24), gold({ r: .22 }), Math.cos(i * 1.3) * 1.4, .02, Math.sin(i * 2) * .7 + .7); cn.rotation.x = .1; }
+  const fl = G(c.scene, -1.55, 0, -.4); M(geo.cyl(.03, .03, 2.3, 12), mat('#5a3a1e', { r: .7 }), 0, 1.15, 0, fl);
   const flagTex = c.canvasTex(256, 160, (g, w, h) => { g.fillStyle = '#151515'; g.fillRect(0, 0, w, h); g.fillStyle = '#f5f0e6'; g.beginPath(); g.arc(w / 2, 62, 30, 0, 6.28); g.fill(); g.fillRect(w / 2 - 20, 80, 40, 22); g.fillStyle = '#151515'; g.beginPath(); g.arc(w / 2 - 11, 60, 8, 0, 6.28); g.arc(w / 2 + 11, 60, 8, 0, 6.28); g.fill();
     g.strokeStyle = '#f5f0e6'; g.lineWidth = 12; g.lineCap = 'round'; g.beginPath(); g.moveTo(w / 2 - 55, 105); g.lineTo(w / 2 + 55, 145); g.moveTo(w / 2 + 55, 105); g.lineTo(w / 2 - 55, 145); g.stroke(); });
-  const fgeo = new THREE.PlaneGeometry(.9, .56, 12, 4), flag = M(fgeo, mat('#ffffff', { map: flagTex, ds: true, r: .8 }), .46, 1.9, 0, fl); const fo = fgeo.attributes.position.array.slice();
+  const fgeo = new THREE.PlaneGeometry(.85, .53, 12, 4), flag = M(fgeo, mat('#ffffff', { map: flagTex, ds: true, r: .85 }), .44, 1.95, 0, fl), fo = fgeo.attributes.position.array.slice();
+  const wave = t => { const a = fgeo.attributes.position.array; for (let i = 0; i < a.length; i += 3) a[i + 2] = Math.sin(t * 4 + fo[i] * 6) * .06 * (fo[i] + .43); fgeo.attributes.position.needsUpdate = true; };
   return {
-    dur: 3.4,
-    idle(t) { const a = fgeo.attributes.position.array; for (let i = 0; i < a.length; i += 3) a[i + 2] = Math.sin(t * 4 + fo[i] * 6) * .06 * (fo[i] + .45); fgeo.attributes.position.needsUpdate = true; chest.rotation.y = -.35 + Math.sin(t * .5) * .08; },
+    dur: 3.2,
+    idle(t) { wave(t); if (lid) lid.rotation.x = -Math.max(0, Math.sin(t * 2.2)) * .04; },
     open(k, t) {
-      this.idle(t); lock.position.y = .85 + Math.sin(seg(k, 0, .5) * Math.PI) * .25; lock.rotation.z = seg(k, 0, .5) * .8; if (k > .5) lock.position.y -= out(seg(k, .5, .9)) * 1.2;
-      lid.rotation.x = -back(seg(k, .55, 1.4)) * 1.9; pile.visible = k > .6; glow.intensity = 6 * out(seg(k, .6, 1.4));
-      if (k > 1 && !this.b) { this.b = 1; c.burst3([0, 1.5, 0], ['#ffd76a', '#f1b93a', '#fff1b0'], 110, { geo: new THREE.CylinderGeometry(.06, .06, .015, 16), speed: 5, up: .9, cone: .5, metal: 1, floor: .05, shadow: true }); }
+      wave(t); if (lock) lock.position.y = .422 + Math.sin(seg(k, 0, .4) * Math.PI) * .05;
+      if (lid) lid.rotation.x = -back(seg(k, .35, 1.2)) * 1.75; pile.visible = k > .5; glow.intensity = out(seg(k, .45, 1.2)) * 8;
+      if (k > .9 && !this.b) { this.b = 1; c.burst3([0, 1.1, 0], ['#ffd76a', '#f1b93a', '#fff1b0'], 120, { geo: new THREE.CylinderGeometry(.055, .055, .014, 16), speed: 5, up: .95, cone: .45, metal: 1, floor: .03, shadow: true }); }
     },
-    zoom: k => ease(seg(k, 2.3, 3.4)),
+    zoom: k => ease(seg(k, 2.1, 3.2)) * .6,
   };
 }
 
 export default { 1: licorne, 2: bulles, 3: heros, 4: train, 5: princesse, 6: pirate };
+export const models = { 1: ['horse_statue_01'], 2: ['rubber_duck_toy'], 4: ['carved_wooden_elephant'], 5: ['ornate_mirror_01'], 6: ['treasure_chest', 'seadogs_compass'] };
