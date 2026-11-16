@@ -453,5 +453,6 @@
     try { f(inner, x); } catch (e) { inner.innerHTML = '<p>Cette activité n\'a pas pu se charger.</p>'; if (window.console) console.error(e); }
     el._cleanup = () => { if (x.cleanup) x.cleanup(); };
   }
-  window.LMZ_ACTS = { mount, TITLES, GOAL, confetti, takeHTML, take };
+  const cleanup = () => { const b = document.getElementById('actbox'); if (b && b._cleanup) b._cleanup(); };
+  window.LMZ_ACTS = { mount, TITLES, GOAL, confetti, takeHTML, take, cleanup };
 })();

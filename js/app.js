@@ -71,27 +71,52 @@
     }
     root.innerHTML = '<div class="app wrap">' + head + '<p class="mut">Chargement…</p></div>';
     let pack; try { pack = await L.days(slug); } catch (_) { root.innerHTML = '<div class="app wrap">' + head + '<p>Impossible de charger ce jour. Vérifie ta connexion et réessaie.</p></div>'; return; }
-    const d = pack.days[n - 1], done = (S.done[slug] || []).includes(n), key = slug + ':' + n, type = d[3], prm = d[4] || {}, A = window.LMZ_ACTS, ART = window.LMZ_ART;
-    S.act[slug] = S.act[slug] || {}; const st0 = S.act[slug][n] || {};
-    const after = '<div id="take"></div><div class="ex"><b>Dans ta journée</b><p>' + esc(d[2]) + '</p></div>' +
-      '<button class="btn pri full" id="dn" type="button">' + (n < TOTAL ? (done ? 'Jour suivant' : 'Terminé, jour suivant') : 'Terminer le programme') + IC.arrow + '</button>' +
-      '<details class="notes"><summary>Ajouter une note</summary><textarea id="nt" class="note" placeholder="Écris ici… (reste sur ton téléphone)">' + esc(S.notes[key] || '') + '</textarea></details>';
-    root.innerHTML = '<div class="app wrap day">' + head + '<div><span class="kick">Jour ' + n + ' sur ' + TOTAL + '</span><h1>' + esc(d[0]) + '</h1></div>' +
-      (A && A.GOAL[type] ? '<p class="goal"><b>Objectif</b> ' + esc(A.GOAL[type]) + '</p>' : '') +
-      '<p class="tx">' + esc(d[1]) + '</p>' +
-      '<section class="act" aria-label="Activité du jour"><h2>' + esc(prm.t || (A && A.TITLES[type]) || 'Activité') + '</h2><div id="actbox"></div></section>' +
-      '<div id="after" class="after"' + (st0.fin ? '' : ' hidden') + '>' + after + '</div>' +
-      (n > 1 ? '<div class="nav2"><a class="crumb" href="#/p/' + slug + '/' + (n - 1) + '">' + IC.back + ' Jour ' + (n - 1) + '</a></div>' : '') + '</div>';
-    const reveal = html => { const tk = document.getElementById('take'); if (tk && html != null) tk.innerHTML = html; const el = document.getElementById('after'); if (el && el.hidden) { el.hidden = false; el.classList.add('in'); setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'center' }), 350); } };
-    if (A && st0.fin) { const tk = document.getElementById('take'); if (tk) tk.innerHTML = A.takeHTML(type, { d: st0, kit: pack.kit, p: prm }); }
-    if (A) A.mount(document.getElementById('actbox'), type, { kit: pack.kit, p: prm, slug, n, L, prog: p,
-      get: () => S.act[slug][n], set: v => { S.act[slug][n] = v; L.save(); }, done: reveal });
-    let t; document.getElementById('nt').oninput = e => { clearTimeout(t); t = setTimeout(() => { S.notes[key] = e.target.value; L.save(); }, 400); };
-    document.getElementById('dn').onclick = () => {
-      const a = S.done[slug] = S.done[slug] || []; if (!a.includes(n)) a.push(n); L.save();
-      location.hash = n < TOTAL ? '#/p/' + slug + '/' + (n + 1) : '#/p/' + slug;
-    };
-    scrollTo(0, 0);
+    const d = pack.days[n - 1], done = (S.done[slug] || []).includes(n), key = slug + ':' + n, type = d[3], prm = d[4] || {}, Q = d[5], F = d[6], A = window.LMZ_ACTS;
+    S.act[slug] = S.act[slug] || {}; const st = S.act[slug][n] = S.act[slug][n] || {};
+    const steps = ['q', 'f'].concat(type ? ['a'] : [], ['m']);
+    let cur = done ? 0 : Math.min(st._s || 0, steps.length - 1);
+    root.innerHTML = '<div class="app wrap day">' + head + '<div class="dots" id="dots"></div><div id="stage" class="stage"></div></div>';
+    const stage = () => document.getElementById('stage');
+    const next = () => { cur = Math.min(cur + 1, steps.length - 1); draw(); };
+    const nextBtn = (label, id) => '<button class="btn pri full" type="button" id="' + (id || 'nx') + '">' + (label || 'Suite') + IC.arrow + '</button>';
+    function dots() {
+      document.getElementById('dots').innerHTML = steps.map((k, i) => '<button type="button" class="dt' + (i === cur ? ' on' : i < cur ? ' ok' : '') + '" data-i="' + i + '" aria-label="Étape ' + (i + 1) + '"' + (i > cur ? ' disabled' : '') + '></button>').join('') + '<span class="mut">Jour ' + n + ' sur ' + TOTAL + '</span>';
+      [].forEach.call(document.querySelectorAll('#dots .dt'), b => b.onclick = () => { cur = +b.dataset.i; draw(); });
+    }
+    function draw() {
+      const k = steps[cur], el = stage(); st._s = cur; L.save(); dots();
+      if (A && A.cleanup) A.cleanup();
+      if (k === 'q') {
+        const sel = st.qa;
+        el.innerHTML = '<h1>' + esc(d[0]) + '</h1><p class="tx">' + esc(d[1]) + '</p><h2 class="qq">' + esc(Q.q) + '</h2><div class="qopts">' +
+          Q.o.map((o, i) => '<button type="button" class="qopt' + (sel === i ? ' sel' : sel != null ? ' dim' : '') + '" data-i="' + i + '"' + (sel != null ? ' disabled' : '') + '>' + esc(o[0]) + '</button>').join('') + '</div><div id="qtip"></div>';
+        const showTip = i => { document.getElementById('qtip').innerHTML = '<div class="tip rise"><span class="kick">Pour t\'aider</span><p>' + esc(Q.o[i][1]) + '</p></div>' + nextBtn(); document.getElementById('nx').onclick = next; };
+        [].forEach.call(el.querySelectorAll('.qopt'), b => b.onclick = () => {
+          const i = +b.dataset.i; st.qa = i; L.save();
+          [].forEach.call(el.querySelectorAll('.qopt'), z => { z.disabled = true; z.classList.toggle('sel', z === b); z.classList.toggle('dim', z !== b); });
+          showTip(i);
+        });
+        if (sel != null) showTip(sel);
+      } else if (k === 'f') {
+        el.innerHTML = '<div class="fcard"><span class="kick">Conseil du jour</span><h2>' + esc(F[0]) + '</h2><p class="ft">' + esc(F[1]) + '</p><div class="try"><b>Essaie</b><span>' + esc(F[2]) + '</span></div></div>' + nextBtn();
+        document.getElementById('nx').onclick = next;
+      } else if (k === 'a') {
+        el.innerHTML = (A && A.GOAL[type] ? '<p class="goal"><b>Objectif</b> ' + esc(A.GOAL[type]) + '</p>' : '') + '<section class="act"><h2>' + esc(prm.t || (A && A.TITLES[type]) || 'Activité') + '</h2><div id="actbox"></div></section><div id="take"></div><div id="anx"></div>';
+        const fin = html => { const tk = document.getElementById('take'); if (tk && html != null) tk.innerHTML = html; const x = document.getElementById('anx'); if (x && !x.firstChild) { x.innerHTML = nextBtn(); document.getElementById('nx').onclick = next; setTimeout(() => { const y = document.getElementById('anx'); if (y) y.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }, 350); } };
+        if (A && st.fin) { const tk = document.getElementById('take'); if (tk) tk.innerHTML = A.takeHTML(type, { d: st, kit: pack.kit, p: prm }); fin(); }
+        if (A) A.mount(document.getElementById('actbox'), type, { kit: pack.kit, p: prm, slug, n, L, prog: p, get: () => S.act[slug][n], set: v => { S.act[slug][n] = v; L.save(); }, done: fin });
+      } else {
+        el.innerHTML = '<div class="fcard"><span class="kick">Dans ta journée</span><p class="mt">' + esc(d[2]) + '</p><textarea id="nt" class="note" rows="3" placeholder="Écris ici ta réponse ou ta note… (elle reste sur ton téléphone)">' + esc(S.notes[key] || '') + '</textarea></div>' +
+          nextBtn(n < TOTAL ? (done ? 'Jour suivant' : 'Terminé, jour suivant') : 'Terminer le programme', 'dn');
+        let t; document.getElementById('nt').oninput = e => { clearTimeout(t); t = setTimeout(() => { S.notes[key] = e.target.value; L.save(); }, 300); };
+        document.getElementById('dn').onclick = () => {
+          S.notes[key] = document.getElementById('nt').value; const a2 = S.done[slug] = S.done[slug] || []; if (!a2.includes(n)) a2.push(n); L.save();
+          location.hash = n < TOTAL ? '#/p/' + slug + '/' + (n + 1) : '#/p/' + slug;
+        };
+      }
+      el.classList.remove('in'); void el.offsetWidth; el.classList.add('in');
+    }
+    draw(); scrollTo(0, 0);
   }
 
   /* ---------- SOS ---------- */

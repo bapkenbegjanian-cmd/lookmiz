@@ -1,5 +1,6 @@
 # Parcours d'activités : quelle activité interactive correspond à chaque jour, et données associées (contenu payant).
 from kits import KITS
+import conseils as K
 
 BASE = ['choose', 'calc', 'balance', 'heat', 'checklist', 'pairs', 'bilan',
         'wave', 'hold', 'breathe', 'slot', 'pause', 'myths', 'bilan',
@@ -53,12 +54,24 @@ EXTRA = {
  },
 }
 
+KEEP = {1, 2, 4, 6, 8, 9, 10, 11, 13, 16, 19, 22, 23, 26, 29, 30}
+KEEP_PLUS = {'vape-tabac': {5, 24}, 'cannabis': {24}}
+
+def _fill(t, s):
+    return t.replace('{h}', K.H[s]).replace('{aide}', K.AIDE[s])
+
 def package(p):
     s = p['slug']
     kit = dict(KITS[s]); kit.update(EXTRA.get(s, {}))
-    types = []
+    keep = KEEP | KEEP_PLUS.get(s, set())
     days = []
     for i, d in enumerate(p['jours']):
-        t, prm = OVR.get(s, {}).get(i + 1, (BASE[i], {}))
-        days.append([d[0], d[1], d[2], t, prm])
+        n = i + 1
+        t, prm = OVR.get(s, {}).get(n, (BASE[i], {}))
+        if n not in keep:
+            t, prm = None, {}
+        q, opts = K.QA[i]
+        days.append([d[0], d[1], d[2], t, prm,
+                     {'q': _fill(q, s), 'o': [[_fill(c, s), _fill(x, s)] for c, x in opts]},
+                     list(K.PHYSIO[s][i])])
     return {'kit': kit, 'days': days}
