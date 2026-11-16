@@ -1,9 +1,9 @@
 <!doctype html>
 <html lang="fr" translate="no" class="notranslate"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="google" content="notranslate"><meta name="robots" content="noindex">
 <title>Code paiement</title><style>body{margin:0;font:16px system-ui;background:#f4f0ea;padding:16px}button{width:100%;padding:20px;font:700 20px system-ui;border:0;border-radius:16px;background:#0e0e10;color:#fff}textarea{width:100%;height:50vh;font:12px monospace;margin-top:12px;box-sizing:border-box}</style></head>
-<body><button id="b">Copier le code</button><p id="m">Touche le bouton, puis colle dans Supabase.</p><textarea id="t" readonly translate="no">// Fonction Supabase « paiement » de Lookmiz.
-// Crée la page de paiement Stripe d&#x27;une carte (1,20 € + 0,60 € par personne ajoutée),
-// puis vérifie le paiement au retour et active la carte.
+<body><button id="b">Copier le code</button><p id="m">Touche le bouton, puis colle dans Supabase.</p><textarea id="t" readonly translate="no">// Fonction Supabase « paiement- » de Lookmiz.
+// 1) Programmes de 30 jours : crée la page de paiement Stripe (prog_checkout) puis vérifie un paiement (prog_verify).
+// 2) Anciennes cartes d&#x27;invitation (checkout / verify) : inchangé.
 import { createClient } from &#x27;npm:@supabase/supabase-js@2&#x27;;
 
 const CORS = { &#x27;Access-Control-Allow-Origin&#x27;: &#x27;*&#x27;, &#x27;Access-Control-Allow-Headers&#x27;: &#x27;*&#x27;, &#x27;Access-Control-Allow-Methods&#x27;: &#x27;POST, OPTIONS&#x27; };
@@ -11,6 +11,14 @@ const json = (d: unknown, status = 200) =&gt; new Response(JSON.stringify(d), { 
 const admin = createClient(Deno.env.get(&#x27;SUPABASE_URL&#x27;)!, Deno.env.get(&#x27;SUPABASE_SERVICE_ROLE_KEY&#x27;)!);
 const SK = Deno.env.get(&#x27;STRIPE_SECRET_KEY&#x27;) ?? &#x27;&#x27;;
 const SITE = &#x27;https://lookmiz.com/&#x27;;
+// Prix côté serveur : le navigateur ne peut pas les modifier.
+const PROGS: Record&lt;string, { cents: number; name: string }&gt; = {
+  &#x27;ecrans&#x27;: { cents: 999, name: &#x27;Écrans et réseaux (30 jours)&#x27; },
+  &#x27;pornographie&#x27;: { cents: 999, name: &#x27;Pornographie (30 jours)&#x27; },
+  &#x27;jeux-d-argent&#x27;: { cents: 999, name: &#x27;Jeux d\&#x27;argent et paris (30 jours)&#x27; },
+  &#x27;vape-tabac&#x27;: { cents: 999, name: &#x27;Vape et tabac (30 jours)&#x27; },
+  &#x27;pack&#x27;: { cents: 1999, name: &#x27;Les 4 programmes&#x27; },
+};
 
 async function stripe(path: string, body?: URLSearchParams) {
   const r = await fetch(&#x27;https://api.stripe.com/v1/&#x27; + path, {
@@ -23,7 +31,32 @@ async function stripe(path: string, body?: URLSearchParams) {
 Deno.serve(async (req) =&gt; {
   if (req.method === &#x27;OPTIONS&#x27;) return new Response(&#x27;ok&#x27;, { headers: CORS });
   if (!SK) return json({ error: &#x27;paiement non configuré&#x27; }, 500);
-  const { action, id, cle, sid } = await req.json().catch(() =&gt; ({}));
+  const body = await req.json().catch(() =&gt; ({}));
+  const { action, id, cle, sid } = body;
+
+  if (action === &#x27;prog_checkout&#x27;) {
+    const prog = String(body.prog || &#x27;&#x27;), P = PROGS[prog];
+    if (!P || body.consent !== true) return json({ error: &#x27;demande invalide&#x27; }, 400);
+    const p = new URLSearchParams({
+      mode: &#x27;payment&#x27;, locale: &#x27;fr&#x27;, allow_promotion_codes: &#x27;true&#x27;,
+      &#x27;line_items[0][quantity]&#x27;: &#x27;1&#x27;,
+      &#x27;line_items[0][price_data][currency]&#x27;: &#x27;eur&#x27;,
+      &#x27;line_items[0][price_data][unit_amount]&#x27;: String(P.cents),
+      &#x27;line_items[0][price_data][product_data][name]&#x27;: &#x27;Lookmiz · &#x27; + P.name,
+      success_url: SITE + &#x27;app/?achat=1&amp;sid={CHECKOUT_SESSION_ID}&#x27;,
+      cancel_url: SITE + (prog === &#x27;pack&#x27; ? &#x27;#tarifs&#x27; : &#x27;programmes/&#x27; + prog + &#x27;/#achat&#x27;),
+      &#x27;metadata[prog]&#x27;: prog, &#x27;metadata[consent]&#x27;: &#x27;1&#x27;,
+    });
+    const s = await stripe(&#x27;checkout/sessions&#x27;, p);
+    if (!s.url) return json({ error: s.error?.message || &#x27;Stripe a refusé&#x27; }, 502);
+    return json({ url: s.url });
+  }
+  if (action === &#x27;prog_verify&#x27;) {
+    if (!/^cs_[A-Za-z0-9_]+$/.test(String(sid || &#x27;&#x27;))) return json({ paid: false });
+    const s = await stripe(&#x27;checkout/sessions/&#x27; + sid), prog = s.metadata?.prog;
+    return json(s.payment_status === &#x27;paid&#x27; &amp;&amp; prog &amp;&amp; PROGS[prog] ? { paid: true, prog } : { paid: false });
+  }
+
   if (!/^[a-z0-9]{10,20}$/.test(id || &#x27;&#x27;)) return json({ error: &#x27;carte invalide&#x27; }, 400);
   const { data: carte } = await admin.from(&#x27;cartes&#x27;).select(&#x27;cle, data, paid&#x27;).eq(&#x27;id&#x27;, id).maybeSingle();
   if (!carte) return json({ error: &#x27;carte introuvable&#x27; }, 404);

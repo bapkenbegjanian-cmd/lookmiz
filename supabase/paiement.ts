@@ -1,6 +1,6 @@
-// Fonction Supabase « paiement » de Lookmiz.
-// Crée la page de paiement Stripe d'une carte (1,20 € + 0,60 € par personne ajoutée),
-// puis vérifie le paiement au retour et active la carte.
+// Fonction Supabase « paiement- » de Lookmiz.
+// 1) Programmes de 30 jours : crée la page de paiement Stripe (prog_checkout) puis vérifie un paiement (prog_verify).
+// 2) Anciennes cartes d'invitation (checkout / verify) : inchangé.
 import { createClient } from 'npm:@supabase/supabase-js@2';
 
 const CORS = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': '*', 'Access-Control-Allow-Methods': 'POST, OPTIONS' };
@@ -8,6 +8,14 @@ const json = (d: unknown, status = 200) => new Response(JSON.stringify(d), { sta
 const admin = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
 const SK = Deno.env.get('STRIPE_SECRET_KEY') ?? '';
 const SITE = 'https://lookmiz.com/';
+// Prix côté serveur : le navigateur ne peut pas les modifier.
+const PROGS: Record<string, { cents: number; name: string }> = {
+  'ecrans': { cents: 999, name: 'Écrans et réseaux (30 jours)' },
+  'pornographie': { cents: 999, name: 'Pornographie (30 jours)' },
+  'jeux-d-argent': { cents: 999, name: 'Jeux d\'argent et paris (30 jours)' },
+  'vape-tabac': { cents: 999, name: 'Vape et tabac (30 jours)' },
+  'pack': { cents: 1999, name: 'Les 4 programmes' },
+};
 
 async function stripe(path: string, body?: URLSearchParams) {
   const r = await fetch('https://api.stripe.com/v1/' + path, {
@@ -20,7 +28,32 @@ async function stripe(path: string, body?: URLSearchParams) {
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS });
   if (!SK) return json({ error: 'paiement non configuré' }, 500);
-  const { action, id, cle, sid } = await req.json().catch(() => ({}));
+  const body = await req.json().catch(() => ({}));
+  const { action, id, cle, sid } = body;
+
+  if (action === 'prog_checkout') {
+    const prog = String(body.prog || ''), P = PROGS[prog];
+    if (!P || body.consent !== true) return json({ error: 'demande invalide' }, 400);
+    const p = new URLSearchParams({
+      mode: 'payment', locale: 'fr', allow_promotion_codes: 'true',
+      'line_items[0][quantity]': '1',
+      'line_items[0][price_data][currency]': 'eur',
+      'line_items[0][price_data][unit_amount]': String(P.cents),
+      'line_items[0][price_data][product_data][name]': 'Lookmiz · ' + P.name,
+      success_url: SITE + 'app/?achat=1&sid={CHECKOUT_SESSION_ID}',
+      cancel_url: SITE + (prog === 'pack' ? '#tarifs' : 'programmes/' + prog + '/#achat'),
+      'metadata[prog]': prog, 'metadata[consent]': '1',
+    });
+    const s = await stripe('checkout/sessions', p);
+    if (!s.url) return json({ error: s.error?.message || 'Stripe a refusé' }, 502);
+    return json({ url: s.url });
+  }
+  if (action === 'prog_verify') {
+    if (!/^cs_[A-Za-z0-9_]+$/.test(String(sid || ''))) return json({ paid: false });
+    const s = await stripe('checkout/sessions/' + sid), prog = s.metadata?.prog;
+    return json(s.payment_status === 'paid' && prog && PROGS[prog] ? { paid: true, prog } : { paid: false });
+  }
+
   if (!/^[a-z0-9]{10,20}$/.test(id || '')) return json({ error: 'carte invalide' }, 400);
   const { data: carte } = await admin.from('cartes').select('cle, data, paid').eq('id', id).maybeSingle();
   if (!carte) return json({ error: 'carte introuvable' }, 404);

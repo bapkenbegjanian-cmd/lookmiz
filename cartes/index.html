@@ -1,0 +1,768 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="google-site-verification" content="tPkA79ZQCeMVM4kRewvgCNKZUg0uWoztpdDwAbVpFfc" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Lookmiz — invitations et cartes animées en 3D</title>
+<meta name="description" content="Invitations et cartes de vœux animées en 3D : anniversaire, mariage, baptême, Noël, Aïd… Chaque modèle a sa propre ouverture. Un lien par invité, les réponses en direct.">
+<meta name="theme-color" content="#f6f2ec">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&family=Cinzel:wght@500;700&family=Fredoka:wght@500;700&family=Great+Vibes&family=Pacifico&family=Playfair+Display:ital,wght@0,500;0,700;1,500&display=swap">
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.min.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
+<style>
+/* Lookmiz — boutique de cartes animées en 3D.
+   Accueil → catégorie → occasion (galerie animée) → personnalisation → paiement → partage.
+   Les scènes 3D sont dessinées par engine.js dans les zones .v3 (transparentes) de la page. */
+:root {
+  --bg: #f6f2ec; --paper: #ffffff; --ink: #161412; --muted: #7b746b; --line: #e4ddd2; --soft: #efe9e0;
+  --acc: #9a7738; --acc-l: #c9a560; --deep: #161412;
+  --ui: "Inter", system-ui, -apple-system, sans-serif; --title: "Instrument Serif", "Playfair Display", Georgia, serif;
+  --r: 14px; color-scheme: light;
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.55 var(--ui); -webkit-font-smoothing: antialiased; }
+body { min-height: 100vh; }
+button, input, textarea, select { font: inherit; color: inherit; }
+img { display: block; max-width: 100%; }
+[hidden] { display: none !important; }
+.app { position: relative; z-index: 1; max-width: 1080px; margin: 0 auto; padding: 0 max(18px, env(safe-area-inset-right, 0px)) calc(env(safe-area-inset-bottom, 0px) + 36px) max(18px, env(safe-area-inset-left, 0px)); }
+/* en-tête */
+.top { position: sticky; top: 0; z-index: 20; display: flex; align-items: center; gap: 12px; height: calc(60px + env(safe-area-inset-top, 0px)); padding-top: env(safe-area-inset-top, 0px);
+  margin: 0 calc(50% - 50vw) 8px; padding-left: max(18px, calc(50vw - 522px)); padding-right: max(18px, calc(50vw - 522px)); background: color-mix(in srgb, var(--bg) 86%, transparent); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-bottom: 1px solid var(--line); }
+.logo { font: 400 29px/1 var(--title); color: var(--ink); background: none; border: 0; cursor: pointer; padding: 0; letter-spacing: -.01em; }
+.logo span { font-style: italic; color: var(--acc); }
+.back { width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--line); background: var(--paper); cursor: pointer; display: grid; place-items: center; }
+.back svg { width: 18px; height: 18px; }
+.top .sp { flex: 1; }
+.mine { border: 1px solid var(--line); background: var(--paper); border-radius: 99px; padding: 9px 16px; font-weight: 600; font-size: 14px; cursor: pointer; }
+/* typographie */
+.screen { display: grid; gap: 28px; padding-top: 18px; animation: in .5s cubic-bezier(.2,.8,.2,1) both; }
+@keyframes in { from { opacity: 0; transform: translateY(10px); } }
+h1, h2, h3 { font-family: var(--title); font-weight: 400; margin: 0; line-height: 1.02; letter-spacing: -.015em; text-wrap: balance; }
+h1 { font-size: clamp(46px, 11.5vw, 92px); }
+h2 { font-size: clamp(34px, 7.6vw, 54px); }
+h3 { font-size: 28px; }
+h1 i, h2 i, h3 i { font-style: italic; color: var(--acc); }
+.sub { color: var(--muted); margin: 0; max-width: 46ch; font-size: 16.5px; }
+.kicker { font-size: 11.5px; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; color: var(--acc); }
+.head { display: grid; gap: 10px; }
+/* boutons */
+.cta { display: inline-flex; align-items: center; justify-content: center; gap: 10px; border: 0; border-radius: 99px; padding: 16px 26px; font-weight: 600; font-size: 15.5px; color: #fff; background: var(--ink); cursor: pointer; text-decoration: none; transition: transform .15s, background .2s; }
+.cta:hover { background: #2d2925; } .cta:active { transform: scale(.97); } .cta:disabled { opacity: .55; cursor: default; }
+.cta.full { width: 100%; }
+.ghost { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid var(--ink); border-radius: 99px; padding: 14px 22px; font-weight: 600; background: transparent; cursor: pointer; text-decoration: none; color: var(--ink); }
+.ghost.full { width: 100%; }
+button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px solid var(--acc); outline-offset: 3px; }
+.rv { opacity: 0; transform: translateY(22px); transition: opacity .9s cubic-bezier(.2,.8,.2,1) var(--d, 0ms), transform .9s cubic-bezier(.2,.8,.2,1) var(--d, 0ms); }
+.rv.on { opacity: 1; transform: none; }
+
+/* zones 3D : transparentes, le moteur dessine dessous ; la carte en repli si pas de 3D */
+.v3 { position: relative; }
+.v3 .nogl { position: absolute; inset: 0; display: none; place-items: center; padding: 8%; }
+.no3d .v3 .nogl { display: grid; }
+.no3d .v3 .nogl .card { width: min(100%, 60vh * .72); }
+.v3 .spin { position: absolute; left: 50%; top: 50%; width: 26px; height: 26px; margin: -13px; border-radius: 50%; border: 2px solid color-mix(in srgb, var(--ink) 15%, transparent); border-top-color: var(--acc); animation: rot 1s linear infinite; }
+.v3.ready .spin, .no3d .v3 .spin { display: none; }
+@keyframes rot { to { transform: rotate(1turn); } }
+
+/* --- accueil --- */
+.hero { display: grid; gap: 0; align-items: center; }
+.hero .htxt { display: grid; gap: 18px; } .hero .h1x { padding-top: 10px; } .hero .h2x { gap: 16px; }
+.hero .acts { display: flex; gap: 10px; flex-wrap: wrap; }
+.hero .from { font-size: 13.5px; color: var(--muted); }
+.hero .v3 { height: min(520px, 64vh); margin: 0 -18px; }
+@media (min-width: 860px) { .hero { grid-template-columns: 1fr 1.05fr; grid-template-areas: "a v" "b v"; column-gap: 30px; } .hero .h1x { grid-area: a; align-self: end; } .hero .h2x { grid-area: b; align-self: start; padding-top: 18px; } .hero .v3 { grid-area: v; margin: 0; height: 620px; } }
+.duo { display: grid; gap: 14px; }
+@media (min-width: 760px) { .duo { grid-template-columns: 1fr 1fr; } }
+.cat { position: relative; border: 0; text-align: left; cursor: pointer; border-radius: 22px; padding: 28px 26px 24px; display: grid; gap: 14px; min-height: 280px; align-content: end; overflow: hidden; transition: transform .3s; }
+.cat:active { transform: scale(.985); }
+.cat.dark { background: var(--deep); color: #f4efe6; } .cat.dark i { color: var(--acc-l); }
+.cat.light { background: var(--paper); border: 1px solid var(--line); }
+.cat b { font: 400 46px/1 var(--title); } .cat b i { font-style: italic; color: var(--acc); }
+.cat p { margin: 0; opacity: .75; font-size: 15px; max-width: 32ch; }
+.cat .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.cat .chips span { font-size: 12.5px; padding: 5px 11px; border-radius: 99px; border: 1px solid currentColor; opacity: .7; }
+.cat .arrow { position: absolute; top: 24px; right: 24px; width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; border: 1px solid currentColor; opacity: .8; }
+.cat .arrow svg { width: 18px; }
+.steps { display: grid; gap: 12px; counter-reset: s; }
+@media (min-width: 760px) { .steps { grid-template-columns: repeat(3, 1fr); } }
+.step { background: var(--paper); border: 1px solid var(--line); border-radius: 18px; padding: 20px; display: grid; gap: 6px; }
+.step::before { counter-increment: s; content: "0" counter(s); font: 400 34px/1 var(--title); color: var(--acc); }
+.step b { font-size: 16px; } .step span { color: var(--muted); font-size: 14.5px; }
+.closing { text-align: center; display: grid; justify-items: center; gap: 16px; padding: 16px 0 6px; }
+
+/* --- galeries --- */
+.occs { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+@media (min-width: 760px) { .occs { grid-template-columns: repeat(4, 1fr); } }
+.occ { position: relative; border: 0; cursor: pointer; text-align: left; border-radius: 16px; padding: 16px; min-height: 150px; display: grid; align-content: space-between; gap: 18px; background: var(--o-bg); color: var(--o-ink); overflow: hidden; transition: transform .25s; }
+.occ:active { transform: scale(.97); }
+.occ::after { content: ""; position: absolute; right: -30px; top: -30px; width: 110px; height: 110px; border-radius: 50%; border: 1px solid var(--o-acc); opacity: .45; }
+.occ::before { content: ""; position: absolute; right: -10px; top: -10px; width: 70px; height: 70px; border-radius: 50%; border: 1px solid var(--o-acc); opacity: .35; }
+.occ b { font: 400 25px/1.05 var(--title); position: relative; }
+.occ small { font-size: 12.5px; font-weight: 600; letter-spacing: .04em; color: var(--o-acc); position: relative; }
+.grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+@media (min-width: 760px) { .grid { grid-template-columns: repeat(3, 1fr); gap: 18px; } }
+.mdl { border: 0; padding: 0; background: none; cursor: pointer; text-align: left; display: grid; gap: 8px; }
+.mdl .v3 { aspect-ratio: 4 / 5; outline: 1px solid var(--line); }
+.mdl b { font: 400 21px/1.1 var(--title); }
+.mdl small { color: var(--muted); font-size: 12.5px; margin-top: -6px; }
+.picks { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+@media (min-width: 760px) { .picks { grid-template-columns: repeat(4, 1fr); } }
+
+/* --- la carte --- */
+.card { position: relative; width: 100%; aspect-ratio: 3 / 4.2; overflow: hidden; container-type: inline-size; background: var(--c-bg); color: var(--c-ink); isolation: isolate; border-radius: 1.4cqw; }
+.card::after { content: ""; position: absolute; inset: 0; z-index: 6; pointer-events: none; opacity: .22; mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .5 0 0 0 0 .45 0 0 0 0 .4 0 0 0 .55 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>"); }
+.card canvas.fx { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
+.card .dec { position: absolute; inset: 0; z-index: 2; pointer-events: none; color: var(--c-acc); }
+.card .dec svg { position: absolute; }
+.card .ct { position: absolute; z-index: 3; inset: 13cqw 12cqw; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 2.4cqw; }
+.card .pre { font: 600 2.9cqw var(--ui); letter-spacing: .32em; text-transform: uppercase; color: var(--c-acc); }
+.card .tt { font: 400 10.4cqw/1.02 var(--title); margin: 0; }
+.card .orn { width: 30cqw; height: auto; color: var(--c-acc); }
+.card .nm { font: 500 6cqw/1.15 var(--title); font-style: italic; background: linear-gradient(100deg, var(--c-acc) 20%, color-mix(in srgb, var(--c-acc) 45%, #fff) 50%, var(--c-acc) 80%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.card .msg { font: 400 3.9cqw/1.5 var(--ui); opacity: .88; max-width: 64cqw; white-space: pre-line; }
+.card .info { font: 600 3.4cqw/1.55 var(--ui); letter-spacing: .02em; padding-top: 2.4cqw; border-top: .25cqw solid color-mix(in srgb, var(--c-acc) 55%, transparent); }
+.card .sig { font: 400 6cqw var(--title); font-style: italic; color: var(--c-acc); }
+.card .uph { position: relative; flex: none; width: 46cqw; aspect-ratio: 1; overflow: hidden; margin-bottom: 1cqw; box-shadow: 0 0 0 .5cqw var(--c-bg), 0 0 0 .8cqw var(--c-acc); }
+.card .uph img { width: 100%; height: 100%; object-fit: cover; }
+.card.hasph .tt { font-size: 8.4cqw; } .card.hasph .msg { font-size: 3.4cqw; } .card.hasph .ct { gap: 1.8cqw; inset: 9cqw 10cqw; }
+/* polices */
+.f-script .tt { font-family: "Great Vibes", cursive; font-size: 13cqw; } .f-script.hasph .tt { font-size: 10.5cqw; }
+.f-script .nm, .f-script .sig { font-family: "Great Vibes", cursive; font-style: normal; font-size: 8cqw; }
+.f-serif .tt { font-family: "Playfair Display", Georgia, serif; font-style: italic; font-size: 9.6cqw; }
+.f-royal .tt { font-family: "Cinzel", Georgia, serif; font-size: 8cqw; letter-spacing: .05em; } .f-royal .nm, .f-royal .sig { font-family: "Cinzel", serif; font-style: normal; font-size: 4.8cqw; letter-spacing: .06em; }
+.f-fun .tt, .f-fun .nm, .f-fun .sig { font-family: "Fredoka", sans-serif; font-weight: 700; font-style: normal; } .f-fun .tt { font-size: 10cqw; }
+.f-brush .tt, .f-brush .nm, .f-brush .sig { font-family: "Pacifico", cursive; font-style: normal; } .f-brush .tt { font-size: 9.4cqw; }
+.f-arab .tt, .f-arab .nm, .f-arab .sig { font-family: "Amiri", serif; font-weight: 700; font-style: normal; } .f-arab .tt { font-size: 10.5cqw; }
+/* 1. cadre : double filet et coins ornés */
+.l-cadre .fr { position: absolute; inset: 5cqw; border: .45cqw solid var(--c-acc); }
+.l-cadre .fr::after { content: ""; position: absolute; inset: 1.6cqw; border: .15cqw solid var(--c-acc); }
+.l-cadre .cn { width: 11cqw; height: 11cqw; }
+/* 2. arche */
+.l-arche .ar { position: absolute; inset: 7cqw 9cqw; border: .4cqw solid var(--c-acc); border-radius: 50cqw 50cqw 1cqw 1cqw; }
+.l-arche .ar::after { content: ""; position: absolute; inset: 1.8cqw; border: .15cqw solid var(--c-acc); border-radius: 50cqw 50cqw .5cqw .5cqw; }
+.l-arche .ct { inset: 20cqw 15cqw 12cqw; } .l-arche .uph { border-radius: 50cqw 50cqw 1cqw 1cqw; width: 40cqw; aspect-ratio: .82; }
+/* 3. monogramme */
+.l-monogramme .fr { position: absolute; inset: 4.5cqw; border: .15cqw solid var(--c-acc); }
+.l-monogramme .mono { width: 24cqw; aspect-ratio: 1; border-radius: 50%; border: .35cqw solid var(--c-acc); box-shadow: inset 0 0 0 1.2cqw var(--c-bg), inset 0 0 0 1.35cqw var(--c-acc); display: grid; place-items: center; font: 500 8cqw/1 "Cinzel", serif; color: var(--c-acc); flex: none; margin-bottom: 1.5cqw; }
+.l-monogramme .uph { border-radius: 50%; width: 38cqw; }
+/* 4. art déco */
+.l-deco .ct { inset: 24cqw 12cqw 14cqw; } .l-deco .tt { letter-spacing: .02em; }
+.l-deco .uph { width: 40cqw; aspect-ratio: 1; clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%); box-shadow: none; }
+/* 5. botanique */
+.l-botanique .ct { inset: 16cqw 13cqw; } .l-botanique .uph { border-radius: 50%; width: 38cqw; }
+/* 6. moderne : aligné à gauche, grand titre */
+.l-moderne .ct { inset: 12cqw 11cqw 11cqw; align-items: flex-start; text-align: left; justify-content: flex-end; }
+.l-moderne .tt { font-size: 13cqw; line-height: .98; } .l-moderne.f-script .tt { font-size: 15cqw; } .l-moderne .orn { display: none; }
+.l-moderne .bar { position: absolute; left: 11cqw; top: 11cqw; width: 14cqw; height: .7cqw; background: var(--c-acc); }
+.l-moderne .msg { max-width: 72cqw; } .l-moderne .uph { width: 100%; aspect-ratio: 1.5; box-shadow: none; margin-bottom: 3cqw; }
+
+/* --- éditeur --- */
+.editor { display: grid; gap: 22px; }
+@media (min-width: 900px) { .editor { grid-template-columns: 1fr 1fr; align-items: start; } .editor .stagecol { position: sticky; top: 76px; } }
+.stagecol { display: grid; gap: 12px; }
+.stagecol .v3 { aspect-ratio: 4 / 5; outline: 1px solid var(--line); }
+.stagecol .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.thecard { max-width: 320px; width: 100%; margin: 0 auto; }
+.thecard .card { box-shadow: 0 22px 46px rgba(22,20,18,.18); }
+.form { display: grid; gap: 14px; }
+.form h2 { margin-bottom: 4px; }
+.fs { display: grid; gap: 12px; padding: 18px; background: var(--paper); border: 1px solid var(--line); border-radius: 18px; }
+.fs > .tlab { font-size: 12px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--acc); }
+.form label { display: grid; gap: 6px; font-size: 13px; font-weight: 600; color: var(--muted); }
+.form input, .form textarea { width: 100%; padding: 13px 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--bg); font-size: 15.5px; color: var(--ink); }
+.form textarea { min-height: 92px; resize: vertical; }
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+@media (max-width: 520px) { .row2 { grid-template-columns: 1fr; } }
+.form input[type=datetime-local] { min-width: 0; }
+.switch { display: flex !important; align-items: center; justify-content: space-between; gap: 10px; color: var(--ink) !important; font-size: 15px !important; font-weight: 500 !important; }
+.switch input { width: 46px; height: 26px; appearance: none; background: #d9d1c5; border-radius: 99px; position: relative; cursor: pointer; transition: background .2s; padding: 0; border: 0; flex: none; }
+.switch input::after { content: ""; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: #fff; transition: transform .2s; }
+.switch input:checked { background: var(--ink); } .switch input:checked::after { transform: translateX(20px); }
+.seg { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.seg button { border: 1px solid var(--line); background: var(--bg); border-radius: 12px; padding: 12px 6px; font-weight: 600; font-size: 14px; cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--ink); color: #fff; border-color: var(--ink); }
+.phrow { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.phrow img { width: 56px; height: 56px; object-fit: cover; border-radius: 12px; }
+.phrow label.pick { border: 1px dashed #c9bfae; border-radius: 12px; padding: 12px 16px; font-weight: 600; color: var(--ink); cursor: pointer; }
+.phrow label.pick input { display: none; }
+.phrow button { border: 0; background: none; text-decoration: underline; cursor: pointer; color: var(--muted); }
+.tags { display: flex; flex-wrap: wrap; gap: 8px; } .tags:empty { display: none; }
+.tag { display: inline-flex; align-items: center; gap: 6px; background: var(--ink); color: #fff; border-radius: 99px; padding: 7px 8px 7px 14px; font-size: 14px; font-weight: 600; animation: in .3s both; }
+.tag button { width: 22px; height: 22px; border-radius: 50%; border: 0; background: rgba(255,255,255,.18); color: #fff; cursor: pointer; font-size: 14px; line-height: 1; padding: 0; }
+.tadd { display: grid; grid-template-columns: minmax(0, 1fr) 50px; gap: 8px; }
+.tadd .plus { border: 0; border-radius: 12px; background: var(--ink); color: #fff; font-size: 24px; cursor: pointer; }
+.total { display: flex; justify-content: space-between; align-items: center; padding: 16px 18px; border-radius: 16px; background: var(--deep); color: #f4efe6; }
+.total small { display: block; font-size: 12.5px; opacity: .7; } .total b { font: 400 32px var(--title); }
+.note { font-size: 13px; color: var(--muted); text-align: center; margin: 0; }
+
+/* --- partage, mes cartes --- */
+.narrow { max-width: 620px; margin: 0 auto; width: 100%; }
+.sharebox { background: var(--paper); border: 1px solid var(--line); border-radius: 20px; padding: 18px; display: grid; gap: 12px; }
+.linkrow { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
+.linkrow input { padding: 13px; border-radius: 12px; border: 1px solid var(--line); background: var(--bg); min-width: 0; font-size: 14px; }
+.btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+#qr { display: grid; place-items: center; padding: 10px; background: #fff; border-radius: 14px; }
+#qr img, #qr canvas { width: 150px !important; height: 150px !important; }
+.resp { display: grid; gap: 8px; }
+.resp .r { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; background: var(--bg); border-radius: 12px; padding: 10px 12px; font-size: 14px; }
+.dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; } .dot.oui { background: #2f9e64; } .dot.non { background: #c94a4a; } .dot.peut-etre { background: #d69a2d; }
+.resp .tot { display: flex; gap: 8px; flex-wrap: wrap; font-weight: 700; font-size: 14px; } .resp .tot span { background: var(--bg); border-radius: 99px; padding: 6px 12px; }
+.guests { display: grid; gap: 8px; } .guest { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 8px; align-items: center; background: var(--bg); border-radius: 12px; padding: 8px 8px 8px 14px; font-weight: 600; }
+.guest button { border: 1px solid var(--line); background: #fff; border-radius: 10px; padding: 8px 12px; font-weight: 600; font-size: 13px; cursor: pointer; }
+.mylist { display: grid; gap: 10px; }
+.mylist button { display: grid; grid-template-columns: 56px 1fr auto; gap: 14px; align-items: center; text-align: left; border: 1px solid var(--line); background: var(--paper); border-radius: 16px; padding: 10px; cursor: pointer; }
+footer { text-align: center; font-size: 12.5px; color: var(--muted); margin-top: 40px; } footer a { color: inherit; }
+
+/* --- ouverture (destinataire) --- */
+.open { position: fixed; inset: 0; z-index: 50; overflow-y: auto; background: var(--o-bg, #efe8de); color: var(--o-ink, #1d1915); }
+.ostage { position: relative; z-index: 1; height: 100vh; height: 100dvh; }
+.ostage .v3 { position: absolute; inset: 0; cursor: pointer; }
+.o-hint { position: absolute; left: 0; right: 0; bottom: calc(env(safe-area-inset-bottom, 0px) + 5%); text-align: center; pointer-events: none; display: grid; gap: 4px; justify-items: center; padding: 0 20px; }
+.o-hint b { font: 400 26px var(--title); } .o-hint small { font-size: 14px; opacity: .7; }
+.o-hint .tap { width: 54px; height: 54px; border-radius: 50%; border: 1.5px solid currentColor; display: grid; place-items: center; margin-bottom: 6px; animation: tap 1.8s ease-in-out infinite; opacity: .8; }
+.o-hint .tap::after { content: ""; width: 14px; height: 14px; border-radius: 50%; background: currentColor; }
+@keyframes tap { 50% { transform: scale(1.12); opacity: .45; } }
+.x { position: fixed; top: calc(env(safe-area-inset-top, 0px) + 14px); left: 16px; z-index: 60; width: 42px; height: 42px; border-radius: 50%; border: 0; background: rgba(255,255,255,.85); backdrop-filter: blur(10px); cursor: pointer; font-size: 20px; color: #1d1915; }
+.o-fx { position: absolute; inset: 0; pointer-events: none; z-index: 2; overflow: hidden; }
+.o-flash { position: absolute; inset: -20%; background: radial-gradient(circle, rgba(255,255,255,.95), rgba(255,255,255,0) 55%); opacity: 0; }
+.o-card { position: absolute; left: 50%; top: 50%; width: min(80vw, 360px, 52vh); transform: translate(-50%, -50%); opacity: 0; }
+.o-card .card { box-shadow: 0 40px 90px rgba(0,0,0,.4); }
+.reveal { position: relative; z-index: 1; display: grid; gap: 16px; justify-items: center; width: min(92vw, 420px); margin: 0 auto; padding: calc(env(safe-area-inset-top, 0px) + 70px) 0 60px; }
+.reveal > .card { box-shadow: 0 30px 70px rgba(0,0,0,.28); animation: pop .8s cubic-bezier(.2,.9,.3,1.1) both; }
+@keyframes pop { from { opacity: 0; transform: translateY(40px) scale(.9); } }
+.panel { width: 100%; background: rgba(255,255,255,.94); border-radius: 20px; padding: 18px; display: grid; gap: 12px; color: #1d1915; animation: in .6s .4s both; }
+.panel h3 { font-size: 26px; }
+.count { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; text-align: center; }
+.count div { background: #f3eee6; border-radius: 12px; padding: 10px 4px; } .count b { display: block; font: 400 28px var(--title); } .count small { font-size: 11px; color: var(--muted); }
+.choice3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.choice3 button { border: 1px solid var(--line); background: #fff; border-radius: 12px; padding: 12px 4px; font-weight: 700; cursor: pointer; }
+.choice3 button[aria-pressed="true"] { background: var(--ink); color: #fff; border-color: var(--ink); }
+.panel input, .panel textarea { padding: 13px; border-radius: 12px; border: 1px solid var(--line); font-size: 15px; width: 100%; }
+.made { font-size: 13px; text-align: center; opacity: .8; } .made a { color: inherit; font-weight: 700; }
+.music { position: fixed; right: 16px; top: calc(env(safe-area-inset-top, 0px) + 14px); z-index: 70; display: flex; align-items: center; gap: 8px; }
+.music button { width: 42px; height: 42px; border-radius: 50%; border: 0; background: rgba(22,20,18,.6); backdrop-filter: blur(10px); color: #fff; cursor: pointer; display: grid; place-items: center; }
+.music button svg { width: 18px; height: 18px; }
+.music .yt { width: 1px; height: 1px; opacity: .01; overflow: hidden; border-radius: 10px; }
+.music.tap .yt { width: 160px; height: 90px; opacity: 1; }
+.music.tap::before { content: "Touche pour la musique"; position: absolute; right: 0; top: 98px; font: 600 12px var(--ui); color: #fff; background: rgba(22,20,18,.75); padding: 5px 10px; border-radius: 99px; white-space: nowrap; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01s !important; animation-iteration-count: 1 !important; transition-duration: .01s !important; } }
+</style>
+<!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "cdd9ad7e2e6f44e39d21157ecadb644e"}'></script><!-- End Cloudflare Web Analytics -->
+</head>
+<body>
+<div class="app">
+  <div class="top"><button class="back" type="button" id="back" aria-label="Retour" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg></button><button class="logo" type="button" data-go="">look<span>miz</span></button><span class="sp"></span><button class="mine" type="button" data-go="mes-cartes">Mes cartes</button></div>
+  <main id="app"></main>
+  <footer>© Lookmiz · <a href="cgv.html">Conditions</a></footer>
+</div>
+<div class="open" id="open" hidden></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="cartes.js"></script>
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const PAYFN = 'https://ctgjnpxdaqdnrcxjwnkp.supabase.co/functions/v1/paiement-';
+const SB = 'https://ctgjnpxdaqdnrcxjwnkp.supabase.co/rest/v1/', SBK = 'sb_publishable_mz--wiLicR1GMDd2b3Fd2g_ewLTbr9h';
+const sb = (path, body) => fetch(SB + path, { method: 'POST', headers: { apikey: SBK, 'Content-Type': 'application/json', Prefer: 'return=minimal' }, body: JSON.stringify(body) });
+const occOf = id => OCC.find(o => o.id === id);
+const mdlOf = id => MODELES.find(m => m.id === id);
+const store = { get: k => { try { return JSON.parse(localStorage.getItem('lmz-' + k)); } catch (_) { return null; } }, set: (k, v) => { try { localStorage.setItem('lmz-' + k, JSON.stringify(v)); } catch (_) {} } };
+
+/* ---------- règles ---------- */
+// occasions où l'on envoie la même carte à plusieurs personnes
+const GROUPE = new Set([...OCC.filter(o => o.cat === 'inv').map(o => o.id), 'noel', 'nouvel-an', 'aid', 'ramadan', 'paques', 'merci']);
+// occasions dont les 6 modèles ont leur propre scène 3D (les autres s'ouvrent dans l'enveloppe 3D)
+const SCENES3 = new Set(['anniversaire-enfant', 'mariage', 'fiancailles', 'anniversaire', 'henne']);
+const hasScene = m => !!m && SCENES3.has(m.occ);
+const destList = f => (Array.isArray(f.dest) ? f.dest : String(f.dest || '').split(/\n|,/)).map(x => String(x).trim()).filter(Boolean).slice(0, 200);
+// tarif : 1,20 € pour une personne, puis 0,60 € par personne ajoutée
+const prix = f => 1.2 + 0.6 * Math.max(0, destList(f).length - 1);
+const euros = v => v.toFixed(2).replace('.', ',') + ' €';
+const tagsHTML = f => destList(f).map((n, i) => `<span class="tag">${esc(n)}<button type="button" data-untag="${i}" aria-label="Retirer ${esc(n)}">×</button></span>`).join('');
+const okPhoto = v => typeof v === 'string' && /^data:image\/jpeg;base64,[A-Za-z0-9+\/=]+$/.test(v);
+const ytId = v => { const r = /(?:v=|youtu\.be\/|shorts\/|embed\/|live\/)([\w-]{11})/.exec(v || ''); return r ? r[1] : (/^[\w-]{11}$/.test(v || '') ? v : ''); };
+const initials = f => { const parts = String(f.noms || f.exp || '').split(/\s*(?:&|\bet\b|\+)\s*/i).map(x => x.trim()).filter(Boolean);
+  return (parts.length > 1 ? parts.slice(0, 2).map(x => x.charAt(0)).join('') : (parts[0] || 'L').charAt(0)).toUpperCase(); };
+function defaults(o) { return { titre: o.titre, noms: '', msg: o.msg, date: '', lieu: '', adresse: '', rsvp: o.cat === 'inv', de: '' }; }
+const EX = { anniversaire: ['Les 30 ans de Julie', 'Le Loft, Lyon'], 'anniversaire-enfant': ['Les 6 ans de Lucas', 'À la maison'], mariage: ['Claire & Thomas', 'Domaine des Roses'], fiancailles: ['Emma & Louis', 'Restaurant Le Jardin'],
+  henne: ['Le henné de Inès', 'Salle Les Jasmins'], bapteme: ['Le baptême de Louise', 'Église Saint-Jean'], 'baby-shower': ['Bébé Martin arrive', 'Chez Camille'], 'gender-reveal': ['Fille ou garçon ?', 'Au jardin'],
+  soiree: ['Soirée chez Antoine', 'Rooftop Bellecour'], cremaillere: ['Chez Manon & Paul', '12 rue des Lilas'], evjf: ['Pour la future mariée Chloé', 'Barcelone'], diplome: ['Hugo est diplômé', 'Chez ses parents'],
+  'joyeux-anniversaire': ['Pour Mathilde'], noel: ['Pour toute la famille'], 'nouvel-an': ['Pour vous tous'], aid: ['Pour toute la famille'], ramadan: ['Pour vous tous'], 'saint-valentin': ['Pour mon amour'],
+  'fete-des-meres': ['Pour Maman'], 'fete-des-peres': ['Pour Papa'], paques: ['Pour les enfants'], felicitations: ['Bravo Léa'], naissance: ['Bienvenue Gabriel'], merci: ['Pour Nathalie'], retablissement: ['Pour Pierre'] };
+const demo = (f, oid) => { const e = EX[oid || f.occ] || []; return { ...f, noms: f.noms || e[0] || '', date: f.date || '2026-06-20T18:00', lieu: f.lieu || e[1] || '' }; };
+
+/* ---------- la carte (papier, typographie, ornements dessinés) ---------- */
+const ORN = '<svg class="orn" viewBox="0 0 160 16" aria-hidden="true"><path d="M2 8h52M106 8h52" stroke="currentColor" stroke-width="1.2"/><path d="M58 8c6-7 14-7 22 0c8 7 16 7 22 0c-6 7-14 7-22 0c-8-7-16-7-22 0z" fill="none" stroke="currentColor" stroke-width="1.2"/><circle cx="80" cy="8" r="2.2" fill="currentColor"/></svg>';
+const CORNER = (pos) => `<svg class="cn" viewBox="0 0 40 40" style="${pos}" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><path d="M3 37V15C3 8 8 3 15 3h22"/><path d="M9 31c0-12 10-22 22-22"/><circle cx="9" cy="9" r="2.4" fill="currentColor"/><path d="M15 15c3-1 5 1 4 4"/></svg>`;
+const DECO = `<svg viewBox="0 0 300 420" preserveAspectRatio="none" style="inset:0;width:100%;height:100%" fill="none" stroke="currentColor" aria-hidden="true">
+  <path d="M24 40 40 24h220l16 16v340l-16 16H40l-16-16z" stroke-width="1.6"/><path d="M32 46 46 32h208l14 14v328l-14 14H46l-14-14z" stroke-width=".7"/>
+  <g stroke-width=".9" transform="translate(150 96)">${Array.from({ length: 13 }, (_, i) => { const a = Math.PI + i * Math.PI / 12; return `<path d="M0 0L${(Math.cos(a) * 52).toFixed(1)} ${(Math.sin(a) * 52).toFixed(1)}"/>`; }).join('')}<path d="M-52 0a52 52 0 0 1 104 0M-38 0a38 38 0 0 1 76 0" /></g>
+  <path d="M120 360h60M135 368h30" stroke-width="1"/></svg>`;
+const leafBranch = (flip) => { let g = ''; for (let i = 0; i < 9; i++) { const t = i / 8, x = 8 + t * 92, y = 96 - Math.sin(t * 2.4) * 70, a = -35 - t * 50; g += `<ellipse cx="${x.toFixed(1)}" cy="${(y - 7).toFixed(1)}" rx="9" ry="3.6" transform="rotate(${(a - 30).toFixed(0)} ${x.toFixed(1)} ${(y - 7).toFixed(1)})" fill="currentColor" opacity=".85"/><ellipse cx="${(x + 6).toFixed(1)}" cy="${(y + 4).toFixed(1)}" rx="8" ry="3.2" transform="rotate(${(a + 40).toFixed(0)} ${(x + 6).toFixed(1)} ${(y + 4).toFixed(1)})" fill="currentColor" opacity=".6"/>`; }
+  return `<svg viewBox="0 0 110 110" style="${flip}" aria-hidden="true"><path d="M4 100C30 92 70 60 104 14" fill="none" stroke="currentColor" stroke-width="1.4"/>${g}<circle cx="104" cy="14" r="3" fill="currentColor"/></svg>`; };
+function decHTML(m, f) {
+  if (m.lay === 'cadre') return `<div class="fr"></div>${CORNER('left:3cqw;top:3cqw')}${CORNER('right:3cqw;top:3cqw;transform:scaleX(-1)')}${CORNER('left:3cqw;bottom:3cqw;transform:scaleY(-1)')}${CORNER('right:3cqw;bottom:3cqw;transform:scale(-1)')}`;
+  if (m.lay === 'arche') return '<div class="ar"></div>';
+  if (m.lay === 'monogramme') return '<div class="fr"></div>';
+  if (m.lay === 'deco') return DECO;
+  if (m.lay === 'botanique') return leafBranch('left:2cqw;top:2cqw;width:38cqw;transform:scaleY(-1)') + leafBranch('right:2cqw;bottom:2cqw;width:38cqw;transform:scaleX(-1)');
+  return '<span class="bar"></span>';
+}
+function cardVars(m) { const [bg, ink, acc] = PAL[m.pal]; return `--c-bg:${bg};--c-ink:${ink};--c-acc:${acc}`; }
+function cardHTML(m, f, { live = false } = {}) {
+  const o = occOf(m.occ), inv = o.cat === 'inv', ph = okPhoto(f.photo) ? f.photo : '';
+  const when = f.date ? new Date(f.date) : null;
+  const dateTxt = when && !isNaN(when) ? when.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' }) + (f.date.includes('T') ? ' · ' + when.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : '') : '';
+  const top = ph ? `<div class="uph"><img src="${ph}" alt=""></div>` : m.lay === 'monogramme' ? `<div class="mono">${esc(initials(f))}</div>` : '';
+  return `<div class="card f-${m.font} l-${m.lay}${ph ? ' hasph' : ''}" style="${cardVars(m)}" data-anim="${m.anim}">
+    ${live ? '<canvas class="fx"></canvas>' : ''}<div class="dec">${decHTML(m, f)}</div>
+    <div class="ct">${top}<span class="pre">${esc(o.nom)}</span>
+      <h3 class="tt">${esc(f.titre || o.titre)}</h3>${ORN}
+      ${f.noms ? `<div class="nm">${esc(f.noms)}</div>` : ''}
+      <div class="msg">${esc(f.msg)}</div>
+      ${inv && (dateTxt || f.lieu) ? `<div class="info">${dateTxt ? esc(dateTxt.charAt(0).toUpperCase() + dateTxt.slice(1)) : ''}${dateTxt && f.lieu ? '<br>' : ''}${f.lieu ? esc(f.lieu) : ''}</div>` : ''}
+      ${!inv && f.de ? `<div class="sig">${esc(f.de)}</div>` : ''}</div>
+  </div>`;
+}
+
+/* ---------- animations (canvas) ---------- */
+const FX = new Set();
+function startFx(cv, type, colors) {
+  const c = cv.getContext('2d'); let W, H, run = true; const dpr = Math.min(2, devicePixelRatio || 1);
+  const size = () => { const r = cv.getBoundingClientRect(); W = r.width; H = r.height; cv.width = W * dpr; cv.height = H * dpr; c.setTransform(dpr, 0, 0, dpr, 0, 0); };
+  size(); const R = (a, b) => a + Math.random() * (b - a), pick = a => a[Math.floor(Math.random() * a.length)];
+  const N = { confettis: 70, neige: 70, coeurs: 22, etoiles: 45, petales: 34, ballons: 12, lanternes: 12, feux: 0, bulles: 26, paillettes: 80 }[type] ?? 40;
+  const P = []; const make = (init) => {
+    const p = { x: R(0, W), y: init ? R(0, H) : (['ballons', 'lanternes', 'bulles', 'coeurs'].includes(type) ? H + R(10, 60) : -R(10, 60)), s: R(.6, 1.4), r: R(0, 6.28), vr: R(-.06, .06), col: pick(colors), t: R(0, 100) };
+    if (type === 'etoiles') { p.y = R(0, H); p.vy = 0; }
+    return p; };
+  for (let i = 0; i < N; i++) P.push(make(true));
+  const bursts = [];
+  const heart = (x, y, s) => { c.beginPath(); c.moveTo(x, y + s * .3); c.bezierCurveTo(x, y, x - s * .5, y, x - s * .5, y + s * .3); c.bezierCurveTo(x - s * .5, y + s * .6, x, y + s * .8, x, y + s); c.bezierCurveTo(x, y + s * .8, x + s * .5, y + s * .6, x + s * .5, y + s * .3); c.bezierCurveTo(x + s * .5, y, x, y, x, y + s * .3); c.fill(); };
+  const star = (x, y, r) => { c.beginPath(); for (let i = 0; i < 10; i++) { const a = i * Math.PI / 5 - Math.PI / 2, rr = i % 2 ? r * .45 : r; c.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr); } c.fill(); };
+  const k = W / 330;
+  function frame(tm) {
+    if (!run) return; if (!document.body.contains(cv)) { run = false; FX.delete(ctl); return; }
+    c.clearRect(0, 0, W, H);
+    for (const p of P) {
+      p.t += 1;
+      if (type === 'confettis') { p.y += 1.6 * p.s * k + .4; p.x += Math.sin(p.t / 20) * .6; p.r += p.vr * 3; c.save(); c.translate(p.x, p.y); c.rotate(p.r); c.fillStyle = p.col; c.fillRect(-4 * k, -2 * k, 8 * k * p.s, 4 * k * p.s); c.restore(); }
+      else if (type === 'neige') { p.y += .7 * p.s * k + .2; p.x += Math.sin(p.t / 40) * .4; c.globalAlpha = .9; c.fillStyle = '#fff'; c.beginPath(); c.arc(p.x, p.y, 2.2 * p.s * k, 0, 7); c.fill(); c.globalAlpha = 1; }
+      else if (type === 'coeurs') { p.y -= .8 * p.s * k + .2; p.x += Math.sin(p.t / 30) * .5; c.globalAlpha = .85; c.fillStyle = p.col; heart(p.x, p.y, 12 * p.s * k); c.globalAlpha = 1; }
+      else if (type === 'etoiles') { const a = .35 + .65 * Math.abs(Math.sin(p.t / 30 + p.r)); c.globalAlpha = a; c.fillStyle = p.col; star(p.x, p.y, 3.4 * p.s * k); c.globalAlpha = 1; }
+      else if (type === 'petales') { p.y += .9 * p.s * k + .2; p.x += Math.sin(p.t / 25) * 1.1; p.r += p.vr; c.save(); c.translate(p.x, p.y); c.rotate(p.r); c.globalAlpha = .85; c.fillStyle = p.col; c.beginPath(); c.ellipse(0, 0, 6 * p.s * k, 3.2 * p.s * k, 0, 0, 7); c.fill(); c.restore(); c.globalAlpha = 1; }
+      else if (type === 'ballons') { p.y -= .7 * p.s * k + .2; p.x += Math.sin(p.t / 45) * .4; const rr = 11 * p.s * k; c.strokeStyle = 'rgba(0,0,0,.25)'; c.lineWidth = 1; c.beginPath(); c.moveTo(p.x, p.y + rr * 1.2); c.quadraticCurveTo(p.x + 4, p.y + rr * 2, p.x, p.y + rr * 2.8); c.stroke(); c.fillStyle = p.col; c.beginPath(); c.ellipse(p.x, p.y, rr, rr * 1.2, 0, 0, 7); c.fill(); c.fillStyle = 'rgba(255,255,255,.45)'; c.beginPath(); c.ellipse(p.x - rr * .35, p.y - rr * .4, rr * .22, rr * .35, -.5, 0, 7); c.fill(); }
+      else if (type === 'lanternes') { p.y -= .45 * p.s * k + .15; p.x += Math.sin(p.t / 50) * .3; const w = 9 * p.s * k, h = 13 * p.s * k; const g = c.createRadialGradient(p.x, p.y, 0, p.x, p.y, h * 2); g.addColorStop(0, 'rgba(255,200,90,.55)'); g.addColorStop(1, 'rgba(255,200,90,0)'); c.fillStyle = g; c.beginPath(); c.arc(p.x, p.y, h * 2, 0, 7); c.fill(); c.fillStyle = '#ffb84d'; c.beginPath(); c.roundRect(p.x - w / 2, p.y - h / 2, w, h, w / 2.4); c.fill(); }
+      else if (type === 'bulles') { p.y -= .6 * p.s * k + .2; p.x += Math.sin(p.t / 35) * .6; const rr = 7 * p.s * k; c.strokeStyle = 'rgba(255,255,255,.85)'; c.lineWidth = 1.2; c.fillStyle = 'rgba(255,255,255,.18)'; c.beginPath(); c.arc(p.x, p.y, rr, 0, 7); c.fill(); c.stroke(); }
+      else if (type === 'paillettes') { p.y += .5 * p.s * k + .15; p.x += Math.sin(p.t / 30) * .3; const a = .3 + .7 * Math.abs(Math.sin(p.t / 12 + p.r)); c.globalAlpha = a; c.fillStyle = p.col; star(p.x, p.y, 2.2 * p.s * k); c.globalAlpha = 1; }
+      if (p.y > H + 70 || p.y < -70 || p.x < -40 || p.x > W + 40) Object.assign(p, make(false));
+    }
+    if (type === 'feux') {
+      if (Math.random() < .035) { const x = R(W * .15, W * .85), y = R(H * .12, H * .5), col = pick(colors); for (let i = 0; i < 46; i++) { const a = Math.random() * 6.28, v = R(.8, 2.6) * k; bursts.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, l: 1, col }); } }
+      for (let i = bursts.length - 1; i >= 0; i--) { const b = bursts[i]; b.x += b.vx; b.y += b.vy; b.vy += .025; b.vx *= .985; b.l -= .012; if (b.l <= 0) { bursts.splice(i, 1); continue; } c.globalAlpha = b.l; c.fillStyle = b.col; c.beginPath(); c.arc(b.x, b.y, 1.8 * k, 0, 7); c.fill(); }
+      c.globalAlpha = 1;
+    }
+    requestAnimationFrame(frame);
+  }
+  const ctl = { stop() { run = false; } }; FX.add(ctl); requestAnimationFrame(frame);
+  return ctl;
+}
+const COLS = { confettis: null, neige: null, coeurs: ['#ff6b8b', '#ff9fb3', '#e0435f'], etoiles: null, petales: ['#ffd6e0', '#ffffff', '#f7b6c7'], ballons: null, lanternes: null, feux: null, bulles: null, paillettes: null };
+function liveCards(root = document) {
+  root.querySelectorAll('.card canvas.fx').forEach(cv => { if (cv.dataset.on) return; cv.dataset.on = 1;
+    const card = cv.closest('.card'), type = card.dataset.anim, acc = getComputedStyle(card).getPropertyValue('--c-acc').trim();
+    startFx(cv, type, COLS[type] || [acc, '#ffffff', '#ffd166', '#ef476f', '#06d6a0', '#8a5cff']); });
+}
+
+
+
+/* ---------- 3D : un moteur pour la page, un autre pour l'ouverture ---------- */
+let ENG = null, PAGE = null, NO3D = false;
+const hasGL = () => { try { const c = document.createElement('canvas'); return !!(window.WebGLRenderingContext && (c.getContext('webgl2') || c.getContext('webgl'))); } catch (_) { return false; } };
+async function engine() {
+  if (NO3D) return null; if (ENG) return ENG;
+  if (!hasGL()) { NO3D = true; document.documentElement.classList.add('no3d'); return null; }
+  try { ENG = await import('./engine.js');
+    await Promise.race([Promise.all(['92px "Instrument Serif"', '80px "Great Vibes"', '200px "Cinzel"', '600 24px Inter'].map(f => document.fonts.load(f))), new Promise(r => setTimeout(r, 2500))]).catch(() => {});
+    return ENG; }
+  catch (_) { NO3D = true; document.documentElement.classList.add('no3d'); return null; }
+}
+// options de scène tirées du modèle et du texte saisi
+function sceneOpts(m, f) {
+  const [bg, ink, acc, paper] = PAL[m.pal], o = occOf(m.occ);
+  return { bg, ink, acc, paper, seal: acc, sheet: '#fbf8f2', ini: initials(f), title: f.titre || o.titre, pre: o.nom, noms: f.noms || '' };
+}
+const useEnv = (m, f) => !hasScene(m) || f.ouv === 'env';
+// installe les scènes 3D de toutes les zones .v3 de la page
+async function mount3(root = document) {
+  const els = [...root.querySelectorAll('.v3[data-v3]:not([data-on])')]; if (!els.length) return;
+  els.forEach(el => el.dataset.on = 1);
+  const E = await engine(); if (!E) return;
+  if (!PAGE) PAGE = E.createLayer(document.body, { dpr: 1.75 });
+  for (const el of els) {
+    if (!el.isConnected) continue;
+    const m = mdlOf(el.dataset.v3); if (!m) continue;
+    const f = el.dataset.edit ? state.f : demo(defaults(occOf(m.occ)), m.occ), env = el.dataset.env === '1' || useEnv(m, f);
+    const b = await E.builderFor(m.occ, m.id.split('-').pop(), env);
+    if (!el.isConnected) continue;
+    const o = sceneOpts(m, f); if (el.dataset.seal) o.seal = el.dataset.seal;
+    el._view = PAGE.add(el, b, o, { loop: true, wait: +(el.dataset.wait || 1.6), hold: 2.4, bg: el.dataset.bg ? PAL[m.pal][0] : null, shadows: true, lite: !el.dataset.edit });
+    el.classList.add('ready');
+  }
+}
+const v3 = (m, extra = '', f = null) => `<div class="v3" data-v3="${m.id}" ${extra}><span class="spin"></span><div class="nogl">${cardHTML(m, f || demo(defaults(occOf(m.occ)), m.occ))}</div></div>`;
+
+/* ---------- écrans ---------- */
+const state = { route: '', f: null, mid: null };
+const ARROW = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
+function home() {
+  const env = mdlOf('mariage-1');
+  const picks = ['anniversaire-enfant-3', 'anniversaire-enfant-1', 'anniversaire-enfant-6', 'anniversaire-enfant-5'].map(mdlOf);
+  const chips = id => OCC.filter(o => o.cat === id).slice(0, 6).map(o => `<span>${esc(o.nom)}</span>`).join('');
+  return `<section class="screen home">
+    <div class="hero">
+      <div class="htxt h1x"><span class="kicker">Invitations & vœux animés en 3D</span>
+        <h1>Des cartes qui <i>s'ouvrent</i> pour de vrai.</h1></div>
+      ${v3(env, 'data-env="1" data-seal="#8e2a2c" data-wait=".8"', { ...demo(defaults(occOf('mariage')), 'mariage'), noms: 'Claire & Thomas' })}
+      <div class="htxt h2x"><p class="sub">Chaque modèle a sa propre scène animée. Tes invités la voient s'ouvrir sous leurs yeux, puis découvrent ta carte.</p>
+        <div class="acts"><button class="cta" type="button" data-go="cat-inv">Créer une invitation</button><button class="ghost" type="button" data-go="cat-voeux">Envoyer des vœux</button></div>
+        <span class="from">À partir de 1,20 € · prête en deux minutes</span></div>
+    </div>
+    <div class="duo">
+      <button class="cat dark rv" type="button" data-go="cat-inv"><span class="arrow">${ARROW}</span><b>Invi<i>tations</i></b><p>${esc(CATS[0].sous)}</p><span class="chips">${chips('inv')}</span></button>
+      <button class="cat light rv" type="button" data-go="cat-voeux" style="--d:120ms"><span class="arrow">${ARROW}</span><b>Vœux & <i>souhaits</i></b><p>${esc(CATS[1].sous)}</p><span class="chips">${chips('voeux')}</span></button>
+    </div>
+    <div class="head rv"><span class="kicker">À découvrir</span><h2>Chaque modèle a <i>sa scène</i></h2></div>
+    <div class="picks">${picks.map((m, i) => `<button class="mdl rv" type="button" data-go="m-${m.id}" style="--d:${i * 90}ms">${v3(m, `data-bg="1" data-wait="${1.2 + i * .9}"`)}<b>${esc(m.nom)}</b><small>${esc(occOf(m.occ).nom)}</small></button>`).join('')}</div>
+    <div class="steps rv"><div class="step"><b>Choisis ton modèle</b><span>150 modèles pour 25 occasions, chacun avec son animation.</span></div><div class="step"><b>Personnalise</b><span>Ton texte, ta photo, ta musique et la liste de tes invités.</span></div><div class="step"><b>Envoie</b><span>Un lien personnel par invité, et leurs réponses en direct.</span></div></div>
+    <div class="closing rv"><h2>Prête en <i>deux minutes.</i></h2><p class="sub">1,20 € la carte, puis 0,60 € par personne ajoutée. Sans abonnement.</p><button class="cta" type="button" data-go="cat-inv">Commencer</button></div>
+  </section>`;
+}
+function catPage(id) {
+  const c = CATS.find(x => x.id === id);
+  return `<section class="screen"><div class="head"><span class="kicker">${esc(c.nom)}</span><h2>Quelle <i>occasion</i> ?</h2></div>
+    <div class="occs">${OCC.filter(o => o.cat === id).map(o => { const m = MODELES.find(x => x.occ === o.id), [bg, ink, acc] = PAL[m.pal];
+      return `<button class="occ" type="button" data-go="o-${o.id}" style="--o-bg:${bg};--o-ink:${ink};--o-acc:${acc}"><small>6 modèles${SCENES3.has(o.id) ? ' · 3D' : ''}</small><b>${esc(o.nom)}</b></button>`; }).join('')}</div></section>`;
+}
+function occPage(id) {
+  const o = occOf(id), ms = MODELES.filter(m => m.occ === id);
+  return `<section class="screen"><div class="head"><span class="kicker">${esc(o.nom)}</span><h2>Choisis ton <i>modèle</i></h2><p class="sub">Chaque modèle s'anime ici comme chez tes invités. Touche celui qui te plaît.</p></div>
+    <div class="grid">${ms.map((m, i) => `<button class="mdl" type="button" data-go="m-${m.id}">${v3(m, `data-bg="1" data-wait="${1 + (i % 3) * 1.1 + Math.floor(i / 3) * .6}"`)}<b>${esc(m.nom)}</b></button>`).join('')}</div></section>`;
+}
+function editor(mid) {
+  const m = mdlOf(mid), o = occOf(m.occ), inv = o.cat === 'inv';
+  if (!state.f || state.mid !== mid) { const keep = state.f && state.f.occ === o.id ? state.f : null; state.f = keep || { ...defaults(o), occ: o.id }; state.mid = mid; }
+  const f = state.f, sc = hasScene(m);
+  return `<section class="screen editor">
+    <div class="stagecol">${v3(m, 'data-bg="1" data-edit="1" data-wait=".6"', f)}
+      <div class="row"><button class="ghost" type="button" data-replay>Rejouer</button><button class="cta" type="button" data-preview>Plein écran</button></div>
+      <div class="thecard" id="pv">${cardHTML(m, f, { live: true })}</div></div>
+    <div class="form"><span class="kicker">${esc(o.nom)} · ${esc(m.nom)}</span><h2>Personnalise <i>ta carte</i></h2>
+      <div class="fs"><span class="tlab">Le texte</span>
+        <label>Titre<input data-f="titre" value="${esc(f.titre)}" maxlength="60"></label>
+        <label>${inv ? 'Qui invite ?' : 'Pour qui ?'}<input data-f="noms" data-r3="1" value="${esc(f.noms)}" maxlength="60" placeholder="${esc((EX[o.id] || [''])[0])}"></label>
+        <label>Message<textarea data-f="msg" maxlength="300">${esc(f.msg)}</textarea></label></div>
+      ${inv ? `<div class="fs"><span class="tlab">L'événement</span>
+        <div class="row2"><label>Date et heure<input type="datetime-local" data-f="date" value="${esc(f.date)}"></label><label>Lieu<input data-f="lieu" value="${esc(f.lieu)}" maxlength="60" placeholder="Salle des fêtes"></label></div>
+        <label>Adresse (pour le GPS)<input data-f="adresse" value="${esc(f.adresse)}" maxlength="120" placeholder="12 rue des Lilas, Lyon"></label>
+        <label class="switch">Les invités répondent (je viens / je ne viens pas)<input type="checkbox" data-f="rsvp" ${f.rsvp ? 'checked' : ''}></label></div>` : ''}
+      ${GROUPE.has(o.id) ? `<div class="fs"><span class="tlab">${inv ? 'Les invités' : 'Les destinataires'}</span>
+        <div class="tags" id="tags">${tagsHTML(f)}</div>
+        <div class="tadd"><input id="tagin" maxlength="60" placeholder="Prénom ou famille" aria-label="Ajouter une personne"><button type="button" class="plus" data-addtag aria-label="Ajouter">+</button></div>
+        <small class="note" style="text-align:left">Chacun reçoit son propre lien, avec son prénom.</small></div>` : ''}
+      <div class="fs"><span class="tlab">Animation, photo et musique</span>
+        ${sc ? `<div class="seg"><button type="button" data-ouv="scene" aria-pressed="${f.ouv !== 'env'}">${esc(m.nom)}</button><button type="button" data-ouv="env" aria-pressed="${f.ouv === 'env'}">Enveloppe</button></div>` : ''}
+        <div class="phrow">${okPhoto(f.photo) ? `<img src="${f.photo}" alt="Ta photo"><button type="button" data-nophoto>Retirer</button>` : ''}<label class="pick">${okPhoto(f.photo) ? 'Changer la photo' : 'Ajouter ta photo'}<input type="file" accept="image/*" id="phin"></label></div>
+        <label>Musique YouTube (facultatif)<input data-f="yt" value="${esc(f.yt || '')}" maxlength="200" placeholder="Colle un lien YouTube" inputmode="url"></label>
+        <small id="ytmsg" class="note" style="text-align:left">${f.yt ? (ytId(f.yt) ? 'Musique ajoutée : elle démarre à l\'ouverture.' : 'Ce lien n\'est pas un lien YouTube.') : 'La musique démarre quand on ouvre la carte.'}</small></div>
+      <div class="fs"><span class="tlab">De la part de</span>
+        <label>Ton nom (affiché à l'ouverture)<input data-f="exp" data-r3="1" value="${esc(f.exp || '')}" maxlength="40" placeholder="Julie"></label>
+        ${inv ? '' : `<label>Signature (en bas de la carte, facultatif)<input data-f="de" value="${esc(f.de)}" maxlength="40" placeholder="Bisous, Julie"></label>`}</div>
+      <div class="total"><span>Total <small id="pdet">${destList(f).length > 1 ? '1,20 € + ' + (destList(f).length - 1) + ' × 0,60 €' : 'pour 1 personne'}</small></span><b id="ptot">${euros(prix(f))}</b></div>
+      <button class="cta full" type="button" data-save>Payer et envoyer</button><p class="note">Paiement sécurisé par Stripe.</p>
+      <p class="note" id="smsg" role="status"></p>
+    </div></section>`;
+}
+// la scène de l'éditeur est reconstruite quand le texte qui y figure change
+let r3T = 0;
+function rebuild3(delay = 500) { clearTimeout(r3T); r3T = setTimeout(() => { const el = document.querySelector('.stagecol .v3'); if (!el) return; if (el._view) el._view.destroy(); el._view = null; delete el.dataset.on; el.classList.remove('ready'); mount3(); }, delay); }
+
+function sharePage(id, cle, url) {
+  const mine = (store.get('mine') || []).find(x => x.id === id), inv = mine && occOf(mine.occ).cat === 'inv' && mine.rsvp;
+  const links = mine && mine.invites ? mine.invites.map(x => ({ n: x.n || 'Invité', u: url + '&t=' + x.t })) : [];
+  return `<section class="screen" style="max-width:620px;margin:0 auto;width:100%">
+    ${mine && !mine.paid ? `<span class="kicker">Paiement en attente</span><h2>Finalise ta <i>carte</i></h2><p class="sub">Ta carte est prête. Elle s'ouvrira chez tes invités dès que le paiement de ${euros(prix(mine.f))} sera fait.</p><button class="cta full" type="button" data-pay="${id}">Payer ${euros(prix(mine.f))}</button><p class="note" id="pmsg"></p>` : ''}
+    ${mine && !mine.paid ? '' : `<span class="kicker">C'est prêt</span><h2>Envoie ta <i>carte</i></h2>`}
+    <div class="sharebox" ${mine && !mine.paid ? 'hidden' : ''}>
+      ${links.length > 1 ? `<h3 style="margin:0;font:400 26px var(--title)">Un lien par invité</h3><p class="note" style="text-align:left">Chaque lien est personnel : il affiche le prénom de l'invité et ne s'ouvre que sur 2 appareils.</p>
+        <div class="guests">${links.map(x => `<div class="guest"><span>${esc(x.n)}</span><button type="button" data-gcopy="${esc(x.u)}">Copier</button><button type="button" data-gshare="${esc(x.u)}" data-gname="${esc(x.n)}">Envoyer</button></div>`).join('')}</div>`
+      : `<div class="linkrow"><input id="lnk" readonly value="${esc(links[0] ? links[0].u : url)}" aria-label="Lien de la carte"><button class="cta" type="button" data-copy>Copier</button></div>
+        <div class="btns"><button class="ghost" type="button" data-share>Partager</button><a class="ghost" href="mailto:?subject=${encodeURIComponent('Tu as reçu une carte')}&body=${encodeURIComponent('Ouvre ton enveloppe : ' + (links[0] ? links[0].u : url))}">Par e-mail</a></div>
+        <div id="qr" aria-label="QR code de la carte"></div><p class="note">Ce lien est personnel : il ne s'ouvre que sur 2 appareils.</p>`}
+      <button class="ghost" type="button" data-selfview="${id}">Voir l'ouverture</button>
+    </div>
+    ${inv ? `<div class="sharebox"><h3 style="margin:0;font:700 22px var(--title)">Réponses des invités</h3><div class="resp" id="resp"><p class="note">Chargement…</p></div><button class="ghost" type="button" data-reload="${id}">Actualiser</button></div>` : ''}
+    <button class="ghost" type="button" data-go="">Créer une autre carte</button>
+  </section>`;
+}
+function myCards() {
+  const L = store.get('mine') || [];
+  return `<section class="screen" style="max-width:620px;margin:0 auto;width:100%"><h2>Mes <i>cartes</i></h2>
+    ${L.length ? `<div class="mylist">${L.map(x => { const m = mdlOf(x.mid); return m ? `<button type="button" data-open-mine="${x.id}">${cardHTML(m, x.f)}<span><b>${esc(x.f.titre)}</b><br><small style="color:var(--muted)">${esc(occOf(x.occ).nom)}</small></span><span>›</span></button>` : ''; }).join('')}</div>`
+      : `<p class="sub">Tu n'as pas encore créé de carte. Elles apparaîtront ici, sur ce téléphone.</p><button class="cta" type="button" data-go="">Créer ma première carte</button>`}</section>`;
+}
+
+
+/* ---------- personnalisation ---------- */
+function refreshTags() {
+  const f = state.f, n = destList(f).length; $('#tags').innerHTML = tagsHTML(f);
+  $('#ptot').textContent = euros(prix(f)); $('#pdet').textContent = n > 1 ? '1,20 € + ' + (n - 1) + ' × 0,60 €' : 'pour 1 personne';
+}
+function addTag() {
+  const i = $('#tagin'), v = i.value.trim(); if (!v) { i.focus(); return; }
+  const L = destList(state.f); if (L.length < 200 && !L.includes(v)) L.push(v); state.f.dest = L; i.value = ''; i.focus(); refreshTags();
+}
+document.addEventListener('keydown', e => { if (e.target.id === 'tagin' && e.key === 'Enter') { e.preventDefault(); addTag(); } });
+document.addEventListener('input', e => {
+  const k = e.target.dataset.f; if (!k || !state.f) return;
+  state.f[k] = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
+  if (k === 'yt') { const x = $('#ytmsg'); if (x) x.textContent = !e.target.value ? 'La musique démarre quand on ouvre la carte.' : ytId(e.target.value) ? 'Musique ajoutée : elle démarre à l\'ouverture.' : 'Ce lien n\'est pas un lien YouTube.'; return; }
+  const m = mdlOf(state.mid); $('#pv').innerHTML = cardHTML(m, state.f, { live: true }); liveCards($('#pv'));
+  if (e.target.dataset.r3 || k === 'titre') rebuild3();
+});
+
+const rerender = () => { const y = scrollY; render(); scrollTo(0, y); };
+// photo : réduite à 1000 px max et compressée en JPEG avant d'être gardée dans la carte
+document.addEventListener('change', e => {
+  if (e.target.id !== 'phin' || !state.f) return; const file = e.target.files[0]; if (!file) return;
+  const img = new Image(), u = URL.createObjectURL(file);
+  img.onload = () => { const k = Math.min(1, 1000 / Math.max(img.width, img.height)), c = document.createElement('canvas');
+    c.width = Math.round(img.width * k); c.height = Math.round(img.height * k); c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(u);
+    let q = .82, d = c.toDataURL('image/jpeg', q); while (d.length > 260000 && q > .4) { q -= .1; d = c.toDataURL('image/jpeg', q); }
+    state.f.photo = d; rerender(); };
+  img.onerror = () => { URL.revokeObjectURL(u); alert('Cette image ne peut pas être lue. Essaie une photo JPG ou PNG.'); };
+  img.src = u;
+});
+const rid = n => Array.from(crypto.getRandomValues(new Uint8Array(n)), b => 'abcdefghjkmnpqrstuvwxyz23456789'[b % 31]).join('');
+const b64 = o => btoa(unescape(encodeURIComponent(JSON.stringify(o)))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+const unb64 = s => JSON.parse(decodeURIComponent(escape(atob(s.replace(/-/g, '+').replace(/_/g, '/')))));
+async function save() {
+  const m = mdlOf(state.mid), f = state.f, data = { mid: m.id, f }, msg = $('#smsg'), base = location.origin + location.pathname;
+  msg.textContent = 'Création de ta carte…';
+  const id = rid(12), cle = rid(16), url = base + '?c=' + id, btn = $('[data-save]');
+  data.f = { ...f, dest: destList(f) }; if (!okPhoto(data.f.photo)) delete data.f.photo; if (data.f.yt) data.f.yt = ytId(data.f.yt) || undefined;
+  const invites = (data.f.dest.length ? data.f.dest : ['']).map(n => ({ t: rid(10), n }));
+  btn.disabled = true;
+  try { const r = await sb('cartes', { id, cle, data, invites }); if (!r.ok) throw 0; }
+  catch (_) { msg.textContent = 'La création n\'a pas marché. Vérifie ta connexion et réessaie.'; btn.disabled = false; return; }
+  const L = store.get('mine') || []; L.unshift({ id, cle, mid: m.id, occ: m.occ, f: { ...data.f, photo: undefined }, invites, rsvp: !!f.rsvp, url, paid: false, at: Date.now() }); store.set('mine', L.slice(0, 50));
+  msg.textContent = 'Ouverture du paiement sécurisé…';
+  pay(id, cle, msg, btn);
+}
+// paiement Stripe : 1,20 € + 0,60 € par personne ajoutée
+async function pay(id, cle, msg, btn) {
+  try {
+    const r = await fetch(PAYFN, { method: 'POST', headers: { 'Content-Type': 'application/json', apikey: SBK, Authorization: 'Bearer ' + SBK }, body: JSON.stringify({ action: 'checkout', id, cle }) });
+    const d = await r.json();
+    if (d.paid) { markPaid(id); return; }
+    if (!d.url) throw new Error(d.error || 'erreur');
+    location.href = d.url;
+  } catch (e) { if (msg) msg.textContent = 'Le paiement n\'a pas pu s\'ouvrir (' + e.message + '). Réessaie depuis « Mes cartes ».'; if (btn) btn.disabled = false; }
+}
+function markPaid(id) {
+  const L = store.get('mine') || [], x = L.find(y => y.id === id); if (!x) return go('');
+  x.paid = true; store.set('mine', L); state.share = [x.id, x.cle, x.url]; go('ok-' + x.id);
+}
+async function loadResp(id, cle) {
+  const box = $('#resp'); if (!box) return;
+  try {
+    const r = await fetch(SB + 'rpc/voir_reponses', { method: 'POST', headers: { apikey: SBK, 'Content-Type': 'application/json' }, body: JSON.stringify({ p_id: id, p_cle: cle }) });
+    const L = await r.json(); if (!Array.isArray(L)) throw 0;
+    if (!L.length) { box.innerHTML = '<p class="note">Pas encore de réponse. Elles s\'afficheront ici.</p>'; return; }
+    const n = k => L.filter(x => x.reponse === k).reduce((a, x) => a + (k === 'oui' ? (x.nb || 1) : 1), 0);
+    box.innerHTML = `<div class="tot"><span>${n('oui')} viennent</span><span>${n('peut-etre')} peut-être</span><span>${n('non')} non</span></div>` +
+      L.map(x => `<div class="r"><span class="dot ${x.reponse}"></span><span><b>${esc(x.nom)}</b>${x.message ? `<br><small>${esc(x.message)}</small>` : ''}</span><span>${x.reponse === 'oui' && x.nb > 1 ? '×' + x.nb : ''}</span></div>`).join('');
+  } catch (_) { box.innerHTML = '<p class="note">Les réponses ne sont pas encore disponibles.</p>'; }
+}
+
+
+function burst(cv, colors, n = 90) {
+  const c = cv.getContext('2d'), r = cv.getBoundingClientRect(), dpr = Math.min(2, devicePixelRatio || 1);
+  cv.width = r.width * dpr; cv.height = r.height * dpr; c.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const W = r.width, H = r.height, P = [];
+  for (let i = 0; i < n; i++) { const a = Math.random() * 6.283, v = 3 + Math.random() * 9;
+    P.push({ x: W / 2, y: H * .45, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 3, r: Math.random() * 6.28, vr: (Math.random() - .5) * .3, s: 3 + Math.random() * 5, col: colors[i % colors.length], star: i % 3 === 0, l: 1 }); }
+  const star = (x, y, rr) => { c.beginPath(); for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4, q = i % 2 ? rr * .35 : rr; c.lineTo(x + Math.cos(a) * q, y + Math.sin(a) * q); } c.fill(); };
+  (function f() {
+    c.clearRect(0, 0, W, H); let alive = 0;
+    for (const p of P) { if (p.l <= 0) continue; alive++; p.x += p.vx; p.y += p.vy; p.vy += .22; p.vx *= .985; p.r += p.vr; p.l -= .011;
+      c.globalAlpha = Math.max(0, p.l); c.fillStyle = p.col;
+      if (p.star) star(p.x, p.y, p.s * 1.3); else { c.save(); c.translate(p.x, p.y); c.rotate(p.r); c.fillRect(-p.s, -p.s / 2, p.s * 2, p.s); c.restore(); } }
+    c.globalAlpha = 1; if (alive) requestAnimationFrame(f); else c.clearRect(0, 0, W, H);
+  })();
+}
+
+// musique YouTube : le lecteur se prépare avant le toucher, et démarre au toucher
+let YTP = null, ytWant = false;
+function musicSetup(id) {
+  document.querySelector('.music')?.remove(); YTP = null; ytWant = false; if (!id) return;
+  const box = document.createElement('div'); box.className = 'music'; box.innerHTML = '<div class="yt"><div id="ytp"></div></div><button type="button" data-mute aria-label="Couper la musique" hidden><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 9v6h4l5 4V5L8 9H4zm12.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4z"/></svg></button>';
+  document.body.appendChild(box);
+  const make = () => { YTP = new YT.Player('ytp', { width: 160, height: 90, videoId: id, playerVars: { playsinline: 1, controls: 0, loop: 1, playlist: id, rel: 0 },
+    events: { onReady: () => { if (ytWant) musicPlay(); }, onStateChange: e => { if (e.data === 1) { box.classList.remove('tap'); box.querySelector('[data-mute]').hidden = false; } } } }); };
+  if (window.YT && YT.Player) make(); else { window.onYouTubeIframeAPIReady = make; if (!document.querySelector('script[src*="iframe_api"]')) { const sc = document.createElement('script'); sc.src = 'https://www.youtube.com/iframe_api'; document.head.appendChild(sc); } }
+}
+function musicPlay() {
+  ytWant = true; if (!YTP || !YTP.playVideo) return;
+  try { YTP.unMute(); YTP.setVolume(80); YTP.playVideo(); } catch (_) {}
+  setTimeout(() => { const box = document.querySelector('.music'); try { if (box && YTP.getPlayerState() !== 1) box.classList.add('tap'); } catch (_) {} }, 2500);
+}
+
+
+function render() {
+  FX.forEach(x => x.stop()); FX.clear();
+  let r = state.route;
+  if (r.startsWith('ok-') && !state.share) { const x = (store.get('mine') || []).find(y => 'ok-' + y.id === r); if (x) state.share = [x.id, x.cle, x.url]; else r = state.route = ''; }
+  $('#app').innerHTML = r.startsWith('cat-') && CATS.find(c => c.id === r.slice(4)) ? catPage(r.slice(4)) : r.startsWith('o-') && occOf(r.slice(2)) ? occPage(r.slice(2)) : r.startsWith('m-') && mdlOf(r.slice(2)) ? editor(r.slice(2))
+    : r.startsWith('ok-') ? sharePage(...state.share) : r === 'mes-cartes' ? myCards() : home();
+  $('#back').hidden = !r;
+  scrollTo(0, 0); liveCards(); reveal(); mount3();
+  if (r.startsWith('ok-')) { if ($('#qr')) try { new QRCode($('#qr'), { text: $('#lnk') ? $('#lnk').value : state.share[2], width: 150, height: 150, correctLevel: QRCode.CorrectLevel.M }); } catch (_) { $('#qr').hidden = true; } loadResp(state.share[0], state.share[1]); }
+}
+const io = 'IntersectionObserver' in window ? new IntersectionObserver(es => es.forEach(x => { if (x.isIntersecting) { x.target.classList.add('on'); io.unobserve(x.target); } }), { threshold: .1 }) : null;
+function reveal() { document.querySelectorAll('.rv:not(.on)').forEach(el => io ? io.observe(el) : el.classList.add('on')); }
+function go(r) { if (r === state.route) return; state.route = r; history.pushState({ r }, '', r ? '#' + r : location.pathname); render(); }
+addEventListener('popstate', e => { const o = $('#open'); if (!o.hidden) { closeOpen(); return; } state.route = (e.state && e.state.r) || location.hash.slice(1); render(); });
+
+/* ---------- ouverture chez le destinataire ---------- */
+let POUR = '', TOK = '', OPENL = null;
+function openCard(data, { id = null, preview = false } = {}) {
+  const m = mdlOf(data.mid); if (!m) return false;
+  const o = occOf(m.occ), f = data.f, [bg, ink] = PAL[m.pal], inv = o.cat === 'inv';
+  const el = $('#open'); el.hidden = false; document.body.style.overflow = 'hidden';
+  el.style.setProperty('--o-bg', bg); el.style.setProperty('--o-ink', ink);
+  const hint = POUR ? 'Pour ' + esc(POUR) + (f.exp ? ' · de la part de ' + esc(f.exp) : '') : f.exp ? 'De la part de ' + esc(f.exp) : 'Tu as reçu une carte';
+  const X = preview ? '<button class="x" type="button" data-close aria-label="Fermer">×</button>' : '';
+  el.innerHTML = `<div class="ostage"><div class="v3" id="ov3" role="button" tabindex="0" aria-label="Ouvrir"><span class="spin"></span><div class="nogl">${cardHTML(m, f)}</div></div>
+    <div class="o-fx"><div class="o-flash"></div><div class="o-card">${cardHTML(m, f)}</div><canvas class="o-burst" style="position:absolute;inset:0;width:100%;height:100%"></canvas></div>
+    <div class="o-hint"><span class="tap"></span><b>Touche pour ouvrir</b><small>${hint}</small></div></div>${X}`;
+  const slot = el.querySelector('#ov3'); let view = null, opened = false, want = false;
+  const showReveal = () => {
+    if (OPENL) { OPENL.destroy(); OPENL = null; }
+    const when = f.date ? new Date(f.date) : null, addr = f.adresse || f.lieu;
+    el.innerHTML = `${X}<div class="reveal">${cardHTML(m, f, { live: true })}
+      ${inv && when && !isNaN(when) && when > Date.now() ? `<div class="panel"><h3>Plus que…</h3><div class="count" id="cnt"></div></div>` : ''}
+      ${inv && (addr || when) ? `<div class="panel">${addr ? `<a class="ghost" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(addr)}" target="_blank" rel="noopener">Itinéraire vers ${esc(f.lieu || 'le lieu')}</a>` : ''}
+        ${when && !isNaN(when) ? `<a class="ghost" href="${icsHref(f, o)}" download="invitation.ics">Ajouter à mon agenda</a>` : ''}</div>` : ''}
+      ${inv && f.rsvp && id ? `<div class="panel" id="rsvp"><h3>Tu viens ?</h3>
+        <input id="rn" maxlength="60" value="${esc(POUR)}" placeholder="Ton prénom et nom">
+        <div class="choice3"><button type="button" data-rv="oui" aria-pressed="false">Oui</button><button type="button" data-rv="peut-etre" aria-pressed="false">Peut-être</button><button type="button" data-rv="non" aria-pressed="false">Non</button></div>
+        <label style="display:flex;align-items:center;gap:10px;font-weight:600">Nombre de personnes <input id="rnb" type="number" min="1" max="20" value="1" style="width:76px"></label>
+        <textarea id="rm" maxlength="300" placeholder="Un petit mot (facultatif)" style="min-height:70px"></textarea>
+        <button class="cta" type="button" data-send-rsvp="${id}">Envoyer ma réponse</button><p class="note" id="rmsg" role="status"></p></div>` : ''}
+      <p class="made">Carte créée avec <a href="${location.origin + location.pathname}">Lookmiz</a> · <a href="${location.origin + location.pathname}">Crée la tienne</a></p></div>`;
+    el.scrollTop = 0; liveCards(el); tickCount(when);
+  };
+  // fin de l'ouverture : éclat de lumière, la carte vient au premier plan
+  const finale = () => new Promise(res => {
+    const A = (n, k, op) => n.animate(k, { fill: 'forwards', ...op });
+    A(el.querySelector('.o-flash'), [{ opacity: 0 }, { opacity: 1, offset: .35 }, { opacity: 0 }], { duration: 900, easing: 'ease-out' });
+    const c3 = el.querySelector('#ov3 canvas'); if (c3) A(c3, [{ opacity: 1 }, { opacity: 0 }], { duration: 500 });
+    A(el.querySelector('.o-card'), [{ transform: 'translate(-50%,-56%) scale(.7)', opacity: 0 }, { transform: 'translate(-50%,-50%) scale(1.03)', opacity: 1, offset: .7 }, { transform: 'translate(-50%,-50%) scale(1)', opacity: 1 }], { duration: 900, easing: 'cubic-bezier(.2,.9,.3,1.15)' });
+    burst(el.querySelector('.o-burst'), [PAL[m.pal][2], '#ffffff', '#ffd98a', '#f3d9a4'], 110);
+    setTimeout(res, 1250);
+  });
+  const doOpen = () => {
+    if (opened) return; musicPlay();
+    if (!view && !NO3D) { want = true; return; }
+    opened = true; el.querySelector('.o-hint').animate([{ opacity: 1 }, { opacity: 0 }], { duration: 300, fill: 'forwards' });
+    (view ? view.open() : Promise.resolve()).then(finale).then(showReveal);
+  };
+  slot.addEventListener('click', doOpen); slot.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); doOpen(); } });
+  musicSetup(ytId(f.yt));
+  engine().then(async E => {
+    if (!E || !slot.isConnected) { if (want) doOpen(); return; }
+    const b = await E.builderFor(m.occ, m.id.split('-').pop(), useEnv(m, f)); if (!slot.isConnected) return;
+    if (OPENL) OPENL.destroy(); OPENL = E.createLayer(el, { dpr: 2 });
+    view = OPENL.add(slot, b, sceneOpts(m, f), { zoom: true, shadows: true }); slot.classList.add('ready');
+    if (want) { want = false; doOpen(); }
+  });
+  return true;
+}
+function closeOpen() { if (OPENL) { OPENL.destroy(); OPENL = null; } musicSetup(''); const el = $('#open'); el.hidden = true; el.innerHTML = ''; document.body.style.overflow = ''; liveCards(); }
+
+/* ---------- clics ---------- */
+document.addEventListener('click', async e => {
+  const t = e.target.closest('button, a'); if (!t) return;
+  if (t.id === 'back') { history.back(); return; }
+  if (t.dataset.go !== undefined) { go(t.dataset.go); return; }
+  if (t.dataset.ouv && state.f) { state.f.ouv = t.dataset.ouv; t.parentNode.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b === t)); rebuild3(0); return; }
+  if ('nophoto' in t.dataset && state.f) { delete state.f.photo; rerender(); return; }
+  if ('mute' in t.dataset && YTP) { try { if (YTP.isMuted()) { YTP.unMute(); t.style.opacity = 1; } else { YTP.mute(); t.style.opacity = .5; } } catch (_) {} return; }
+  if ('replay' in t.dataset) { rebuild3(0); return; }
+  if ('preview' in t.dataset) { openCard({ mid: state.mid, f: state.f }, { preview: true }); history.pushState({ r: state.route, open: 1 }, ''); return; }
+  if ('close' in t.dataset) { history.back(); return; }
+  if ('save' in t.dataset) { save(); return; }
+  if ('copy' in t.dataset) { const i = $('#lnk'); try { await navigator.clipboard.writeText(i.value); t.textContent = 'Copié'; } catch (_) { i.select(); } return; }
+  if ('share' in t.dataset) { const u = $('#lnk').value; if (navigator.share) navigator.share({ title: 'Tu as reçu une carte', text: 'Ouvre ta carte :', url: u }).catch(() => {}); else { try { await navigator.clipboard.writeText(u); t.textContent = 'Lien copié'; } catch (_) {} } return; }
+  if (t.dataset.pay) { const x = (store.get('mine') || []).find(y => y.id === t.dataset.pay); if (x) { t.disabled = true; $('#pmsg').textContent = 'Ouverture du paiement…'; pay(x.id, x.cle, $('#pmsg'), t); } return; }
+  if ('addtag' in t.dataset) { addTag(); return; }
+  if (t.dataset.untag !== undefined) { const L = destList(state.f); L.splice(+t.dataset.untag, 1); state.f.dest = L; refreshTags(); return; }
+  if (t.dataset.selfview) { const x = (store.get('mine') || []).find(y => y.id === t.dataset.selfview); if (x) { openCard({ mid: x.mid, f: x.f }, { preview: true }); history.pushState({ r: state.route, open: 1 }, ''); } return; }
+  if (t.dataset.gcopy) { try { await navigator.clipboard.writeText(t.dataset.gcopy); t.textContent = 'Copié'; } catch (_) {} return; }
+  if (t.dataset.gshare) { const u = t.dataset.gshare; if (navigator.share) navigator.share({ title: t.dataset.gname + ', tu as reçu une carte', url: u }).catch(() => {}); else { try { await navigator.clipboard.writeText(u); t.textContent = 'Copié'; } catch (_) {} } return; }
+  if (t.dataset.reload) { const x = (store.get('mine') || []).find(y => y.id === t.dataset.reload); if (x) loadResp(x.id, x.cle); return; }
+  if (t.dataset.openMine) { const x = (store.get('mine') || []).find(y => y.id === t.dataset.openMine); if (x) { state.share = [x.id, x.cle, x.url]; go('ok-' + x.id); } return; }
+  if (t.dataset.rv) { document.querySelectorAll('[data-rv]').forEach(b => b.setAttribute('aria-pressed', b === t)); return; }
+  if (t.dataset.sendRsvp) {
+    const nom = $('#rn').value.trim(), rep = (document.querySelector('[data-rv][aria-pressed="true"]') || {}).dataset?.rv, m = $('#rmsg');
+    if (!nom) { m.textContent = 'Indique ton prénom.'; return; } if (!rep) { m.textContent = 'Choisis Oui, Peut-être ou Non.'; return; }
+    t.disabled = true; m.textContent = 'Envoi…';
+    try { const r = await sb('reponses', { carte: t.dataset.sendRsvp, t: TOK || null, nom, reponse: rep, nb: Math.max(1, Math.min(20, +$('#rnb').value || 1)), message: $('#rm').value.trim() || null }); if (r.status === 409) { m.textContent = 'Tu as déjà répondu avec ce lien.'; t.disabled = false; return; } if (!r.ok) throw 0;
+      $('#rsvp').innerHTML = `<h3>Merci ${esc(nom)} !</h3><p style="margin:0">Ta réponse a bien été envoyée.</p>`; }
+    catch (_) { m.textContent = 'L\'envoi n\'a pas marché. Réessaie dans un instant.'; t.disabled = false; }
+  }
+});
+
+let cntT;
+function tickCount(when) {
+  clearInterval(cntT); if (!when || isNaN(when)) return;
+  const t = () => { const box = $('#cnt'); if (!box) return clearInterval(cntT); let s = Math.max(0, (when - Date.now()) / 1000);
+    const d = Math.floor(s / 86400), h = Math.floor(s % 86400 / 3600), m = Math.floor(s % 3600 / 60), ss = Math.floor(s % 60);
+    box.innerHTML = [[d, 'jours'], [h, 'heures'], [m, 'min'], [ss, 'sec']].map(([v, l]) => `<div><b>${v}</b><small>${l}</small></div>`).join(''); };
+  t(); cntT = setInterval(t, 1000);
+}
+function icsHref(f, o) {
+  const d = new Date(f.date), e = new Date(+d + 3 * 3600000), z = x => x.toISOString().replace(/[-:]/g, '').replace(/\.\d+/, '');
+  const ics = `BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Lookmiz//FR\r\nBEGIN:VEVENT\r\nUID:${Date.now()}@lookmiz.com\r\nDTSTAMP:${z(new Date())}\r\nDTSTART:${z(d)}\r\nDTEND:${z(e)}\r\nSUMMARY:${(f.titre || o.titre).replace(/[,;\n]/g, ' ')}\r\nLOCATION:${(f.adresse || f.lieu || '').replace(/[,;\n]/g, ' ')}\r\nEND:VEVENT\r\nEND:VCALENDAR`;
+  return 'data:text/calendar;charset=utf-8,' + encodeURIComponent(ics);
+}
+
+
+/* ---------- démarrage ---------- */
+(async () => {
+  const q = new URLSearchParams(location.search);
+  if (q.get('paye')) {   // retour de Stripe : on vérifie le paiement avant d'activer la carte
+    const id = q.get('paye'); history.replaceState(null, '', location.pathname);
+    $('#app').innerHTML = '<section class="screen"><h2>Vérification du <i>paiement</i>…</h2></section>';
+    try { const r = await fetch(PAYFN, { method: 'POST', headers: { 'Content-Type': 'application/json', apikey: SBK, Authorization: 'Bearer ' + SBK }, body: JSON.stringify({ action: 'verify', id, sid: q.get('sid') }) });
+      const d = await r.json(); if (d.paid) { markPaid(id); return; } } catch (_) {}
+    state.route = 'mes-cartes'; render(); return;
+  }
+  if (q.get('c')) {
+    let dev = store.get('dev'); if (!dev) { dev = rid(16); store.set('dev', dev); }
+    try { const r = await fetch(SB + 'rpc/ouvrir_carte', { method: 'POST', headers: { apikey: SBK, 'Content-Type': 'application/json' }, body: JSON.stringify({ p_id: q.get('c'), p_t: q.get('t') || '', p_dev: dev }) });
+      const d = await r.json();
+      if (d && d.erreur === 'limite') { $('#app').innerHTML = '<section class="screen"><h2>Lien déjà <i>utilisé</i></h2><p class="sub">Cette carte a déjà été ouverte sur 2 appareils. Chaque invité a son propre lien : demande à la personne qui t\'a invité de t\'envoyer le tien.</p></section>'; return; }
+      if (d && d.data) { POUR = d.nom || ''; TOK = q.get('t') || ''; if (openCard(d.data, { id: q.get('c') })) return; } } catch (_) {}
+    $('#app').innerHTML = '<section class="screen"><h2>Carte <i>introuvable</i></h2><p class="sub">Le lien est peut-être incomplet. Demande à la personne de te le renvoyer.</p><button class="cta" type="button" data-go="">Découvrir Lookmiz</button></section>';
+    return;
+  }
+  state.route = location.hash.slice(1); history.replaceState({ r: state.route }, '', location.href); render();
+})();
+</script>
+</body>
+</html>

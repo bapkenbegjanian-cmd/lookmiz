@@ -1,0 +1,280 @@
+#!/usr/bin/env python3
+"""Génère le site Lookmiz (pages HTML, données des programmes, sitemap) à partir de content.py.
+Usage : python3 build/build.py  (depuis la racine du dépôt)"""
+import json, os, re, time, html, sys
+sys.path.insert(0, os.path.dirname(__file__))
+import content as C
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE = 'https://lookmiz.com'
+V = str(int(time.time()))
+W = lambda path, txt: (os.makedirs(os.path.dirname(os.path.join(ROOT, path)), exist_ok=True), open(os.path.join(ROOT, path), 'w', encoding='utf-8').write(txt))
+e = html.escape
+j = lambda o: json.dumps(o, ensure_ascii=False, separators=(',', ':'))
+
+# icônes : une seule source (js/common.js)
+_cj = open(os.path.join(ROOT, 'js/common.js'), encoding='utf-8').read()
+IC = dict(re.findall(r"^\s*(\w+): '(<svg.*?</svg>)'", _cj, re.M))
+def ic(name, size=None):
+    s = IC[name]
+    return s.replace('<svg', f'<svg width="{size}" height="{size}"', 1) if size else s
+
+PROGS = C.PROGS
+SEM = C.SEMAINES
+SEM_TXT = [
+    "Tu regardes ton habitude en face, sans te juger : ce qu'elle t'apporte, ce qu'elle te coûte, ce qui la déclenche.",
+    "Tu apprends à laisser passer les envies : respiration, règle des 10 minutes, gestion du stress et de l'ennui.",
+    "Tu remplaces l'habitude par autre chose : activités, mouvement, soutien de ton entourage, pensées-pièges.",
+    "Tu prépares l'après : dérapage, plan de rechute, moments à risque, aide professionnelle.",
+]
+GA = '''<!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "cdd9ad7e2e6f44e39d21157ecadb644e"}'></script><!-- End Cloudflare Web Analytics -->'''
+
+def head(title, desc, path, extra='', noindex=False, jsonld=None):
+    url = BASE + path
+    ld = f'<script type="application/ld+json">{j(jsonld)}</script>' if jsonld else ''
+    return f'''<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="google-site-verification" content="tPkA79ZQCeMVM4kRewvgCNKZUg0uWoztpdDwAbVpFfc">
+<title>{e(title)}</title>
+<meta name="description" content="{e(desc)}">
+<link rel="canonical" href="{url}">
+{'<meta name="robots" content="noindex">' if noindex else ''}
+<meta property="og:type" content="website"><meta property="og:site_name" content="Lookmiz"><meta property="og:title" content="{e(title)}"><meta property="og:description" content="{e(desc)}"><meta property="og:url" content="{url}">
+<meta name="theme-color" content="#f4f7f6" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#09100f" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,650;12..96,700&family=Inter:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="/css/site.css?v={V}">
+{extra}{ld}
+{GA}
+</head>
+<body>
+<a class="skip" href="#main">Aller au contenu</a>
+'''
+
+HEADER = f'''<header class="top"><div class="wrap bar">
+  <a class="logo" href="/" aria-label="Lookmiz, accueil"><i></i>Lookmiz</a>
+  <nav class="nav" aria-label="Navigation"><a class="lnk hide-s" href="/#programmes">Programmes</a><a class="lnk" href="/app/">Mon espace</a><a class="btn sos sm" href="/app/#/sos">{ic('life')} SOS</a></nav>
+</div></header>
+'''
+FOOTER = '''<footer><div class="wrap">
+  <nav aria-label="Liens"><a href="/#programmes">Programmes</a><a href="/app/">Mon espace</a><a href="/mentions-legales.html">Mentions légales</a><a href="/cgv.html">Conditions de vente</a><a href="/confidentialite.html">Confidentialité</a><a href="/cartes/">Cartes d'invitation</a></nav>
+  <p class="small">Lookmiz propose des programmes d'accompagnement. Ce ne sont pas des traitements médicaux et ils ne remplacent pas l'avis d'un professionnel de santé. En cas de détresse : 3114, 24h/24, gratuit.</p>
+  <p class="small">© Lookmiz</p>
+</div></footer>
+'''
+def scripts(app=False):
+    s = f'<script src="/data/meta.js?v={V}"></script>\n<script src="/js/common.js?v={V}"></script>\n'
+    if app: s += f'<script src="/js/app.js?v={V}"></script>\n'
+    return s
+
+def help_box(keys):
+    rows = ''.join(f'<div class="num"><a href="{C.AIDES[k][2]}">{e(C.AIDES[k][0])}</a><span>{e(C.AIDES[k][1])}</span></div>' for k in keys)
+    return f'<div class="notice help"><h3>Besoin d\'aide maintenant ?</h3>{rows}</div>'
+
+def faq_html(items):
+    return ''.join(f'<details><summary>{e(q)}</summary><p>{e(a)}</p></details>' for q, a in items)
+def faq_ld(items):
+    return {'@type': 'FAQPage', 'mainEntity': [{'@type': 'Question', 'name': q, 'acceptedAnswer': {'@type': 'Answer', 'text': a}} for q, a in items]}
+
+# ---------------------------------------------------------------- données
+meta = {'v': V, 'semaines': SEM, 'prix': C.PRIX, 'aides': C.AIDES,
+        'progs': [{'slug': p['slug'], 'nom': p['nom'], 'titre': p['titre'], 'adulte': p['adulte'], 'ico': p['ico'], 'sos': p['sos'], 'aides': p['aides'], 'titres': [d[0] for d in p['jours']]} for p in PROGS]}
+W('data/meta.js', 'window.LMZ_META=' + j(meta) + ';')
+for p in PROGS:
+    s = p['slug']
+    W(f'data/{s}-free.js', f"window.LMZ_DAYS=window.LMZ_DAYS||{{}};window.LMZ_DAYS['{s}']=Object.assign(window.LMZ_DAYS['{s}']||{{}},{{free:{j(p['jours'][:3])}}});")
+    W(f'data/{s}-full.js', f"window.LMZ_DAYS=window.LMZ_DAYS||{{}};window.LMZ_DAYS['{s}']=Object.assign(window.LMZ_DAYS['{s}']||{{}},{{full:{j(p['jours'][3:])}}});")
+
+# ---------------------------------------------------------------- accueil
+FAQ_HOME = [
+ ('Est-ce un traitement médical ?', "Non. Ce sont des programmes d'accompagnement, inspirés des thérapies comportementales et de l'entretien motivationnel. Ils ne remplacent ni un médecin ni un psychologue, et ne promettent aucune guérison. Si tu as besoin d'un suivi, des lignes gratuites sont indiquées sur chaque page."),
+ ('Mon suivi est-il privé ?', "Oui. Ton compteur, tes notes et ta progression restent sur ton téléphone. Nous ne les recevons pas. Il n'y a pas de compte à créer."),
+ ('Comment je paie ? Y a-t-il un abonnement ?', "Un seul paiement par programme, par carte via Stripe. Pas d'abonnement, pas de renouvellement. Les 3 premiers jours de chaque programme sont gratuits."),
+ ('Je change de téléphone, je perds tout ?', "Après ton paiement, tu reçois un lien personnel à garder. Il rétablit ton accès sur un autre appareil. Ton suivi, lui, reste sur l'appareil où tu l'as fait."),
+ ('Et si je rechute ?', "Un dérapage n'est pas un échec. Le programme prévoit un plan de rechute et le bouton « J'ai rechuté » garde ton record et relance ton compteur, sans jugement."),
+]
+PR = str(C.PRIX['prog']).replace('.', ',')
+cards = ''.join(f'''<a class="card prog rise d{i%3}" href="/programmes/{p['slug']}/"><span class="ico">{ic(p['ico'])}</span><h3>{e(p['nom'])}</h3><p>{e(p['desc'])}</p><div class="foot"><span class="tag">30 jours · 3 gratuits</span><b>{PR}&nbsp;€</b></div></a>''' for i, p in enumerate(PROGS))
+mock = f'''<div class="phone rise d1" aria-hidden="true"><div class="scr">
+  <div class="row"><span>Écrans et réseaux</span><span>Jour 7</span></div>
+  <div class="ringbox"><svg viewBox="0 0 150 150"><circle class="c bg" cx="75" cy="75" r="64"/><circle class="c fg" cx="75" cy="75" r="64" style="stroke-dashoffset:308"/></svg><div class="in"><b>7/30</b><small>jours faits</small></div></div>
+  <div class="mini"><b>Aujourd'hui · Le plan « si… alors… »</b><span>Écris 3 phrases pour savoir quoi faire quand l'envie arrive.</span></div>
+  <div class="mini streak"><span class="n">12</span><span><b>jours sans</b><br><span>Record : 12</span></span></div>
+  <div class="sosb">{ic('life', 18)} SOS · j'ai une envie</div>
+</div></div>'''
+home_body = f'''{HEADER}<main id="main">
+<section class="hero"><div class="wrap g">
+  <div class="tx">
+    <span class="kick rise">Programmes de 30 jours</span>
+    <h1 class="rise d1">Reprends le contrôle, <em>un jour à la fois.</em></h1>
+    <p class="lead rise d2">Écrans, pornographie, jeux d'argent, vape et tabac. Cinq minutes par jour, un petit exercice, un bouton SOS pour les moments difficiles. Sans jugement.</p>
+    <div class="acts rise d2"><a class="btn pri" href="#programmes">Choisir mon programme {ic('arrow')}</a><a class="btn ghost" href="/app/#/sos">Essayer le bouton SOS</a></div>
+    <div class="pts rise d2"><span>{ic('check')} 3 premiers jours gratuits</span><span>{ic('check')} Ton suivi reste sur ton téléphone</span><span>{ic('check')} Pas d'abonnement</span></div>
+  </div>
+  {mock}
+</div></section>
+
+<section id="programmes" style="padding-top:20px"><div class="wrap">
+  <div class="sec-h"><span class="kick">Les programmes</span><h2>Choisis ce que tu veux changer.</h2><p class="lead">Chaque programme dure 30 jours. Les 3 premiers sont gratuits, pour voir si la méthode te convient.</p></div>
+  <div class="grid c2">{cards}</div>
+</div></section>
+
+<section style="background:var(--card);border-block:1px solid var(--line)"><div class="wrap">
+  <div class="sec-h"><span class="kick">Comment ça marche</span><h2>Simple, concret, chaque jour.</h2></div>
+  <div class="grid c3 steps">
+    <div class="step"><h3>Un petit pas par jour</h3><p>Un court texte pour comprendre, un exercice à faire dans la journée, des notes pour garder une trace. Cinq minutes suffisent.</p></div>
+    <div class="step"><h3>Le bouton SOS</h3><p>Quand l'envie arrive, dix minutes guidées : une respiration, des consignes simples, un minuteur. L'envie monte, atteint un pic, retombe.</p></div>
+    <div class="step"><h3>Ton suivi, en privé</h3><p>Jours sans, envies surmontées, record, notes. Tout reste sur ton téléphone, rien n'est envoyé.</p></div>
+  </div>
+</div></section>
+
+<section><div class="wrap">
+  <div class="sec-h"><span class="kick">En toute honnêteté</span><h2>Ce que Lookmiz fait, et ce qu'il ne fait pas.</h2></div>
+  <div class="grid c2">
+    <div class="notice do"><h3>Ce qu'on fait</h3><ul>
+      <li>{ic('check')}<span>Une méthode en 30 jours, inspirée des thérapies comportementales et de l'entretien motivationnel.</span></li>
+      <li>{ic('check')}<span>Des outils concrets : plan « si… alors… », gestion des envies, plan de rechute.</span></li>
+      <li>{ic('check')}<span>Un ton sans jugement, sans honte, sans leçon de morale.</span></li>
+    </ul></div>
+    <div class="notice no"><h3>Ce qu'on ne fait pas</h3><ul>
+      <li>{ic('x')}<span>Ce n'est pas un traitement et ce n'est pas un avis médical.</span></li>
+      <li>{ic('x')}<span>Aucune promesse de résultat : chacun avance à son rythme.</span></li>
+      <li>{ic('x')}<span>On ne remplace pas un médecin, un psychologue ou un centre d'addictologie.</span></li>
+    </ul></div>
+  </div>
+  <div style="margin-top:14px">{help_box(['3114', 'tabac', 'jeux', 'drogues'])}</div>
+</div></section>
+
+<section id="tarifs" style="background:var(--card);border-block:1px solid var(--line)"><div class="wrap">
+  <div class="sec-h"><span class="kick">Tarifs</span><h2>Un paiement, pas d'abonnement.</h2></div>
+  <div class="grid c2">
+    <div class="card flat" style="display:grid;gap:16px;align-content:start"><h3>Un programme</h3>
+      <div class="price"><b>{str(C.PRIX['prog']).replace('.', ',')}&nbsp;€</b><span>par programme</span></div>
+      <ul class="list"><li>{ic('check')}<span>30 jours guidés, du jour 1 au jour 30</span></li><li>{ic('check')}<span>Bouton SOS, suivi, notes</span></li><li>{ic('check')}<span>Les 3 premiers jours gratuits pour essayer</span></li></ul>
+      <a class="btn ghost" href="#programmes">Choisir un programme</a></div>
+    <div class="card" style="display:grid;gap:16px;align-content:start;border-color:color-mix(in srgb,var(--brand) 50%,var(--line))"><span class="tag">Meilleur prix</span><h3>Les 4 programmes</h3>
+      <div data-buybox="pack"></div></div>
+  </div>
+</div></section>
+
+<section><div class="wrap" style="max-width:820px">
+  <div class="sec-h"><span class="kick">Questions fréquentes</span><h2>Tu te demandes peut-être…</h2></div>
+  {faq_html(FAQ_HOME)}
+</div></section>
+</main>
+{FOOTER}{scripts()}</body></html>'''
+ld_home = {'@context': 'https://schema.org', '@graph': [
+    {'@type': 'WebSite', 'name': 'Lookmiz', 'url': BASE + '/'},
+    faq_ld(FAQ_HOME)]}
+W('index.html', head('Lookmiz : programmes de 30 jours pour reprendre le contrôle', "Écrans, pornographie, jeux d'argent, vape et tabac : des programmes de 30 jours, un petit pas par jour, un bouton SOS pour les envies. Sans jugement.", '/', jsonld=ld_home,
+    extra="<script>if(/[?&](c|paye)=/.test(location.search))location.replace('/cartes/'+location.search+location.hash)</script>\n") + home_body)
+
+# ---------------------------------------------------------------- pages programmes
+for p in PROGS:
+    s = p['slug']; d1 = p['jours'][0]
+    weeks = ''.join(f'<div class="card flat step"><span class="kick" style="margin-top:2px">Semaine {i+1}</span><h3>{e(SEM[i])}</h3><p>{e(SEM_TXT[i])}</p></div>' for i in range(4))
+    dl = ''
+    for i, d in enumerate(p['jours']):
+        if i % 7 == 0 and i < 28: dl += f'<div class="week">Semaine {i//7+1} · {e(SEM[i//7])}</div>'
+        dl += f'<div><b>{i+1}</b><span>{e(d[0])}</span>{"<span class=tag>Gratuit</span>" if i < 3 else ic("lock", 16)}</div>'
+    recog = ''.join(f'<li>{ic("check")}<span>{e(x)}</span></li>' for x in p['pour_qui'])
+    faq = p['faq'] + [('Combien ça coûte ?', f"{str(C.PRIX['prog']).replace('.', ',')} € une seule fois pour les 30 jours, ou {str(C.PRIX['pack']).replace('.', ',')} € pour les 4 programmes. Les 3 premiers jours sont gratuits. Il n'y a pas d'abonnement.")]
+    adult = '<p class="mut" style="font-size:14.5px">Ce programme est réservé aux personnes majeures.</p>' if p['adulte'] else ''
+    body = f'''{HEADER}<main id="main">
+<section class="hero" style="padding-bottom:50px"><div class="wrap g">
+  <div class="tx">
+    <a class="crumb" href="/#programmes">{ic('back')} Tous les programmes</a>
+    <span class="kick rise">{e(p['nom'])} · 30 jours</span>
+    <h1 class="rise d1" style="font-size:clamp(36px,7.6vw,60px)">{e(p['titre'])}</h1>
+    <p class="lead rise d2">{e(p['accroche'])}</p>
+    <div class="pts rise d2"><span>{ic('check')} 5 minutes par jour</span><span>{ic('check')} Sans jugement</span><span>{ic('check')} Suivi privé</span></div>
+    {adult}
+  </div>
+  <div class="card rise d2" id="achat" style="display:grid;gap:16px;align-content:start;scroll-margin-top:80px">
+    <span class="tag am">3 jours gratuits</span><h3>Commence gratuitement.</h3>
+    <a class="btn pri full" href="/app/#/p/{s}/1">Commencer le jour 1 {ic('arrow')}</a>
+    <hr class="hr"><h3 style="font-size:20px">Débloquer les 30 jours</h3>
+    <ul class="list"><li>{ic('check')}<span>Les 30 jours guidés</span></li><li>{ic('check')}<span>Bouton SOS, suivi des jours sans, notes</span></li><li>{ic('check')}<span>Un seul paiement, pas d'abonnement</span></li></ul>
+    <div data-buybox="{s}"></div>
+    <p class="mut" style="font-size:14px">Ou <a href="/#tarifs" style="text-decoration:underline">les 4 programmes pour {str(C.PRIX['pack']).replace('.', ',')} €</a>.</p>
+  </div>
+</div></section>
+
+<section style="padding-top:10px"><div class="wrap split">
+  <div><div class="sec-h" style="margin-bottom:22px"><span class="kick">Tu te reconnais ?</span><h2>Ce programme est pour toi si…</h2></div><ul class="list" style="font-size:18px">{recog}</ul></div>
+  <div class="card"><span class="kick">Aperçu gratuit · Jour 1</span><h3 style="margin:10px 0">{e(d1[0])}</h3><p class="mut">{e(d1[1])}</p><div class="ex" style="margin-top:16px"><b>Ton exercice du jour</b><p>{e(d1[2])}</p></div></div>
+</div></section>
+
+<section style="background:var(--card);border-block:1px solid var(--line)"><div class="wrap">
+  <div class="sec-h"><span class="kick">Le parcours</span><h2>Quatre semaines, un fil conducteur.</h2></div>
+  <div class="grid c2 steps" style="counter-reset:none">{weeks}</div>
+  <div class="days" style="margin-top:30px">{dl}</div>
+</div></section>
+
+<section><div class="wrap" style="max-width:820px;display:grid;gap:28px">
+  <div class="notice"><h3>À savoir</h3><p class="mut">Ce programme est un accompagnement, pas un traitement médical, et il ne promet aucun résultat. Il ne remplace pas l'avis d'un professionnel de santé. Si tu as besoin d'un suivi, parles-en à ton médecin.</p></div>
+  {help_box(p['aides'])}
+  <div><div class="sec-h" style="margin-bottom:10px"><span class="kick">Questions fréquentes</span><h2>Avant de commencer</h2></div>{faq_html(faq)}</div>
+  <div class="acts"><a class="btn pri" href="#achat">Commencer {ic('arrow')}</a><a class="btn ghost" href="/">Voir les autres programmes</a></div>
+</div></section>
+</main>
+{FOOTER}{scripts()}</body></html>'''
+    ld = {'@context': 'https://schema.org', '@graph': [
+        {'@type': 'Course', 'name': p['titre'] + ' : programme de 30 jours', 'description': p['desc'], 'provider': {'@type': 'Organization', 'name': 'Lookmiz', 'url': BASE + '/'}, 'url': f'{BASE}/programmes/{s}/', 'inLanguage': 'fr',
+         'offers': {'@type': 'Offer', 'price': str(C.PRIX['prog']), 'priceCurrency': 'EUR', 'availability': 'https://schema.org/InStock'}},
+        faq_ld(faq)]}
+    W(f'programmes/{s}/index.html', head(p['seo'] + ' | Lookmiz', p['desc'], f'/programmes/{s}/', jsonld=ld) + body)
+
+# ---------------------------------------------------------------- espace
+W('app/index.html', head('Mon espace | Lookmiz', 'Ton suivi, tes jours et le bouton SOS.', '/app/', noindex=True) + HEADER +
+  '<main id="main"><div id="app"><noscript><div class="wrap" style="padding:40px 0"><p>Cette page a besoin de JavaScript pour fonctionner.</p></div></noscript></div></main>\n' + scripts(True) + '</body></html>')
+
+# ---------------------------------------------------------------- pages légales (les champs à compléter sont signalés)
+TD = lambda t: f'<span class="todo">[À compléter : {t}]</span>'
+def doc(path, title, desc, body):
+    W(path, head(title + ' | Lookmiz', desc, '/' + path, noindex=True) + HEADER + f'<main id="main"><div class="wrap doc">{body}</div></main>\n' + FOOTER + scripts() + '</body></html>')
+
+doc('mentions-legales.html', 'Mentions légales', 'Mentions légales du site Lookmiz.', f'''<h1>Mentions légales</h1>
+<h2>Éditeur du site</h2>
+<p>Nom ou raison sociale : {TD("nom")}<br>Statut : {TD("auto-entrepreneur, société…")}<br>Adresse : {TD("adresse")}<br>SIRET : {TD("numéro")}<br>Adresse e-mail de contact : {TD("e-mail")}<br>Directeur de la publication : {TD("nom")}</p>
+<h2>Hébergement</h2>
+<p>GitHub, Inc., 88 Colin P. Kelly Jr. Street, San Francisco, CA 94107, États-Unis (GitHub Pages).</p>
+<h2>Paiement</h2>
+<p>Les paiements sont traités par Stripe Payments Europe, Ltd. Lookmiz ne reçoit ni ne conserve les numéros de carte bancaire.</p>
+<h2>Nature du service</h2>
+<p>Lookmiz propose des programmes d'accompagnement personnel. Ce ne sont pas des traitements médicaux : ils ne remplacent pas l'avis d'un médecin ou d'un autre professionnel de santé et ne promettent aucun résultat.</p>
+<h2>Propriété intellectuelle</h2>
+<p>Les textes, la mise en page et les programmes sont la propriété de l'éditeur. Toute reproduction sans autorisation est interdite.</p>''')
+
+doc('cgv.html', 'Conditions générales de vente', 'Conditions générales de vente des programmes Lookmiz.', f'''<h1>Conditions générales de vente</h1>
+<p>Dernière mise à jour : {TD("date")}</p>
+<h2>1. Objet</h2><p>Les présentes conditions régissent la vente en ligne des programmes numériques Lookmiz (« les programmes »), par {TD("nom de l'éditeur")} (« le vendeur »), à tout consommateur majeur.</p>
+<h2>2. Nature du service</h2><p>Les programmes sont des contenus numériques d'accompagnement : textes, exercices, outils de suivi. Ce ne sont pas des actes médicaux ni des traitements. Ils ne promettent aucun résultat et ne remplacent pas l'avis d'un professionnel de santé. Le vendeur ne peut pas être tenu responsable d'une absence de résultat.</p>
+<h2>3. Prix</h2><p>Un programme : {str(C.PRIX['prog']).replace('.', ',')} € TTC. Les 4 programmes : {str(C.PRIX['pack']).replace('.', ',')} € TTC. Paiement unique, sans abonnement ni renouvellement. {TD("mention de TVA selon le statut")}</p>
+<h2>4. Commande et paiement</h2><p>Le paiement s'effectue par carte bancaire via Stripe. L'accès est ouvert dès la confirmation du paiement. Un lien personnel permettant de retrouver l'accès sur un autre appareil est fourni à l'issue du paiement : le client doit le conserver.</p>
+<h2>5. Accès immédiat et droit de rétractation</h2><p>Les programmes sont des contenus numériques fournis sans support matériel. Avant le paiement, le client demande expressément l'accès immédiat et reconnaît qu'il perd son droit de rétractation dès le début de l'exécution du contrat (article L221-28 du Code de la consommation). Les 3 premiers jours de chaque programme sont gratuits afin de permettre au client de les découvrir avant d'acheter.</p>
+<h2>6. Âge</h2><p>Les programmes sont réservés aux personnes majeures.</p>
+<h2>7. Données</h2><p>Voir la <a href="/confidentialite.html">politique de confidentialité</a>.</p>
+<h2>8. Réclamations et médiation</h2><p>Pour toute réclamation : {TD("e-mail")}. À défaut d'accord, le client peut recourir gratuitement à un médiateur de la consommation : {TD("nom et coordonnées du médiateur")}.</p>
+<h2>9. Droit applicable</h2><p>Les présentes conditions sont soumises au droit français.</p>''')
+
+doc('confidentialite.html', 'Confidentialité', 'Politique de confidentialité de Lookmiz.', f'''<h1>Confidentialité</h1>
+<h2>Ton suivi reste sur ton appareil</h2>
+<p>Ton compteur de jours, tes envies surmontées, tes notes et ta progression sont enregistrés uniquement dans le navigateur de ton appareil. Lookmiz ne les reçoit pas et ne peut pas les lire. Si tu effaces les données du navigateur, ils disparaissent.</p>
+<h2>Aucun compte</h2><p>Il n'y a pas de compte à créer.</p>
+<h2>Paiement</h2><p>Le paiement est géré par Stripe. Lookmiz reçoit de Stripe la confirmation du paiement, le montant, le programme acheté et l'adresse e-mail saisie lors du paiement. Les numéros de carte ne sont jamais transmis à Lookmiz. L'identifiant de paiement sert à rétablir ton accès sur un autre appareil.</p>
+<h2>Statistiques de visite</h2><p>Lookmiz utilise Cloudflare Web Analytics, un outil de mesure d'audience sans cookie qui ne suit pas les visiteurs d'un site à l'autre.</p>
+<h2>Tes droits</h2><p>Tu peux demander l'accès, la rectification ou la suppression des données liées à ton paiement : {TD("e-mail")}.</p>
+<h2>Responsable du traitement</h2><p>{TD("nom et coordonnées de l'éditeur")}</p>''')
+
+# favicon + sitemap + robots
+W('favicon.svg', '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="10" fill="#0f5c4d"/><circle cx="16" cy="16" r="5.5" fill="#fff"/><circle cx="16" cy="16" r="9.5" fill="none" stroke="#fff" stroke-opacity=".4" stroke-width="2"/></svg>')
+urls = ['/', '/app/'] + [f'/programmes/{p["slug"]}/' for p in PROGS]
+W('sitemap.xml', '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + ''.join(f'<url><loc>{BASE}{u}</loc></url>\n' for u in urls if u != '/app/') + '</urlset>\n')
+W('robots.txt', f'User-agent: *\nAllow: /\nDisallow: /app/\nSitemap: {BASE}/sitemap.xml\n')
+W('.nojekyll', '')
+print('ok', V)
