@@ -422,3 +422,7 @@ textarea.note.tall { min-height: 220px; }
 .qb.on { background: var(--brand); border-color: var(--brand); } .qb.on::after { content: ""; position: absolute; left: 5px; top: 1px; width: 6px; height: 11px; border: solid var(--brand-ink); border-width: 0 2.5px 2.5px 0; transform: rotate(45deg); }
 .qopt.sel:disabled { opacity: 1; color: var(--ink); } .backb { justify-self: start; } #qedit { justify-self: start; }
 .btn.pri[disabled] { opacity: .45; }
+
+.recaps { display: grid; gap: 8px; } .recap { background: var(--soft); border-radius: 14px; padding: 12px 14px; display: grid; gap: 6px; } .recap b { font-size: 14.5px; } .rn { font-size: 16px; line-height: 1.5; white-space: normal; }
+.recap .take { background: transparent; border: 0; padding: 0; } .recap .take .kick { display: none; } .recap .take h3 { font-size: 16px; }
+details.notes.card { padding: 14px 16px; } details.notes.card[open] { display: grid; gap: 8px; }

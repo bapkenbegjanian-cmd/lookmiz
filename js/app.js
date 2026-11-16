@@ -45,10 +45,12 @@
       return;
     }
     html += '<div class="bar2"><i style="width:' + Math.round(n / TOTAL * 100) + '%"></i></div>';
+    const mynotes = Object.keys(S.notes).filter(k => k.indexOf(slug + ':') === 0 && (S.notes[k] || '').trim()).map(k => +k.split(':')[1]).sort((a, b) => a - b);
     html += '<a class="btn pri full xl" href="#/p/' + slug + '/' + nextDay + '">' + (n ? 'Continuer : jour ' + nextDay : 'Commencer le jour 1') + IC.arrow + '</a>';
     html += '<div class="card streak-c">' + (st
       ? '<div class="n">' + st.d + '<small>jour' + (st.d > 1 ? 's' : '') + ' sans</small></div><button class="btn ghost sm" id="rech" type="button" style="width:max-content">J\'ai rechuté</button><div id="rc"></div>'
       : '<button class="btn ghost" id="go" type="button">Lancer mon compteur de jours sans</button>') + '</div></div>';
+    if (mynotes.length) html = html.replace(/<\/div>$/, '') + '<details class="notes card"><summary>Mes notes (' + mynotes.length + ')</summary>' + mynotes.map(k => '<div class="recap"><b>Jour ' + k + '</b><p class="rn">' + esc(S.notes[slug + ':' + k]).replace(/\n/g, '<br>') + '</p></div>').join('') + '</details></div>';
     root.innerHTML = html;
     const go = document.getElementById('go'); if (go) go.onclick = () => { S.streak[slug] = Date.now(); L.save(); programme(slug); };
     const r = document.getElementById('rech'); if (r) r.onclick = () => {
@@ -116,7 +118,13 @@
         if (A && st.fin) { const tk = document.getElementById('take'); if (tk) tk.innerHTML = A.takeHTML(type, { d: st, kit: pack.kit, p: prm }); fin(); }
         if (A) A.mount(document.getElementById('actbox'), type, { kit: pack.kit, p: prm, slug, n, L, prog: p, get: () => S.act[slug][n], set: v => { S.act[slug][n] = v; L.save(); }, done: fin });
       } else {
-        el.innerHTML = '<div class="fcard"><span class="kick">Dans ta journée</span><p class="mt">' + esc(d[2]) + '</p><textarea id="nt" class="note" rows="3" placeholder="Écris ici ta réponse ou ta note… (elle reste sur ton téléphone)">' + esc(S.notes[key] || '') + '</textarea></div>' +
+        const recap = r2 => { const dd = pack.days[r2 - 1], nt = (S.notes[slug + ':' + r2] || '').trim(), a2 = (S.act[slug] || {})[r2], tk = a2 && a2.fin && dd[3] && A ? A.takeHTML(dd[3], { d: a2, kit: pack.kit, p: dd[4] || {} }) : '';
+          return '<div class="recap"><b>Jour ' + r2 + ' · ' + esc(dd[0]) + '</b>' + (nt ? '<p class="rn">' + esc(nt).replace(/\n/g, '<br>') + '</p>' : '') + tk + (!nt && !tk ? '<p class="mut">Tu n\'as rien enregistré ce jour-là.</p>' : '') + '</div>'; };
+        let refs = [...new Set((d[2].match(/jour\s+(\d+)/gi) || []).map(m => +m.replace(/\D/g, '')))].filter(r2 => r2 >= 1 && r2 < n);
+        if (!refs.length && /notes?\b/i.test(d[2])) { for (let q = n - 1; q >= 1 && refs.length < 3; q--) if ((S.notes[slug + ':' + q] || '').trim()) refs.push(q); refs.reverse(); }
+        const why1 = /pourquoi|raisons/i.test(d[2]) && ((S.act[slug] || {})[1] || {}).sel;
+        const back = (refs.length || (why1 && why1.length)) ? '<div class="recaps"><span class="kick">Ce que tu avais noté</span>' + (why1 && why1.length ? '<div class="recap"><b>Ton pourquoi (jour 1)</b><p class="rn">' + why1.map(esc).join(' · ') + '</p></div>' : '') + refs.map(recap).join('') + '</div>' : '';
+        el.innerHTML = '<div class="fcard"><span class="kick">Dans ta journée</span><p class="mt">' + esc(d[2]) + '</p>' + back + '<textarea id="nt" class="note" rows="3" placeholder="Écris ici ta réponse ou ta note… (elle reste sur ton téléphone)">' + esc(S.notes[key] || '') + '</textarea></div>' +
           nextBtn(n < TOTAL ? (done ? 'Jour suivant' : 'Terminé, jour suivant') : 'Terminer le programme', 'dn');
         let t; document.getElementById('nt').oninput = e => { clearTimeout(t); t = setTimeout(() => { S.notes[key] = e.target.value; L.save(); }, 300); };
         document.getElementById('dn').onclick = () => {
