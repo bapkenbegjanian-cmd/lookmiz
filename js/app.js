@@ -87,16 +87,26 @@
       const k = steps[cur], el = stage(); st._s = cur; L.save(); dots();
       if (A && A.cleanup) A.cleanup();
       if (k === 'q') {
-        const sel = st.qa;
-        el.innerHTML = '<h1>' + esc(d[0]) + '</h1><p class="tx">' + esc(d[1]) + '</p><h2 class="qq">' + esc(Q.q) + '</h2><div class="qopts">' +
-          Q.o.map((o, i) => '<button type="button" class="qopt' + (sel === i ? ' sel' : sel != null ? ' dim' : '') + '" data-i="' + i + '"' + (sel != null ? ' disabled' : '') + '>' + esc(o[0]) + '</button>').join('') + '</div><div id="qtip"></div>';
-        const showTip = i => { document.getElementById('qtip').innerHTML = '<div class="tip rise"><span class="kick">Pour t\'aider</span><p>' + esc(Q.o[i][1]) + '</p></div>' + nextBtn(); document.getElementById('nx').onclick = next; };
-        [].forEach.call(el.querySelectorAll('.qopt'), b => b.onclick = () => {
-          const i = +b.dataset.i; st.qa = i; L.save();
-          [].forEach.call(el.querySelectorAll('.qopt'), z => { z.disabled = true; z.classList.toggle('sel', z === b); z.classList.toggle('dim', z !== b); });
-          showTip(i);
-        });
-        if (sel != null) showTip(sel);
+        const multi = !!Q.m; let sel = [].concat(st.qa == null ? [] : st.qa), ok = !!st.qv && sel.length > 0;
+        const qdraw = () => {
+          const opts = Q.o.map((o, i) => {
+            const on = sel.includes(i); if (ok && !on) return '';
+            return '<button type="button" class="qopt' + (on ? ' sel' : '') + '" data-i="' + i + '"' + (ok ? ' disabled' : '') + ' aria-pressed="' + on + '">' + (multi && !ok ? '<span class="qb' + (on ? ' on' : '') + '"></span>' : '') + esc(o[0]) + '</button>';
+          }).join('');
+          const tips = ok ? sel.map(i => '<div class="tip rise"><span class="kick">' + (sel.length > 1 ? esc(Q.o[i][0]) : 'Pour t\'aider') + '</span><p>' + esc(Q.o[i][1]) + '</p></div>').join('') : '';
+          el.innerHTML = '<h1>' + esc(d[0]) + '</h1><p class="tx">' + esc(d[1]) + '</p><h2 class="qq">' + esc(Q.q) + '</h2>' + (multi && !ok ? '<p class="hint">Tu peux choisir plusieurs réponses.</p>' : '') +
+            '<div class="qopts">' + opts + '</div><div id="qtip">' + tips +
+            (ok ? nextBtn() + '<button class="btn ghost sm" type="button" id="qedit">Changer ma réponse</button>' : (multi ? '<button class="btn pri full" type="button" id="qok"' + (sel.length ? '' : ' disabled') + '>Valider' + (sel.length ? ' (' + sel.length + ')' : '') + IC.arrow + '</button>' : '')) + '</div>';
+          [].forEach.call(el.querySelectorAll('.qopt'), b => b.onclick = () => {
+            if (ok) return; const i = +b.dataset.i;
+            if (multi) { const k2 = sel.indexOf(i); k2 >= 0 ? sel.splice(k2, 1) : sel.push(i); st.qa = sel.slice(); L.save(); qdraw(); }
+            else { sel = [i]; st.qa = [i]; st.qv = 1; ok = true; L.save(); qdraw(); }
+          });
+          const okb = document.getElementById('qok'); if (okb) okb.onclick = () => { if (!sel.length) return; st.qa = sel.slice(); st.qv = 1; ok = true; L.save(); qdraw(); };
+          const ed = document.getElementById('qedit'); if (ed) ed.onclick = () => { ok = false; st.qv = 0; L.save(); qdraw(); };
+          const nx = document.getElementById('nx'); if (nx) nx.onclick = next;
+        };
+        qdraw();
       } else if (k === 'f') {
         el.innerHTML = '<div class="fcard"><span class="kick">Conseil du jour</span><h2>' + esc(F[0]) + '</h2><p class="ft">' + esc(F[1]) + '</p><div class="try"><b>Essaie</b><span>' + esc(F[2]) + '</span></div></div>' + nextBtn();
         document.getElementById('nx').onclick = next;
@@ -114,6 +124,7 @@
           location.hash = n < TOTAL ? '#/p/' + slug + '/' + (n + 1) : '#/p/' + slug;
         };
       }
+      if (cur > 0) { const bk = document.createElement('button'); bk.type = 'button'; bk.className = 'btn ghost sm backb'; bk.textContent = 'Retour'; bk.onclick = () => { cur--; draw(); }; el.appendChild(bk); }
       el.classList.remove('in'); void el.offsetWidth; el.classList.add('in');
     }
     draw(); scrollTo(0, 0);

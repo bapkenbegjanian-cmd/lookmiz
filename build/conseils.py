@@ -34,12 +34,12 @@ QA = [
    ("Quand je m'ennuie", "L'ennui est un déclencheur très fréquent. Il retombe en quelques minutes si on ne le fuit pas : prépare une action de 5 minutes."),
    ("Quand je suis stressé(e)", "Le stress donne envie d'un soulagement rapide. Un souffle plus long à l'expiration (4 s / 6 s) calme le corps en 2 minutes."),
    ("Avec d'autres personnes", "Le contexte social pèse beaucoup. Dire à une personne que tu changes suffit souvent à désamorcer.")]),
- ("Quelle barrière poses-tu en premier ?", [
+ ("Quelles barrières peux-tu poser ?", [
    ("Supprimer l'accès", "Chaque étape en plus fait baisser le passage à l'acte : un obstacle de 20 secondes laisse souvent l'envie retomber."),
    ("Changer de lieu ou d'horaire", "Les habitudes sont liées à des lieux et des heures. Change l'un des deux et l'automatisme perd son déclencheur."),
    ("Prévenir quelqu'un", "Dire ton objectif à voix haute le rend plus réel et te donne un témoin bienveillant."),
    ("Aucune, c'est trop dur", "Prends la plus petite, une seule. Une barrière imparfaite vaut mieux qu'un plan parfait jamais appliqué.")]),
- ("Quel plan « si… alors… » te ressemble ?", [
+ ("Quels plans « si… alors… » te ressemblent ?", [
    ("Si l'envie vient, je bois de l'eau et j'attends 10 minutes", "Un délai court plus un geste simple : c'est très efficace. Les plans précis marchent bien mieux que les bonnes intentions."),
    ("Si je m'ennuie, je sors 5 minutes", "Bouger change l'état du corps et coupe l'automatisme. Même monter un escalier compte."),
    ("Si je suis stressé(e), je respire 1 minute", "Inspire 4 secondes, souffle 6 : l'expiration longue ralentit le cœur et calme le système nerveux."),
@@ -64,7 +64,7 @@ QA = [
    ("Je le retiens parfois", "Retenir son souffle augmente la tension. Souffle doucement par la bouche, comme dans une paille."),
    ("Je n'y ai jamais fait attention", "Pose une main sur le ventre : si elle ne bouge pas, ta respiration est haute. Essaie de la faire gonfler."),
    ("Plutôt calme", "Bien. Garde ce réflexe pour les moments d'envie, c'est là qu'il compte le plus.")]),
- ("Pour t'occuper 10 minutes, tu préfères…", [
+ ("Pour t'occuper 10 minutes, qu'est-ce qui te tente ?", [
    ("Bouger", "Le mouvement réduit les envies et améliore l'humeur en quelques minutes."),
    ("Parler à quelqu'un", "Une voix humaine apaise plus vite qu'un écran ou un produit."),
    ("Faire quelque chose de mes mains", "Cuisine, dessin, rangement : occuper les mains occupe aussi l'attention, l'envie perd de la place."),
@@ -74,7 +74,7 @@ QA = [
    ("De la fatigue", "La fatigue baisse le frein de la volonté. Une sieste de 15 à 20 minutes aide, sinon couche-toi plus tôt ce soir."),
    ("De l'agitation", "Marche rapide 5 minutes : elle dépense l'adrénaline en trop."),
    ("Je ne sais pas", "Scanne : tête, épaules, ventre, jambes. Où ça serre ? C'est là qu'il faut respirer.")]),
- ("Quelle idée te retient le plus ?", [
+ ("Quelles idées te retiennent ?", [
    ("J'en ai besoin pour me détendre ou dormir", "Ça détend sur l'instant mais entretient le manque ensuite. À terme, la détente et le sommeil naturels reviennent."),
    ("Je gère, ce n'est pas un problème", "Si tu es ici, c'est que tu veux plus de contrôle. Fais confiance à ça."),
    ("Tout le monde le fait", "Beaucoup le font, et beaucoup changent aussi. Tu n'es pas seul(e) dans les deux cas."),
@@ -104,12 +104,12 @@ QA = [
    ("Un proche de la famille", "Choisis la personne la plus calme et la moins critique. Un message écrit peut être plus facile."),
    ("Un professionnel ou une ligne d'aide", "Excellente idée : {aide} est là pour ça, gratuitement et sans jugement."),
    ("Personne pour l'instant", "C'est possible, et ce n'est pas grave. Une ligne d'aide ({aide}) peut être ton premier interlocuteur.")]),
- ("Quelle pensée te fait le plus craquer ?", [
+ ("Quelles pensées te font craquer ?", [
    ("« Juste une fois »", "C'est le piège le plus courant. Réponse : « si c'est juste une fois, je peux attendre demain »."),
    ("« Je l'ai bien mérité »", "Oui, et tu peux te récompenser autrement : repas, film, sortie. Sans la facture."),
    ("« Je m'y mets demain »", "Demain sera pareil. Réponse : « je commence par les 10 prochaines minutes »."),
    ("« J'ai déjà craqué, tant pis »", "Un faux pas n'efface pas les jours passés. Reprends dès la prochaine heure.")]),
- ("Quelle récompense te ferait vraiment plaisir ?", [
+ ("Quelles récompenses te feraient vraiment plaisir ?", [
    ("Un bon repas", "Parfait : choisis le jour et le lieu à l'avance, une récompense prévue motive mieux qu'une récompense improvisée."),
    ("Une sortie", "Planifie-la dans ton agenda dès aujourd'hui : l'avoir devant soi aide à tenir."),
    ("Un achat", "Mets de côté la somme économisée dans une enveloppe : la voir grossir motive."),
@@ -366,3 +366,6 @@ PHYSIO['drogues-de-soiree'] = [
  ("Écrire aide", "Écrire ce qu'on ressent aide à réguler les émotions, c'est ce qu'on appelle l'écriture expressive.", "Écris 5 minutes, sans te relire."),
  ("Garder le cap", "Les rechutes sont fréquentes dans tout changement ; ce qui compte, c'est de reprendre vite. Ne reste jamais seul(e) en cas de rechute.", "Fixe un rappel mensuel pour faire le point."),
 ]
+
+# Jours dont la question accepte plusieurs réponses (numéro du jour, de 1 à 30)
+MULTI = {1, 3, 4, 5, 6, 7, 8, 11, 12, 13, 14, 15, 17, 18, 19, 20, 21, 23, 24, 25, 27, 29, 30}

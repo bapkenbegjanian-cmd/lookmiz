@@ -72,6 +72,6 @@ def package(p):
             t, prm = None, {}
         q, opts = K.QA[i]
         days.append([d[0], d[1], d[2], t, prm,
-                     {'q': _fill(q, s), 'o': [[_fill(c, s), _fill(x, s)] for c, x in opts]},
+                     {'q': _fill(q, s), 'm': 1 if n in K.MULTI else 0, 'o': [[_fill(c, s), _fill(x, s)] for c, x in opts]},
                      list(K.PHYSIO[s][i])])
     return {'kit': kit, 'days': days}
