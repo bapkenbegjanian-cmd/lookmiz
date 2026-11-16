@@ -392,16 +392,66 @@
     evening: 'Ta routine du soir', gain: 'Ton gain', support: 'Ton réseau', letter: 'Ta lettre', final: 'Ton bilan final', chase: 'Le piège de « se refaire »', timeline: 'Ce que ton corps récupère'
   };
 
+
+  /* ---------- objectif du jour et « ce que tu retiens » ---------- */
+  const GOAL = {
+    choose: 'Savoir pour quoi tu le fais.', calc: 'Mettre un chiffre sur ton habitude.', balance: 'Voir ce qu\'elle t\'apporte et ce qu\'elle te coûte.', heat: 'Repérer ce qui déclenche l\'envie.',
+    checklist: 'Rendre l\'habitude plus difficile.', pairs: 'Préparer ta réponse à chaque déclencheur.', bilan: 'Mesurer où tu en es.', wave: 'Voir qu\'une envie redescend toute seule.',
+    hold: 'T\'entraîner à tenir sans céder.', breathe: 'Calmer une envie avec ton souffle.', slot: 'Trouver de quoi remplacer l\'habitude.', pause: 'Te donner de vraies pauses.',
+    myths: 'Démonter les idées qui te retiennent.', toolbox: 'Te constituer une boîte à outils.', move: 'Utiliser le mouvement contre l\'envie.', planner: 'Préparer ton prochain moment à risque.',
+    message: 'Demander de l\'aide, simplement.', pieges: 'Repérer les pensées qui te font craquer.', rewards: 'Te récompenser autrement.', scenario: 'T\'entraîner sur des situations réelles.',
+    relapse: 'Avoir un plan B si tu craques.', identity: 'Nommer qui tu deviens.', calendar: 'Anticiper tes jours à risque.', evening: 'Construire ta routine du soir.',
+    gain: 'Chiffrer ce que tu récupères.', support: 'Savoir qui peut t\'aider.', letter: 'T\'écrire pour plus tard.', final: 'Fixer les règles que tu gardes.',
+    chase: 'Voir pourquoi « se refaire » coûte plus cher.', timeline: 'Voir ce qui s\'améliore avec le temps.'
+  };
+  const li = a => '<ul>' + a.map(t => '<li>' + esc(t) + '</li>').join('') + '</ul>';
+  const lc = t => t ? t.charAt(0).toLowerCase() + t.slice(1) : t;
+  function take(type, x) {
+    const d = x.d || x.get() || {}, k = x.kit, p = x.p || {};
+    const L = (a, n) => (a || []).slice(0, n || 99);
+    switch (type) {
+      case 'choose': return d.sel && d.sel.length ? ['Tes raisons', li(d.sel), 'Relis-les quand l\'envie monte : elles s\'affichent aussi dans le bouton SOS.'] : null;
+      case 'identity': return d.sel && d.sel.length ? ['Qui tu deviens', '« Je deviens quelqu\'un ' + d.sel.map(lc).join(', ') + '. »', 'Relis cette phrase le matin.'] : null;
+      case 'toolbox': return d.sel && d.sel.length ? ['Ta boîte à outils', li(d.sel), 'À chaque envie, prends-en une avant de céder.'] : null;
+      case 'rewards': return d.sel && d.sel.length ? ['Tes récompenses', li(d.sel), 'Offre-t\'en une à chaque semaine tenue.'] : null;
+      case 'calc': case 'gain': { const c = k.calc, y = (typeof d.v === 'number' ? d.v : c.def) * c.mult; return ['Ton chiffre', '<b>' + fmt(y) + ' ' + esc(c.out) + '</b>' + (c.div ? ', soit ' + (y / c.div).toFixed(1).replace('.', ',') + ' ' + esc(c.divLabel) : '') + '.', (d.plan ? 'Ton objectif : ' + esc(d.plan) + '.' : 'Chaque jour gagné se retrouve dans ce total.')]; }
+      case 'balance': return d.pros || d.cons ? ['Ta balance', 'Ce que ça t\'apporte : ' + esc((d.pros || []).join(', ') || 'rien de noté') + '.<br>Ce que ça te coûte : ' + esc((d.cons || []).join(', ') || 'rien de noté') + '.', 'Ce que ça t\'apporte, on va l\'obtenir autrement dans les jours qui viennent.'] : null;
+      case 'heat': { const t = Object.entries(d.lv || {}).filter(e => e[1]).sort((a, b) => b[1] - a[1]).slice(0, 3).map(e => e[0]); return t.length ? ['Tes déclencheurs n°1', li(t), 'Dans les prochains jours, on s\'occupe de ceux-là en premier.'] : null; }
+      case 'checklist': case 'evening': { const key = p.key || (type === 'evening' ? 'evening' : 'env'), all = k[key] || [], on = d.on || [], miss = all.filter((_, i) => !on.includes(i)); return ['C\'est en place', '<b>' + on.length + ' sur ' + all.length + '</b> mis en place.', miss.length ? 'Il reste : ' + esc(L(miss, 2).join(' ; ')) + '. Fais-le dans la journée.' : 'Tout est en place, bravo.']; }
+      case 'pairs': return ['Ton plan « si… alors… »', li(k.pairs.map(q => 'Si ' + lc(q[0]) + ', alors ' + lc(q[1]))), 'Recopie-les dans tes notes.'];
+      case 'bilan': return d.v ? ['Ton bilan', 'Humeur <b>' + d.v.humeur + '/10</b>, sommeil <b>' + d.v.sommeil + '/10</b>, envies <b>' + d.v.envies + '/10</b>.', 'Compare avec le prochain bilan pour voir ce qui change.'] : null;
+      case 'wave': return d.peak != null ? ['Ce que tu as vu', 'Ton envie a atteint <b>' + d.peak + '/10</b>, puis <b>' + d.last + '/10</b> à la fin.', (d.last < d.peak ? 'Elle redescend sans que tu fasses quoi que ce soit : tu n\'as pas à céder.' : 'Elle ne baisse pas toujours en 40 secondes : refais l\'exercice plus tard, ou utilise le bouton SOS (10 minutes).')] : null;
+      case 'hold': return ['Ce que tu as prouvé', 'Tu as tenu <b>' + (p.sec || 30) + ' secondes</b> pendant que les tentations défilaient.', 'Refais-le chaque fois qu\'une envie arrive : elle passe.'];
+      case 'breathe': return ['Ton outil', 'Une minute de respiration lente calme une envie.', 'Le bouton SOS te guide pour la refaire n\'importe quand.'];
+      case 'pause': return ['Tes micro-pauses', li(k.pause), 'Place-en une à chaque moment de stress ou de fatigue.'];
+      case 'move': return ['Tu l\'as fait', 'Le mouvement coupe l\'envie et améliore l\'humeur.', 'Refais-le à l\'heure où l\'envie est la plus forte.'];
+      case 'slot': return d.kept && d.kept.length ? ['Tes alternatives', li(d.kept), 'Quand l\'envie arrive, fais l\'une d\'elles pendant 10 minutes.'] : null;
+      case 'myths': return ['À retenir', li(L(k.myths.filter(m => !m[1]).map(m => '« ' + m[0].replace(/\.$/, '') + ' » : ' + m[2]), 2)), d.score != null ? 'Score : ' + d.score + '/' + k.myths.length + '.' : ''];
+      case 'pieges': return ['Tes réponses aux pièges', li(L(k.pieges.filter(q => q[1]).map(q => '« ' + q[0].replace(/\.$/, '') + ' » : ' + q[2]), 3)), 'Quand la pensée arrive, réponds-lui avec cette phrase.'];
+      case 'scenario': return ['Les bons réflexes', li(k.scenarios.map(q => q.c.filter(c => c[1] === 2)[0][0])), d.score != null ? 'Score : ' + d.score + '/' + k.scenarios.length * 2 + '.' : ''];
+      case 'relapse': { const v = d.v || {}; return ['Ton plan B', '<b>Dans l\'heure :</b> ' + esc(v.heure || '') + '.<br><b>Ensuite :</b> ' + esc(v.ajuster || '') + '.<br><b>Je préviens :</b> ' + esc(v.prevenir || '') + '.', 'Garde-le sous la main, même si tu n\'en as jamais besoin.']; }
+      case 'planner': return d.plans && d.plans.length ? ['Tes plans', li(d.plans.map(q => q.e + ' : ' + q.a + ' · ' + q.b + ' · ' + q.c)), 'Relis-le la veille.'] : null;
+      case 'calendar': { const ds = Object.keys(d.days || {}).sort(); return ds.length ? ['Tes jours à risque', li(ds.map(q => new Date(q + 'T12:00').toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' }) + (d.days[q] ? ' : ' + d.days[q] : ''))), 'Ces jours-là, applique ton plan dès le matin.'] : null; }
+      case 'message': return d.who ? ['Ton message', '« ' + esc(d.txt || '') + ' »', 'Envoie-le à ' + esc(lc(d.who)) + ' aujourd\'hui, avant ce soir.'] : null;
+      case 'support': return d.sel && d.sel.length ? ['Ton réseau', li(d.sel), 'Prévins au moins une de ces personnes aujourd\'hui.'] : null;
+      case 'letter': return ['Lettre scellée', 'Tu la retrouveras au jour 30.', ''];
+      case 'timeline': return ['À retenir', 'Chaque jour compte : ton corps récupère à son rythme.', ''];
+      case 'chase': return d.rounds ? ['Ce que tu as vu', 'Après <b>' + d.rounds + ' tours</b>, il te reste <b>' + fmt(d.bank) + ' €</b> sur 100.', 'Se refaire coûte presque toujours plus. Repense à ce graphique.'] : null;
+      default: return null;
+    }
+  }
+  const takeHTML = (type, x) => { try { const t = take(type, x); return t ? '<div class="take"><span class="kick">Ce que tu retiens</span><h3>' + esc(t[0]) + '</h3><div class="tk">' + (/^<ul>/.test(t[1]) || /<b>|<br>/.test(t[1]) ? t[1] : t[1]) + '</div>' + (t[2] ? '<p class="tkn">' + t[2] + '</p>' : '') + '</div>' : ''; } catch (e) { return ''; } };
+
   function mount(el, type, ctx) {
     const f = T[type]; if (!f) { el.innerHTML = ''; return; }
     const x = Object.assign({ type }, ctx); x.p = ctx.p || {};
     x.d = ctx.get() || {};
     x.put = obj => { x.d = Object.assign(x.d, obj); ctx.set(x.d); };
-    x.finish = () => { if (!x.d.fin) { x.put({ fin: 1 }); confetti(70); } ctx.done(); };
+    x.finish = () => { if (!x.d.fin) { x.put({ fin: 1 }); confetti(70); } ctx.done(takeHTML(type, x)); };
     const old = el._cleanup; if (old) old();
     const inner = document.createElement('div'); inner.className = 'a-in'; el.innerHTML = ''; el.appendChild(inner);
     try { f(inner, x); } catch (e) { inner.innerHTML = '<p>Cette activité n\'a pas pu se charger.</p>'; if (window.console) console.error(e); }
     el._cleanup = () => { if (x.cleanup) x.cleanup(); };
   }
-  window.LMZ_ACTS = { mount, TITLES, confetti };
+  window.LMZ_ACTS = { mount, TITLES, GOAL, confetti, takeHTML, take };
 })();

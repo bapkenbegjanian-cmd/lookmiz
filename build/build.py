@@ -109,7 +109,7 @@ FAQ_HOME = [
 FAQ_HOME = [q for q in FAQ_HOME if not OPEN or not q[0].startswith(('Comment je paie', 'Je change de téléphone'))]
 PR = str(C.PRIX['prog']).replace('.', ',')
 ACTS_COVER = {'ecrans': 'phone', 'pornographie': 'shield', 'jeux-d-argent': 'coins', 'vape-tabac': 'lungs', 'cannabis': 'moon', 'drogues-de-soiree': 'city'}
-cards = ''.join(f'''<a class="card prog rise d{i%3}" href="{'/app/#/p/' + p['slug'] if OPEN else '/programmes/' + p['slug'] + '/'}"><div class="cov"><img src="/img/{PHOTO[p['slug']]}.jpg" alt="" loading="lazy" width="1000" height="500"></div><div class="pc"><h3>{e(p['nom'])}</h3><span class="go">30 jours {ic('arrow')}</span></div></a>''' for i, p in enumerate(PROGS))
+cards = ''.join(f'''<a class="card prog rise d{i%3}" href="{'/app/#/p/' + p['slug'] if OPEN else '/programmes/' + p['slug'] + '/'}"><div class="cov" data-cover="{p['slug']}"></div><div class="pc"><h3>{e(p['nom'])}</h3><span class="go">30 jours {ic('arrow')}</span></div></a>''' for i, p in enumerate(PROGS))
 mock = ''
 TILE = [('wave', "Surfer sur l'envie", "Suis ton envie 40 secondes et regarde-la monter, puis retomber."), ('hourglass', 'Tenir 30 secondes', "Maintiens le bouton pendant que les tentations défilent."), ('scale', 'La balance', "Pose ce que ça t'apporte et ce que ça te coûte, et vois de quel côté ça penche."), ('coins', 'La machine à alternatives', "Tourne la machine, garde les idées qui te parlent."), ('compass', 'Mises en situation', "Choisis ta réaction dans des scènes réelles, avec un retour à chaque réponse."), ('cloud', 'Respiration guidée', "Un cercle qui respire avec toi, pour laisser l'envie retomber.")]
 TILES = ''.join(f'<div class="card flat tile"><h3>{e(t)}</h3><p>{e(d)}</p></div>' for a, t, d in TILE)
@@ -126,7 +126,7 @@ TARIFS = f'''<section id="tarifs" style="background:var(--card);border-block:1px
 </div></section>'''
 home_body = f'''{HEADER}<main id="main">
 <section class="start"><div class="wrap">
-  <h1 class="rise">Que veux-tu changer ?</h1>
+  <h1 class="rise">Reprends le contrôle, <em>un jour à la fois.</em></h1>
   <div class="grid c2 pgrid">{cards}</div>
 </div></section>
 </main>
@@ -161,7 +161,7 @@ for p in PROGS:
     body = f'''{HEADER}<main id="main">
 <section class="start"><div class="wrap" style="max-width:760px;display:grid;gap:20px">
   <a class="crumb" href="/">{ic('back')} Retour</a>
-  <div class="cov big"><img src="/img/{PHOTO[s]}.jpg" alt="" width="1000" height="500"></div>
+  <div class="cov big" data-cover="{s}"></div>
   <h1 class="rise" style="font-size:clamp(32px,7vw,52px)">{e(p['titre'])}</h1>
   <p class="lead">{e(p['accroche'])}</p>
   {('<a class="btn pri full xl" href="/app/#/p/' + s + '/1">Commencer le jour 1 ' + ic('arrow') + '</a>') if OPEN else PAID_CARD}
@@ -193,8 +193,6 @@ doc('mentions-legales.html', 'Mentions légales', 'Mentions légales du site Loo
 <p>Les paiements sont traités par Stripe Payments Europe, Ltd. Lookmiz ne reçoit ni ne conserve les numéros de carte bancaire.</p>
 <h2>Nature du service</h2>
 <p>Lookmiz propose des programmes d'accompagnement personnel. Ce ne sont pas des traitements médicaux : ils ne remplacent pas l'avis d'un médecin ou d'un autre professionnel de santé et ne promettent aucun résultat.</p>
-<h2>Photographies</h2>
-<p>Photographies issues de Pexels (licence Pexels, usage libre).</p>
 <h2>Propriété intellectuelle</h2>
 <p>Les textes, la mise en page et les programmes sont la propriété de l'éditeur. Toute reproduction sans autorisation est interdite.</p>''')
 

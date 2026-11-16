@@ -18,7 +18,7 @@
   function home() {
     const cards = META.progs.map(p => {
       const n = dnum(p.slug), started = n > 0 || !!S.start[p.slug];
-      return '<a class="card pcard" href="#/p/' + p.slug + '"><div class="cov">' + (window.LMZ_ART ? window.LMZ_ART.cover(p.slug) : '') + '</div><div class="pc"><h3>' + esc(p.nom) + '</h3>' +
+      return '<a class="card pcard" href="#/p/' + p.slug + '"><div class="cov">' + (window.LMZ_ART ? window.LMZ_ART.cover(p.slug, false) : '') + '</div><div class="pc"><h3>' + esc(p.nom) + '</h3>' +
         (started ? '<div class="bar2"><i style="width:' + Math.round(n / TOTAL * 100) + '%"></i></div><span class="mut" style="font-size:14px">Jour ' + Math.min(TOTAL, n + 1) + ' sur ' + TOTAL + '</span>' : '<span class="mut" style="font-size:14px">30 jours</span>') + '</div></a>';
     }).join('');
     const acc = META.open ? '' : S.sids.length
@@ -37,7 +37,7 @@
   /* ---------- un programme ---------- */
   function programme(slug) {
     const p = prog(slug), n = dnum(slug), st = L.streakInfo(slug), acc = has(slug), nextDay = Math.min(TOTAL, n + 1);
-    let html = '<div class="app wrap"><a class="crumb" href="#/">' + IC.back + ' Retour</a><div class="banner">' + (window.LMZ_ART ? window.LMZ_ART.cover(slug) : '') + '</div><h1>' + esc(p.nom) + '</h1>';
+    let html = '<div class="app wrap"><a class="crumb" href="#/">' + IC.back + ' Retour</a><div class="banner">' + (window.LMZ_ART ? window.LMZ_ART.cover(slug, true) : '') + '</div><h1>' + esc(p.nom) + '</h1>';
     if (!acc) {
       html += (verified ? '<div class="card" style="display:grid;gap:14px"><h3>Débloquer les 30 jours</h3><div data-x="buy"></div></div>' : '<p class="mut">Vérification de ton accès…</p>') + '</div>';
       root.innerHTML = html;
@@ -73,15 +73,17 @@
     let pack; try { pack = await L.days(slug); } catch (_) { root.innerHTML = '<div class="app wrap">' + head + '<p>Impossible de charger ce jour. Vérifie ta connexion et réessaie.</p></div>'; return; }
     const d = pack.days[n - 1], done = (S.done[slug] || []).includes(n), key = slug + ':' + n, type = d[3], prm = d[4] || {}, A = window.LMZ_ACTS, ART = window.LMZ_ART;
     S.act[slug] = S.act[slug] || {}; const st0 = S.act[slug][n] || {};
-    const after = '<div class="ex"><b>Dans ta journée</b><p>' + esc(d[2]) + '</p></div>' +
+    const after = '<div id="take"></div><div class="ex"><b>Dans ta journée</b><p>' + esc(d[2]) + '</p></div>' +
       '<button class="btn pri full" id="dn" type="button">' + (n < TOTAL ? (done ? 'Jour suivant' : 'Terminé, jour suivant') : 'Terminer le programme') + IC.arrow + '</button>' +
       '<details class="notes"><summary>Ajouter une note</summary><textarea id="nt" class="note" placeholder="Écris ici… (reste sur ton téléphone)">' + esc(S.notes[key] || '') + '</textarea></details>';
     root.innerHTML = '<div class="app wrap day">' + head + '<div><span class="kick">Jour ' + n + ' sur ' + TOTAL + '</span><h1>' + esc(d[0]) + '</h1></div>' +
+      (A && A.GOAL[type] ? '<p class="goal"><b>Objectif</b> ' + esc(A.GOAL[type]) + '</p>' : '') +
       '<p class="tx">' + esc(d[1]) + '</p>' +
       '<section class="act" aria-label="Activité du jour"><h2>' + esc(prm.t || (A && A.TITLES[type]) || 'Activité') + '</h2><div id="actbox"></div></section>' +
       '<div id="after" class="after"' + (st0.fin ? '' : ' hidden') + '>' + after + '</div>' +
       (n > 1 ? '<div class="nav2"><a class="crumb" href="#/p/' + slug + '/' + (n - 1) + '">' + IC.back + ' Jour ' + (n - 1) + '</a></div>' : '') + '</div>';
-    const reveal = () => { const el = document.getElementById('after'); if (el && el.hidden) { el.hidden = false; el.classList.add('in'); setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'center' }), 350); } };
+    const reveal = html => { const tk = document.getElementById('take'); if (tk && html != null) tk.innerHTML = html; const el = document.getElementById('after'); if (el && el.hidden) { el.hidden = false; el.classList.add('in'); setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'center' }), 350); } };
+    if (A && st0.fin) { const tk = document.getElementById('take'); if (tk) tk.innerHTML = A.takeHTML(type, { d: st0, kit: pack.kit, p: prm }); }
     if (A) A.mount(document.getElementById('actbox'), type, { kit: pack.kit, p: prm, slug, n, L, prog: p,
       get: () => S.act[slug][n], set: v => { S.act[slug][n] = v; L.save(); }, done: reveal });
     let t; document.getElementById('nt').oninput = e => { clearTimeout(t); t = setTimeout(() => { S.notes[key] = e.target.value; L.save(); }, 400); };

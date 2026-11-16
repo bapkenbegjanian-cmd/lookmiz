@@ -381,3 +381,13 @@ textarea.note.tall { min-height: 220px; }
 .pgrid .pc .bar2 { height: 5px; background: rgba(255, 255, 255, .25); }
 .app .pgrid { padding-top: 0; }
 @media (min-width: 640px) { .pgrid .pc h3 { font-size: 20px; } .pgrid .pc { padding: 40px 16px 14px; } }
+
+/* ===== illustrations en couverture, objectif et « ce que tu retiens » ===== */
+.start h1 { font-size: clamp(26px, 7vw, 40px); line-height: 1.08; margin-bottom: 14px; } .start h1 em { font-style: normal; color: var(--brand); }
+.pgrid .card { height: clamp(120px, calc((100svh - 200px) / 3), 250px); }
+.pgrid .cov .art { width: 100%; height: 100%; }
+.cov .art { --art1: #14423a; --art2: #0c1d1a; } .cov .art.t-m { --art1: #4a3410; --art2: #1c1408; } .cov .art.t-r { --art1: #4a2018; --art2: #1d0e0b; } .cov .art.t-n { --art1: #16284a; --art2: #0b1424; }
+.pgrid .pc { background: linear-gradient(to top, rgba(0, 0, 0, .7), transparent); }
+.goal { font-size: 18px; line-height: 1.4; color: var(--ink); } .goal b { color: var(--brand); font: 600 12.5px var(--ui); letter-spacing: .14em; text-transform: uppercase; margin-right: 8px; }
+.take { background: var(--soft); border-radius: 18px; padding: 18px; display: grid; gap: 8px; border: 1px solid color-mix(in srgb, var(--brand) 30%, var(--line)); }
+.take h3 { font-size: 21px; } .take .tk { font-size: 16.5px; } .take ul { margin: 0; padding-left: 20px; display: grid; gap: 4px; } .take .tkn { color: var(--mut); font-size: 15px; }

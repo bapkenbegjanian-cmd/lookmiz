@@ -2,7 +2,7 @@
 (function () {
   'use strict';
   let n = 0;
-  const wrap = (inner, tone) => { const id = ++n; return '<svg class="art' + (tone ? ' t-' + tone : '') + '" viewBox="0 0 400 220" aria-hidden="true" focusable="false" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="ag' + id + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--art1)"/><stop offset="1" style="stop-color:var(--art2)"/></linearGradient></defs><rect width="400" height="220" fill="url(#ag' + id + ')"/>' + inner + '</svg>'; };
+  const wrap = (inner, tone, vb) => { const id = ++n; return '<svg class="art' + (tone ? ' t-' + tone : '') + '" viewBox="' + (vb || '0 0 400 220') + '" aria-hidden="true" focusable="false" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="ag' + id + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--art1)"/><stop offset="1" style="stop-color:var(--art2)"/></linearGradient></defs><rect x="-200" y="-100" width="800" height="420" fill="url(#ag' + id + ')"/>' + inner + '</svg>'; };
   const stars = '<g class="tw"><circle cx="60" cy="40" r="1.8" class="m"/><circle cx="130" cy="22" r="1.4" class="m"/><circle cx="300" cy="36" r="1.8" class="m"/><circle cx="350" cy="80" r="1.4" class="m"/><circle cx="215" cy="30" r="1.2" class="m"/><circle cx="40" cy="100" r="1.2" class="m"/></g>';
 
   const S = {
@@ -48,9 +48,9 @@
 
   function art(name, extra) { const f = S[name] || S.compass; return wrap(f(), TONE[name] || 'b'); }
   const forType = t => art(FOR[t] || 'compass');
-  const PH = { ecrans: 'ecrans', pornographie: 'porno', 'jeux-d-argent': 'jeux', 'vape-tabac': 'tabac', cannabis: 'cannabis', 'drogues-de-soiree': 'soiree' };
-  const cover = slug => PH[slug] ? '<img src="/img/' + PH[slug] + '.jpg" alt="" loading="lazy" width="1000" height="500">' : art('compass');
+  const CVB = { phone: '90 0 220 220', shield: '90 0 220 220', coins: '80 0 220 220', lungs: '90 0 220 220', moon: '60 0 220 220', city: '90 0 220 220' };
+  const cover = (slug, wide) => { const nm = COVER[slug] || 'compass'; return wrap(S[nm](), TONE[nm] || 'b', wide ? '' : CVB[nm]); };
   window.LMZ_ART = { art, forType, cover, scenes: Object.keys(S) };
-  const fill = () => document.querySelectorAll('[data-art]').forEach(el => { if (!el.firstChild) el.innerHTML = art(el.dataset.art); });
+  const fill = () => { document.querySelectorAll('[data-art]').forEach(el => { if (!el.firstChild) el.innerHTML = art(el.dataset.art); }); document.querySelectorAll('[data-cover]').forEach(el => { if (!el.firstChild) el.innerHTML = cover(el.dataset.cover, el.classList.contains('big')); }); };
   document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', fill) : fill();
 })();
