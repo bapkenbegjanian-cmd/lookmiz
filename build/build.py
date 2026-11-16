@@ -193,7 +193,7 @@ doc('mentions-legales.html', 'Mentions légales', 'Mentions légales du site Loo
 <p>Les paiements sont traités par Stripe Payments Europe, Ltd. Lookmiz ne reçoit ni ne conserve les numéros de carte bancaire.</p>
 <h2>Nature du service</h2>
 <p>Lookmiz propose des programmes d'accompagnement personnel. Ce ne sont pas des traitements médicaux : ils ne remplacent pas l'avis d'un médecin ou d'un autre professionnel de santé et ne promettent aucun résultat.</p>
-<h2>Propriété intellectuelle</h2>
+<h2>Illustrations</h2>\n<p>Illustrations : unDraw (licence MIT).</p>\n<h2>Propriété intellectuelle</h2>
 <p>Les textes, la mise en page et les programmes sont la propriété de l'éditeur. Toute reproduction sans autorisation est interdite.</p>''')
 
 doc('cgv.html', 'Conditions générales de vente', 'Conditions générales de vente des programmes Lookmiz.', f'''<h1>Conditions générales de vente</h1>
