@@ -5,13 +5,14 @@
 
 SEMAINES = ['Comprendre et mesurer', 'Déclencheurs et envies', 'Remplacer et reconstruire', 'Tenir dans la durée']
 
-PRIX = {'prog': 9.99, 'pack': 19.99}
+PRIX = {'prog': 9.99, 'pack': 24.99}
 
 AIDES = {
     '3114': ('3114', 'Prévention du suicide, 24h/24, gratuit', 'tel:3114'),
     'tabac': ('39 89', 'Tabac info service : un tabacologue vous accompagne gratuitement', 'tel:3989'),
     'jeux': ('09 74 75 13 13', 'Joueurs info service : écoute gratuite et anonyme', 'tel:0974751313'),
     'drogues': ('0 800 23 13 13', 'Drogues info service : écoute gratuite et anonyme', 'tel:0800231313'),
+    'urgence': ('15 ou 112', 'Malaise ou urgence médicale : SAMU, gratuit, 24h/24', 'tel:112'),
 }
 
 PROGS = [
@@ -184,3 +185,7 @@ PROGS = [
  ],
 },
 ]
+
+
+from content_new import PROGS_NEW
+PROGS += PROGS_NEW

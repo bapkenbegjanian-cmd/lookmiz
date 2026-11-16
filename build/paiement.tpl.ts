@@ -11,14 +11,16 @@ const SK = Deno.env.get('STRIPE_SECRET_KEY') ?? '';
 const SITE = 'https://lookmiz.com/';
 // Prix côté serveur : le navigateur ne peut pas les modifier.
 // Contenu des 4 programmes : jamais envoyé sans paiement confirmé.
-const DAYS: Record<string, string[][]> = __DAYS__;
+const DAYS: Record<string, { kit: unknown; days: unknown[] }> = __DAYS__;
 const okPaid = (s: any) => s.payment_status === 'paid' || s.payment_status === 'no_payment_required';
 const PROGS: Record<string, { cents: number; name: string }> = {
   'ecrans': { cents: 999, name: 'Écrans et réseaux (30 jours)' },
   'pornographie': { cents: 999, name: 'Pornographie (30 jours)' },
   'jeux-d-argent': { cents: 999, name: 'Jeux d\'argent et paris (30 jours)' },
   'vape-tabac': { cents: 999, name: 'Vape et tabac (30 jours)' },
-  'pack': { cents: 1999, name: 'Les 4 programmes' },
+  'cannabis': { cents: 999, name: 'Cannabis (30 jours)' },
+  'drogues-de-soiree': { cents: 999, name: 'Cocaïne et drogues de soirée (30 jours)' },
+  'pack': { cents: 2499, name: 'Les 6 programmes' },
 };
 
 async function stripe(path: string, body?: URLSearchParams) {
@@ -63,7 +65,7 @@ Deno.serve(async (req) => {
     for (const one of list) {
       if (!/^cs_[A-Za-z0-9_]+$/.test(String(one))) continue;
       const s = await stripe('checkout/sessions/' + one), pr = s.metadata?.prog;
-      if (okPaid(s) && (pr === prog || pr === 'pack')) return json({ days: DAYS[prog] });
+      if (okPaid(s) && (pr === prog || pr === 'pack')) return json({ days: DAYS[prog].days, kit: DAYS[prog].kit });
     }
     return json({ error: 'accès refusé' }, 403);
   }

@@ -10,13 +10,14 @@
   const week = n => Math.min(3, Math.floor((n - 1) / 7));
   const link = () => (S.sids.length ? location.origin + '/app/?achat=1&sid=' + S.sids[S.sids.length - 1] : '');
 
+  function why(slug) { const a = (S.act[slug] || {})[1]; return a && a.sel && a.sel.length ? '<div class="whybox"><span class="kick">Ton pourquoi</span><p>' + a.sel.map(esc).join(' · ') + '</p></div>' : ''; }
   function sosAide(p) { const a = (p && p.aides || []).map(k => META.aides[k]).filter(Boolean)[0]; return a ? '<p>Besoin de parler ? <a href="' + a[2] + '">' + esc(a[0]) + '</a> · ' + esc(a[1]) + '</p>' : ''; }
 
   /* ---------- accueil de l'espace ---------- */
   function home() {
     const cards = META.progs.map(p => {
       const n = dnum(p.slug), st = L.streakInfo(p.slug), started = !!S.start[p.slug] || n > 0;
-      return '<a class="card pcard" href="#/p/' + p.slug + '"><div class="t"><span class="ico">' + IC[p.ico] + '</span><div><h3>' + esc(p.nom) + '</h3><span class="mut" style="font-size:14.5px">' +
+      return '<a class="card pcard" href="#/p/' + p.slug + '"><div class="cov">' + (window.LMZ_ART ? window.LMZ_ART.cover(p.slug) : '') + '</div><div class="t"><span class="ico">' + IC[p.ico] + '</span><div><h3>' + esc(p.nom) + '</h3><span class="mut" style="font-size:14.5px">' +
         (has(p.slug) ? (started ? 'Jour ' + Math.min(TOTAL, n + 1) + ' sur ' + TOTAL : 'Prêt à commencer') : 'Programme de 30 jours · ' + L.euro(META.prix.prog)) + '</span></div></div>' +
         (has(p.slug) && started ? '<div class="bar2"><i style="width:' + Math.round(n / TOTAL * 100) + '%"></i></div><div class="row2"><span>' + n + ' jour' + (n > 1 ? 's' : '') + ' terminé' + (n > 1 ? 's' : '') + '</span>' + (st ? '<b style="color:var(--amber)">' + st.d + ' j sans</b>' : '<span></span>') + '</div>' : '') + '</a>';
     }).join('');
@@ -39,7 +40,7 @@
   /* ---------- un programme ---------- */
   function programme(slug) {
     const p = prog(slug), n = dnum(slug), st = L.streakInfo(slug), acc = has(slug), nextDay = Math.min(TOTAL, n + 1);
-    let html = '<div class="app wrap"><a class="crumb" href="#/">' + IC.back + ' Mon espace</a><div><span class="kick">' + esc(p.nom) + '</span><h1>' + esc(p.titre) + '</h1></div>';
+    let html = '<div class="app wrap"><a class="crumb" href="#/">' + IC.back + ' Mon espace</a><div class="banner">' + (window.LMZ_ART ? window.LMZ_ART.cover(slug) : '') + '</div><div><span class="kick">' + esc(p.nom) + '</span><h1>' + esc(p.titre) + '</h1></div>';
     if (!acc) {
       html += (verified ? '<div class="card" style="display:grid;gap:14px"><h3>Débloquer les 30 jours</h3><p class="mut">Un seul paiement, pas d\'abonnement. Tu accèdes tout de suite aux 30 jours, au compteur et aux notes.</p><div data-x="buy"></div></div>' : '<p class="mut">Vérification de ton accès…</p>') +
         '<a class="bigsos" href="#/sos/' + slug + '">' + IC.life + '<div><b>SOS : j\'ai une envie</b><span>10 minutes guidées, gratuit</span></div></a>' +
@@ -81,14 +82,20 @@
       root.querySelector('[data-x="buy"]').outerHTML = L.buyHTML(slug); return;
     }
     root.innerHTML = '<div class="app wrap">' + head + '<p class="mut">Chargement…</p></div>';
-    let list; try { list = await L.days(slug); } catch (_) { root.innerHTML = '<div class="app wrap">' + head + '<p>Impossible de charger ce jour. Vérifie ta connexion et réessaie.</p></div>'; return; }
-    const d = list[n - 1], done = (S.done[slug] || []).includes(n), key = slug + ':' + n;
-    root.innerHTML = '<div class="app wrap day">' + head + '<div><span class="kick">Semaine ' + (week(n) + 1) + ' · ' + esc(META.semaines[week(n)]) + ' · Jour ' + n + ' sur ' + TOTAL + '</span><h1>' + esc(d[0]) + '</h1></div>' +
-      '<p class="tx">' + esc(d[1]) + '</p><div class="ex"><b>Ton exercice du jour</b><p>' + esc(d[2]) + '</p></div>' +
+    let pack; try { pack = await L.days(slug); } catch (_) { root.innerHTML = '<div class="app wrap">' + head + '<p>Impossible de charger ce jour. Vérifie ta connexion et réessaie.</p></div>'; return; }
+    const d = pack.days[n - 1], done = (S.done[slug] || []).includes(n), key = slug + ':' + n, type = d[3], prm = d[4] || {}, A = window.LMZ_ACTS, ART = window.LMZ_ART;
+    S.act[slug] = S.act[slug] || {}; const st0 = S.act[slug][n] || {};
+    root.innerHTML = '<div class="app wrap day">' + head + '<div class="banner">' + (ART ? ART.forType(type) : '') + '<div class="bn"><span class="kick">Semaine ' + (week(n) + 1) + ' · ' + esc(META.semaines[week(n)]) + '</span><b>Jour ' + n + ' sur ' + TOTAL + '</b></div></div><div><h1>' + esc(d[0]) + '</h1></div>' +
+      '<p class="tx">' + esc(d[1]) + '</p>' +
+      '<section class="act" aria-label="Activité du jour"><div class="act-h"><span class="kick">Activité du jour</span><span class="pill' + (st0.fin ? ' on' : '') + '" id="pl">' + (st0.fin ? 'Terminée' : 'À faire') + '</span></div><h2>' + esc(prm.t || (A && A.TITLES[type]) || 'Activité') + '</h2><div id="actbox"></div></section>' +
+      '<div class="ex"><b>Dans ta journée</b><p>' + esc(d[2]) + '</p></div>' +
       '<div style="display:grid;gap:8px"><label for="nt" class="mut" style="font-size:14.5px">Tes notes. Elles restent sur ton téléphone.</label><textarea id="nt" class="note" placeholder="Écris ici…">' + esc(S.notes[key] || '') + '</textarea></div>' +
       '<div class="acts"><button class="btn ' + (done ? 'ghost' : 'pri') + '" id="dn" type="button">' + (done ? 'Fait ' : 'Marquer comme fait') + (done ? IC.check.replace('<svg', '<svg width="18" height="18"') : '') + '</button>' +
       (n < TOTAL ? '<a class="btn ghost" href="#/p/' + slug + '/' + (n + 1) + '">Jour suivant' + IC.arrow + '</a>' : '') + '</div>' +
       '<div class="nav2">' + (n > 1 ? '<a class="crumb" href="#/p/' + slug + '/' + (n - 1) + '">' + IC.back + ' Jour ' + (n - 1) + '</a>' : '<span></span>') + '<a class="crumb" href="#/sos/' + slug + '">SOS ' + IC.life.replace('<svg', '<svg width="16" height="16"') + '</a></div></div>';
+    if (A) A.mount(document.getElementById('actbox'), type, { kit: pack.kit, p: prm, slug, n, L, prog: p,
+      get: () => S.act[slug][n], set: v => { S.act[slug][n] = v; L.save(); },
+      done: () => { const pl = document.getElementById('pl'); if (pl) { pl.textContent = 'Terminée'; pl.classList.add('on'); } } });
     let t; document.getElementById('nt').oninput = e => { clearTimeout(t); t = setTimeout(() => { S.notes[key] = e.target.value; L.save(); }, 400); };
     document.getElementById('dn').onclick = () => {
       const a = S.done[slug] = S.done[slug] || [], i = a.indexOf(n);
@@ -133,7 +140,7 @@
       S.envies[slug] = (S.envies[slug] || 0) + 1; L.save(); const p = prog(slug);
       ov.innerHTML = x + '<div class="sosin"><span class="kick">Bravo</span><h2>Tu l\'as laissée passer.</h2><p class="lead">Une envie de plus surmontée. Tu en es à <b style="color:var(--ink)">' + S.envies[slug] + '</b> sur ce programme. Chaque envie qui passe rend la suivante plus facile.</p>' +
         '<div class="acts" style="justify-content:center"><button class="btn pri" id="bk" type="button">Retour à mon espace</button><button class="btn ghost" id="rp" type="button">Encore 10 minutes</button></div>' +
-        '<p class="mut" style="font-size:14.5px;max-width:42ch">Et si tu as craqué, ce n\'est pas la fin : reprends demain, sans te punir.</p><div class="sosfoot">' + sosAide(p) + '</div></div>';
+        why(slug) + '<p class="mut" style="font-size:14.5px;max-width:42ch">Et si tu as craqué, ce n\'est pas la fin : reprends demain, sans te punir.</p><div class="sosfoot">' + sosAide(p) + '</div></div>';
       document.getElementById('sx').onclick = document.getElementById('bk').onclick = () => { closeSos(); location.hash = '#/'; };
       document.getElementById('rp').onclick = run;
     };
@@ -144,6 +151,7 @@
   function route() {
     const parts = location.hash.replace(/^#\/?/, '').split('/');
     if (parts[0] !== 'sos') closeSos();
+    const ab = document.getElementById('actbox'); if (ab && ab._cleanup) ab._cleanup();
     if (parts[0] === 'sos') return sos(parts[1]);
     if (parts[0] === 'p' && prog(parts[1])) { if (parts[2]) return day(parts[1], +parts[2]); return programme(parts[1]); }
     home(); scrollTo(0, 0);

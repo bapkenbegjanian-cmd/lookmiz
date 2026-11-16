@@ -1,0 +1,228 @@
+# Données des activités interactives de chaque programme (listes à choisir, jeux, scénarios).
+# Ces données font partie du contenu payant : elles sont servies par la fonction de paiement, jamais en fichier public.
+
+IDENT = ["qui décide de son temps", "qui tient ses engagements", "qui prend soin de lui", "qui sait demander de l'aide", "qui ose dire non",
+         "qui se réveille avec de l'énergie", "qui choisit ses soirées", "qui protège son argent", "qui est présent avec ses proches",
+         "qui avance sur ses projets", "qui se respecte", "qui ne se juge plus durement"]
+REWARDS = ["Un bon repas au restaurant", "Une sortie au cinéma", "Un week-end dans la nature", "Un vêtement qui me plaît", "Un moment avec un ami",
+           "Une journée sans rien faire", "Un livre ou un jeu", "Un hammam ou un massage", "Un petit voyage", "Un cadeau pour quelqu'un"]
+EVENING = ["Fixer l'heure du coucher", "Téléphone hors du lit", "Écrans éteints 30 minutes avant", "Douche ou tisane", "Préparer la journée de demain", "Respirer 2 minutes"]
+PEOPLE = ["Un ami proche", "Mon frère ou ma sœur", "Mon conjoint ou ma conjointe", "Un parent", "Un collègue de confiance", "Mon médecin"]
+RULES = ["Garder mes barrières en place", "Utiliser le bouton SOS à chaque envie", "Prévoir mes moments à risque", "Parler à quelqu'un quand c'est dur",
+         "Bouger régulièrement", "Bien dormir", "Me récompenser autrement", "Faire un point chaque mois"]
+PAUSE = ["Lève-toi et étire-toi", "Bois un verre d'eau, lentement", "Regarde loin, par la fenêtre", "Respire lentement 5 fois", "Note ce que tu ressens, en une phrase"]
+RELAPSE_PREV = ["Un ami proche", "Mon frère ou ma sœur", "Mon conjoint ou ma conjointe", "Un professionnel", "Personne, je gère seul"]
+
+
+def base(k):
+    k.setdefault("identite", IDENT); k.setdefault("rewards", REWARDS); k.setdefault("evening", EVENING); k.setdefault("people", PEOPLE)
+    k.setdefault("pause", PAUSE); k["rules"] = RULES + k.get("rules", [])
+    k["relapse"].setdefault("prevenir", RELAPSE_PREV)
+    return k
+
+
+KITS = {}
+
+KITS["ecrans"] = base({
+ "raisons": ["Mieux dormir", "Être plus présent avec les gens", "Retrouver ma concentration", "Avancer sur mes projets", "Moins me comparer aux autres", "Avoir plus de temps pour moi", "Être moins stressé", "Reprendre le sport", "Relire des livres", "Moins culpabiliser"],
+ "pros": ["M'occuper quand je m'ennuie", "Rester en lien avec mes amis", "Me détendre", "Ne pas rater les infos", "Me divertir", "Ne pas penser à mes soucis"],
+ "cons": ["Je dors moins", "Je perds des heures", "Je me compare aux autres", "J'ai du mal à me concentrer", "Je suis plus irritable", "Je remets mes projets à plus tard", "Je suis moins présent avec les gens", "Je me sens vidé après"],
+ "calc": {"q": "Combien d'heures par jour passes-tu sur ton téléphone ?", "unit": "h par jour", "min": 0, "max": 12, "step": 0.5, "def": 4, "mult": 365, "out": "heures par an", "div": 24, "divLabel": "jours entiers", "eq": [6, "livres de 300 pages lus"], "gain": "récupérées chaque année"},
+ "env": ["Couper les notifications non essentielles", "Sortir les applis des écrans d'accueil", "Me déconnecter des réseaux sociaux", "Passer l'écran en noir et blanc", "Charger le téléphone hors de la chambre", "Régler une limite de temps par appli"],
+ "triggers": ["Une notification", "L'ennui", "Une file d'attente", "Dans mon lit", "Une pause au travail", "Pendant le repas", "Quand je suis stressé", "Quand je suis seul", "Dans les transports", "Avant de m'endormir"],
+ "actions": ["Respirer 1 minute", "Boire un verre d'eau", "Écrire une phrase dans mes notes", "Poser le téléphone dans une autre pièce", "Lire 2 pages", "Faire quelques étirements", "Appeler un ami", "Marcher 5 minutes dehors", "Regarder par la fenêtre", "Ranger un objet"],
+ "distract": ["Nouveau message", "12 notifications", "Quelqu'un a aimé ta photo", "Offre -50 % aujourd'hui", "Tu as raté une story", "Mise à jour disponible"],
+ "myths": [["Si je coupe les notifications, je vais rater des choses importantes.", False, "Tes appels et messages de proches restent possibles. La plupart des notifications ne sont pas urgentes."],
+           ["Une envie de checker dure toute la journée.", False, "Elle monte, atteint un pic, puis retombe, souvent en quelques minutes."],
+           ["Il faut une volonté de fer pour réduire son temps d'écran.", False, "Ton environnement fait le travail : applis rangées, notifications coupées, téléphone loin du lit."],
+           ["Dormir avec le téléphone près du lit n'a aucun effet sur le sommeil.", False, "Il retarde souvent le coucher et fragilise le sommeil. Le charger hors de la chambre aide."],
+           ["Remplacer le scroll par une autre activité aide à tenir.", True, "Quand on enlève une habitude sans rien mettre à la place, le vide la rappelle."],
+           ["Si je dérape une soirée, tout est perdu.", False, "Un dérapage n'est pas une rechute : on reprend le fil le lendemain."]],
+ "pairs": [["Notification", "Couper les notifications"], ["L'ennui", "Lire 2 pages"], ["Dans mon lit", "Téléphone hors de la chambre"], ["Stress", "Respirer 1 minute"], ["File d'attente", "Regarder autour de moi"]],
+ "pieges": [["Juste cinq minutes.", True, "Cinq minutes deviennent souvent trente. Si tu y vas, mets un minuteur avant."],
+            ["Je l'ai bien mérité.", True, "Tu peux te récompenser autrement, sans y perdre ta soirée."],
+            ["L'envie va passer si j'attends 10 minutes.", False, "Exact : une envie monte, atteint un pic puis retombe."],
+            ["J'ai besoin de savoir ce qui se passe.", True, "Presque rien n'est urgent. Les vraies urgences t'appellent."],
+            ["Je peux faire une pause d'écran maintenant.", False, "Oui. Une pause de 10 minutes est déjà une victoire."],
+            ["Je regarde juste un truc.", True, "« Juste un truc » est la porte d'entrée du scroll."],
+            ["Un dérapage n'est pas un échec.", False, "Exact. Ce qui compte, c'est de reprendre le fil."],
+            ["Je peux m'arrêter quand je veux.", True, "Alors prouve-le : arrête pendant 10 minutes, tout de suite."]],
+ "scenarios": [
+   {"q": "Il est 23h30, tu es dans ton lit. Tu prends ton téléphone « juste pour voir l'heure ».", "c": [["J'ouvre une appli, juste deux minutes", 0, "Deux minutes deviennent souvent une heure. L'idéal : le téléphone n'est pas dans la chambre."], ["Je le repose et je respire 1 minute", 2, "Bien joué : tu coupes l'automatisme et tu protèges ton sommeil."], ["Je mets un minuteur de 5 minutes", 1, "Mieux que rien, mais tu restes dans le piège."]]},
+   {"q": "Tu t'ennuies dans la file d'attente du supermarché.", "c": [["Je regarde autour de moi, sans écran", 2, "Parfait. L'ennui est inconfortable un instant, puis il passe."], ["Je regarde juste mes notifications", 0, "C'est comme ça que le scroll recommence."], ["J'écoute un podcast", 1, "Ça occupe sans scroller : c'est correct."]]},
+   {"q": "Tu as passé 2 heures sur ton téléphone sans t'en rendre compte. Tu te sens mal.", "c": [["Je me dis que je suis nul et j'abandonne", 0, "Le jugement dur fatigue et pousse à recommencer."], ["Je note ce qui m'a déclenché et je reprends demain", 2, "C'est ça, un dérapage utile : tu apprends et tu repars."], ["Je supprime toutes mes applis d'un coup", 1, "Radical, mais difficile à tenir. Mieux vaut avancer pas à pas."]]}],
+ "relapse": {"heure": ["Je pose le téléphone et je respire", "Je bois un verre d'eau et je sors prendre l'air", "Je note ce qui s'est passé"], "ajuster": ["Je règle une limite de temps", "Je range l'appli difficile", "Je change mon heure de coucher"]},
+ "events": ["Soirée seul", "Week-end sans programme", "Voyage", "Stress au travail", "Dimanche soir", "Vacances"],
+ "messages": ["Je réduis mon temps d'écran. Peux-tu me demander demain comment ça s'est passé ?", "J'essaie de lâcher mon téléphone le soir. Tu peux me le rappeler gentiment ?"],
+ "rules": ["Pas de téléphone au lit", "Notifications coupées"],
+})
+
+KITS["pornographie"] = base({
+ "raisons": ["Plus d'énergie", "Mieux me concentrer", "Être plus présent dans mon couple", "Me sentir fier de moi", "Retrouver du temps", "Mieux dormir", "Moins de culpabilité", "Des relations plus vraies", "Avoir confiance en moi", "Reprendre le contrôle"],
+ "pros": ["Calmer le stress", "Combler l'ennui", "Me sentir moins seul", "Avoir du plaisir rapidement", "M'endormir", "Me détendre"],
+ "cons": ["De la culpabilité", "Du temps perdu", "Moins de sommeil", "Des attentes irréalistes", "Moins d'énergie", "De la distance avec les autres", "Plus de difficultés à me concentrer", "De la honte"],
+ "calc": {"q": "Combien d'heures par semaine y passes-tu ?", "unit": "h par semaine", "min": 0, "max": 20, "step": 0.5, "def": 3, "mult": 52, "out": "heures par an", "div": 24, "divLabel": "jours entiers", "eq": [2, "sorties au cinéma"], "gain": "récupérées chaque année"},
+ "env": ["Installer un filtre ou bloqueur de contenus adultes", "Désactiver la navigation privée", "Supprimer les comptes et favoris", "Téléphone hors du lit", "Laisser la porte de ma chambre ouverte", "Prévoir un programme pour mes soirées seul"],
+ "triggers": ["Seul à la maison", "Le soir tard", "L'ennui", "Le stress", "La fatigue", "Après une dispute", "Après un verre", "Dans mon lit", "Quand je me sens seul", "Quand je me sens nul"],
+ "actions": ["Changer de pièce", "Prendre une douche", "Faire quelques pompes", "Appeler quelqu'un", "Sortir marcher", "Respirer 1 minute", "Écouter de la musique", "Boire un verre d'eau", "Ranger un objet", "Écrire ce que je ressens"],
+ "distract": ["Lien suggéré", "Nouvelle vidéo pour toi", "Onglet resté ouvert", "Publicité adulte", "Notification d'un site", "Message d'un inconnu"],
+ "myths": [["Cette habitude se règle avec de la honte et de la culpabilité.", False, "La honte pousse souvent à recommencer : on se sent mal, on cherche du soulagement."],
+           ["Une envie dure jusqu'à ce qu'on y cède.", False, "Elle monte, atteint un pic puis retombe, même si tu ne fais rien."],
+           ["Rendre l'accès plus difficile aide vraiment.", True, "Moins d'accès facile, c'est moins de décisions à prendre sous l'impulsion."],
+           ["Un dérapage prouve que je n'y arriverai jamais.", False, "C'est une information, pas une fin. Tu reprends le fil."],
+           ["Le soir, seul et fatigué, est le moment le plus risqué.", True, "Fatigue, solitude et téléphone à la main : prévois un plan pour ces moments."],
+           ["Ce que je vois à l'écran reflète la vraie intimité.", False, "C'est une mise en scène. Les vraies relations ont d'autres rythmes et d'autres envies."]],
+ "pairs": [["Seul le soir", "Appeler quelqu'un"], ["L'ennui", "Sortir marcher"], ["Le stress", "Respirer 1 minute"], ["Dans mon lit", "Téléphone hors du lit"], ["Une envie forte", "Changer de pièce"]],
+ "pieges": [["Juste une fois.", True, "« Juste une fois » est la phrase qui relance le cycle."],
+            ["Personne ne le saura.", True, "Toi, tu le sauras. Et la culpabilité reviendra."],
+            ["L'envie va passer si je change de pièce.", False, "Oui. Changer de lieu coupe souvent l'automatisme."],
+            ["Je l'ai bien mérité.", True, "Tu peux te récompenser autrement : un bon repas, un film, un moment avec des amis."],
+            ["Je peux en parler à quelqu'un de confiance.", False, "Oui. Garder ça pour soi entretient la honte."],
+            ["Ça me détend, il n'y a pas de mal.", True, "Ça détend sur le moment, mais ça laisse souvent de la culpabilité."],
+            ["Un dérapage n'est pas un échec.", False, "Exact. Tu reprends le fil sans te punir."],
+            ["Je gère, je n'ai besoin de rien changer.", True, "Si tu es ici, c'est que tu veux changer. Fais confiance à ça."]],
+ "scenarios": [
+   {"q": "Il est minuit, tu es seul, fatigué, le téléphone à la main. L'envie monte.", "c": [["Je laisse le téléphone dans la chambre et je vais dans une autre pièce", 2, "Parfait : tu changes de lieu et tu coupes l'accès."], ["Je me dis que c'est la dernière fois", 0, "« La dernière fois » revient presque toujours. Mieux vaut agir maintenant."], ["Je regarde juste mes messages", 1, "Pas idéal : le téléphone au lit reste le déclencheur."]]},
+   {"q": "Tu as une dispute avec ton partenaire et tu te sens nul.", "c": [["Je sors marcher 10 minutes", 2, "Bien : tu laisses redescendre l'émotion sans passer par l'habitude."], ["J'ouvre un onglet pour me détendre", 0, "Tu apaises sur le moment, mais la culpabilité arrive ensuite."], ["Je mets de la musique", 1, "Ça aide un peu. Ajoute un changement de pièce."]]},
+   {"q": "Tu as craqué hier soir. Ce matin, tu te sens honteux.", "c": [["Je me dis que je ne m'en sortirai jamais", 0, "La honte fatigue et pousse à recommencer."], ["Je note ce qui a déclenché l'envie et je reprends aujourd'hui", 2, "C'est exactement ça : une information, pas une fin."], ["Je fais comme si rien ne s'était passé", 1, "Mieux vaut regarder ce qui s'est passé pour mieux t'en protéger."]]}],
+ "relapse": {"heure": ["Je ferme tout et je change de pièce", "Je prends une douche et je respire", "Je note ce qui s'est passé"], "ajuster": ["Je renforce mon filtre", "Je change mes soirées seul", "Je parle à quelqu'un"]},
+ "events": ["Soirée seul", "Voyage ou hôtel", "Période de stress", "Après une dispute", "Week-end seul", "Nuit sans sommeil"],
+ "messages": ["J'essaie de changer une habitude. Peux-tu me demander de mes nouvelles cette semaine ?", "Je traverse une période difficile. Tu pourrais m'appeler ce soir ?"],
+ "rules": ["Garder mon filtre actif", "Pas de téléphone dans le lit"],
+})
+
+KITS["jeux-d-argent"] = base({
+ "raisons": ["Protéger mon argent", "Retrouver la paix avec mes proches", "Arrêter de mentir", "Rembourser mes dettes", "Dormir tranquille", "Reprendre le contrôle", "Avoir un projet", "Être fier de moi", "Moins de stress", "Retrouver du temps"],
+ "pros": ["L'excitation", "L'espoir de gagner", "L'évasion", "Être avec des amis", "Me sentir vivant", "Oublier mes soucis"],
+ "cons": ["Je perds de l'argent", "Je mens à mes proches", "Je suis stressé en permanence", "Je dors moins", "Je m'endette", "Je pense au jeu tout le temps", "Je m'éloigne des gens", "J'ai honte"],
+ "calc": {"q": "Combien mets-tu par semaine ?", "unit": "€ par semaine", "min": 0, "max": 500, "step": 5, "def": 40, "mult": 52, "out": "€ par an", "div": 0, "divLabel": "", "eq": [500, "week-ends en amoureux"], "gain": "récupérés chaque année"},
+ "env": ["Désinstaller les applis de paris", "Supprimer les cartes enregistrées", "Me désabonner des mails de promotions", "Demander l'interdiction volontaire de jeux (site de l'ANJ)", "Mettre en place un virement d'épargne le jour de la paie", "Demander à un proche de garder une carte"],
+ "triggers": ["Le jour de paie", "Un jour de match", "Une notification de bonus", "L'ennui", "Après une perte", "Avec des amis qui jouent", "Quand je suis stressé", "Le week-end", "Tard le soir", "Quand j'ai de l'argent sur moi"],
+ "actions": ["Ne rien déposer pendant 24 heures", "Appeler quelqu'un", "Sortir marcher", "Respirer 1 minute", "Fermer l'appli et la désinstaller", "Faire du sport", "Écrire le montant déjà perdu", "Changer de pièce", "Regarder le match sans parier", "Écouter de la musique"],
+ "distract": ["Bonus de bienvenue", "Cote boostée ce soir", "Dernière chance de te refaire", "Match en direct", "Tu as 20 € offerts", "Ton pari t'attend"],
+ "myths": [["Après une série de pertes, un gain est « dû ».", False, "Chaque pari est indépendant. Le hasard n'a pas de mémoire."],
+           ["Une mise pour se refaire règle le problème.", False, "Courir après ses pertes les aggrave presque toujours."],
+           ["Les bonus sont un cadeau.", False, "Les bonus sont conçus pour te faire jouer plus longtemps."],
+           ["L'envie de jouer finit par retomber si on ne fait rien.", True, "Elle monte, atteint un pic, puis redescend. Attendre 24 heures aide."],
+           ["Parler de ses dettes à quelqu'un est une faiblesse.", False, "Demander de l'aide est une force. Des conseillers gratuits existent."],
+           ["Bloquer l'accès aux sites aide à tenir.", True, "Moins de facilité, c'est moins de décisions sous l'impulsion."]],
+ "pairs": [["Le jour de paie", "Virement d'épargne automatique"], ["Un jour de match", "Regarder sans parier"], ["Une notification", "Désinstaller l'appli"], ["L'ennui", "Sortir marcher"], ["Après une perte", "Appeler quelqu'un"]],
+ "pieges": [["Je vais me refaire.", True, "C'est la pensée la plus coûteuse : chaque mise pour récupérer alourdit la perte."],
+            ["J'ai un système.", True, "Aucun système ne bat la mathématique du jeu sur la durée."],
+            ["Je peux attendre 24 heures avant de déposer.", False, "Oui : l'envie retombe, tu décides à tête reposée."],
+            ["J'étais proche, la prochaine sera la bonne.", True, "Être « proche » n'a aucune valeur. Chaque pari est indépendant."],
+            ["Je vais en parler à Joueurs info service.", False, "Excellente idée : c'est gratuit, anonyme, au 09 74 75 13 13."],
+            ["Juste un petit pari pour le match.", True, "Un petit pari relance le cycle. Regarde le match, sans mise."],
+            ["Un dérapage n'efface pas mes progrès.", False, "Exact. Arrête-toi là et reprends le fil."],
+            ["Ce n'est que de l'argent.", True, "C'est ton argent, ton temps et ta tranquillité."]],
+ "scenarios": [
+   {"q": "C'est le jour de paie. Une notification te propose un bonus de 20 €.", "c": [["Je dépose un petit montant pour en profiter", 0, "Les bonus sont faits pour te faire jouer plus. C'est le piège."], ["Je supprime la notification et je vire une part de ma paie en épargne", 2, "Parfait : tu protèges ton argent avant d'avoir la tentation."], ["J'attends demain pour décider", 1, "Bon réflexe : la règle des 24 heures. Ajoute le virement d'épargne."]]},
+   {"q": "Tu as perdu 80 € hier. Ce soir, l'envie de te refaire est très forte.", "c": [["Je mise plus pour récupérer d'un coup", 0, "C'est le piège le plus coûteux : la perte grossit."], ["Je ne dépose rien, je note le montant perdu et j'appelle quelqu'un", 2, "Tu casses le cycle : tu agis, tu n'attends pas que l'envie passe seul."], ["Je me dis que je jouerai juste un peu", 0, "« Juste un peu » relance la spirale."]]},
+   {"q": "Tes amis regardent le match et parient entre eux.", "c": [["Je regarde sans parier et je prends une boisson", 2, "Tu restes dans le groupe sans jouer. C'est possible."], ["Je pars sans rien dire", 1, "Ça protège, mais n'oublie pas d'expliquer à un ami pourquoi."], ["Je mise une petite somme pour ne pas me sentir à l'écart", 0, "C'est ce qui relance le cycle. Préviens plutôt un ami de ta décision."]]}],
+ "relapse": {"heure": ["Je m'arrête et je ne redépose rien", "Je bloque mes paiements et mes comptes", "J'appelle quelqu'un"], "ajuster": ["Je demande l'interdiction volontaire de jeux", "Je confie ma carte à un proche", "Je désinstalle les applis restantes"]},
+ "events": ["Jour de paie", "Grand tournoi sportif", "Soirée entre amis", "Week-end seul", "Période de stress", "Vacances"],
+ "messages": ["J'essaie d'arrêter les paris. Peux-tu m'aider à ne pas jouer pendant les matchs ?", "Je veux reprendre le contrôle de mon argent. Peux-tu garder ma carte ce mois-ci ?"],
+ "rules": ["Ne jamais déposer le jour même", "Jamais de pari pour se refaire"],
+})
+
+KITS["vape-tabac"] = base({
+ "raisons": ["Retrouver mon souffle", "Ma santé", "L'argent économisé", "Faire du sport", "Être un exemple pour mes proches", "Ne plus dépendre d'un produit", "Mieux dormir", "Retrouver le goût et l'odorat", "Avoir plus d'énergie", "Me sentir libre"],
+ "pros": ["Me détendre", "Une pause", "Un rituel social", "Gérer le stress", "Me concentrer", "Mes habitudes du café"],
+ "cons": ["Je manque de souffle", "Ça coûte cher", "Je dépends de la nicotine", "Je tousse", "Je suis irritable quand j'en manque", "Je m'inquiète pour ma santé", "Je dors moins bien", "Ça me prend du temps"],
+ "calc": {"q": "Combien dépenses-tu par semaine ?", "unit": "€ par semaine", "min": 0, "max": 150, "step": 1, "def": 30, "mult": 52, "out": "€ par an", "div": 0, "divLabel": "", "eq": [60, "bons restaurants"], "gain": "économisés chaque année"},
+ "env": ["Choisir mon jour d'arrêt", "Parler à mon pharmacien ou à mon médecin", "Jeter ou donner mon matériel", "Nettoyer ma voiture et mon logement", "Préparer chewing-gums et collations", "Prévenir mes proches"],
+ "triggers": ["Le café", "Après le repas", "Une pause au travail", "En soirée", "Avec de l'alcool", "Le stress", "Dans la voiture", "L'ennui", "Avec des amis qui fument", "Au réveil"],
+ "actions": ["Boire un grand verre d'eau", "Mâcher un chewing-gum", "Respirer lentement", "Marcher 5 minutes", "Me brosser les dents", "Appeler un ami", "Croquer une carotte", "Faire les 4 D", "Changer de pièce", "Écrire ce que je ressens"],
+ "distract": ["Un collègue sort fumer", "L'odeur d'une cigarette", "Pause café", "Un ami propose une bouffée", "Une publicité de vape", "Fin de repas"],
+ "myths": [["Une bouffée après l'arrêt ne change rien.", False, "Elle relance souvent la dépendance. Mieux vaut t'arrêter tout de suite."],
+           ["La détente après une cigarette est surtout la fin du manque.", True, "La nicotine calme le manque qu'elle a créé."],
+           ["Les envies durent toute la journée.", False, "Elles montent, atteignent un pic et retombent en quelques minutes."],
+           ["Des substituts nicotiniques peuvent aider à arrêter.", True, "Parles-en à ton pharmacien ou à ton médecin, ou appelle Tabac info service (39 89)."],
+           ["Il faut arrêter seul, sans aide.", False, "L'accompagnement augmente les chances de réussir. Le 39 89 est gratuit."],
+           ["Un craquage = tout recommencer de zéro.", False, "Un dérapage n'est pas une rechute : on reprend le fil."]],
+ "pairs": [["Le café", "Le boire debout, dans une autre pièce"], ["Après le repas", "Me brosser les dents"], ["Le stress", "Respirer lentement"], ["En soirée", "Une boisson sans alcool à la main"], ["Une envie forte", "Les 4 D"]],
+ "pieges": [["Juste une.", True, "« Juste une » relance la dépendance."],
+            ["Ce soir c'est exceptionnel.", True, "Il y aura toujours une occasion « exceptionnelle »."],
+            ["Je vais attendre 10 minutes.", False, "L'envie monte, atteint un pic puis retombe."],
+            ["Je contrôle, je peux faire une exception.", True, "Le contrôle revient seulement si tu arrêtes complètement."],
+            ["Je peux demander de l'aide au 39 89.", False, "Oui, c'est gratuit et accompagné par un tabacologue."],
+            ["Ça va me calmer.", True, "Ça calme le manque créé par la nicotine, pas ton vrai stress."],
+            ["Un dérapage n'est pas un échec.", False, "Exact. Tu t'arrêtes là et tu reprends."],
+            ["Un seul de plus ne changera rien.", True, "Ça relance l'envie et rapproche de la rechute."]],
+ "scenarios": [
+   {"q": "Pause café au travail. Ton collègue sort fumer comme d'habitude.", "c": [["Je sors avec lui, sans fumer", 1, "Possible, mais tu restes exposé à l'envie. Mieux vaut changer de routine."], ["Je bois mon café debout, ailleurs, avec un chewing-gum", 2, "Tu gardes la pause et tu changes le geste. Bien joué."], ["Je prends juste une bouffée", 0, "Une bouffée relance la dépendance."]]},
+   {"q": "En soirée, après quelques verres, un ami te propose une cigarette.", "c": [["Je refuse en disant « non merci, j'arrête »", 2, "Simple, clair, tu n'as pas à te justifier."], ["J'accepte, c'est la fête", 0, "L'alcool et la fête sont les moments les plus risqués. Prévois ton plan à l'avance."], ["Je m'éloigne sans rien dire", 1, "Ça protège, mais n'hésite pas à expliquer ta décision."]]},
+   {"q": "Jour 3 sans nicotine : tu es irritable et l'envie est très forte.", "c": [["Je lance les 4 D : délai, distraction, eau, respiration", 2, "Tu appliques une méthode qui marche et tu laisses passer l'envie."], ["Je me dis que c'est trop dur et j'abandonne", 0, "Les premiers jours sont souvent les plus intenses. Ça passe. Appelle le 39 89 si besoin."], ["Je me promets d'arrêter demain", 0, "Le « demain » repousse l'arrêt. Tu es déjà dedans."]]}],
+ "relapse": {"heure": ["Je m'arrête là et je jette ce qu'il reste", "Je bois un verre d'eau et je sors prendre l'air", "J'appelle le 39 89 ou un proche"], "ajuster": ["Je demande des substituts à mon pharmacien", "Je change mes routines du café", "Je prends rendez-vous avec mon médecin"]},
+ "events": ["Soirée avec alcool", "Pause café", "Période de stress", "Repas de famille", "Vacances", "Dispute"],
+ "messages": ["J'arrête la cigarette ou la vape. Peux-tu me soutenir cette semaine ?", "Peux-tu éviter de m'en proposer ? Ça m'aiderait beaucoup."],
+ "rules": ["Aucune bouffée, jamais", "Appeler le 39 89 si ça devient dur"],
+})
+
+KITS["cannabis"] = base({
+ "raisons": ["Mieux dormir", "Retrouver ma motivation", "Améliorer ma mémoire", "Économiser mon argent", "Avoir plus d'énergie", "Mieux gérer mes émotions", "Être plus présent", "Reprendre le sport", "Avancer sur mes projets", "Respirer mieux"],
+ "pros": ["Me détendre", "M'endormir", "Être avec des amis", "Oublier mes soucis", "Mon rituel du soir", "Me sentir moins anxieux"],
+ "cons": ["Je manque de motivation", "J'oublie des choses", "Ça coûte cher", "Je dors mal sans", "Je repousse mes projets", "Je suis moins énergique", "Je m'isole parfois", "Je me sens dépendant"],
+ "calc": {"q": "Combien dépenses-tu par semaine ?", "unit": "€ par semaine", "min": 0, "max": 200, "step": 5, "def": 40, "mult": 52, "out": "€ par an", "div": 0, "divLabel": "", "eq": [500, "week-ends en voyage"], "gain": "économisés chaque année"},
+ "env": ["Jeter ou donner mon stock et mon matériel", "Supprimer les contacts et les conversations", "Éviter les lieux où j'ai l'habitude de consommer", "Prévoir une activité pour mon rituel du soir", "Prévenir un ami de ma décision", "Ne rien garder « pour plus tard »"],
+ "triggers": ["En rentrant le soir", "Avec des amis", "L'ennui", "Le stress", "Avant de dormir", "Le week-end", "Après le travail", "Quand je suis seul", "En écoutant de la musique", "Quand je suis triste"],
+ "actions": ["Prendre une douche", "Faire une tisane", "Sortir marcher", "Appeler un ami", "Faire du sport", "Respirer lentement", "Regarder une série", "Cuisiner", "Écouter de la musique", "Écrire ce que je ressens"],
+ "distract": ["Un ami propose un joint", "L'odeur dans le couloir", "Le soir en rentrant", "Un message « tu passes ? »", "Un morceau qui rappelle des soirées", "Ennui du dimanche"],
+ "myths": [["Le cannabis aide durablement à dormir.", False, "Il peut endormir, mais il fragilise souvent le sommeil. Arrêter perturbe d'abord les nuits, puis ça s'améliore."],
+           ["Une envie forte dure toute la soirée.", False, "Elle monte, atteint un pic puis retombe, surtout si tu fais autre chose."],
+           ["Les premiers jours sans, on peut être irritable et dormir mal.", True, "C'est fréquent et ça passe, souvent en quelques jours à quelques semaines."],
+           ["Mélanger avec du tabac n'a pas d'importance.", False, "Le tabac ajoute la dépendance à la nicotine. Les deux se travaillent ensemble."],
+           ["Changer le rituel du soir aide à tenir.", True, "Garde le moment, change le geste : douche, tisane, série, sport."],
+           ["Un dérapage = tout est à refaire.", False, "Un dérapage est une information. Tu reprends le fil."]],
+ "pairs": [["En rentrant le soir", "Prendre une douche"], ["Avec des amis", "Choisir un lieu sans consommation"], ["Avant de dormir", "Tisane et respiration"], ["L'ennui", "Sortir marcher"], ["Le stress", "Respirer lentement"]],
+ "pieges": [["Juste pour dormir.", True, "À long terme, ça fragilise le sommeil. Une routine du soir marche mieux."],
+            ["C'est naturel, ce n'est pas grave.", True, "Naturel ne veut pas dire sans effet, surtout en cas d'usage régulier."],
+            ["J'arrête demain.", True, "« Demain » repousse. Tu peux commencer ce soir."],
+            ["Je peux changer mon rituel du soir.", False, "Oui : douche, tisane, série, sport."],
+            ["Je peux parler à une consultation jeunes consommateurs.", False, "Gratuit et confidentiel. Appelle Drogues info service : 0 800 23 13 13."],
+            ["Juste ce week-end.", True, "Les week-ends sont des moments à risque. Prévois un plan."],
+            ["Un dérapage n'est pas un échec.", False, "Exact. Tu reprends le fil sans te punir."],
+            ["Je gère, je consomme moins que les autres.", True, "Te comparer ne change pas ce que ça te coûte à toi."]],
+ "scenarios": [
+   {"q": "Il est 22h, tu rentres du travail. Ton rituel du soir te démange.", "c": [["Je prends une douche, je fais une tisane et je mets une série", 2, "Tu gardes le moment, tu changes le geste. C'est la clé."], ["Je me dis que c'est la dernière fois", 0, "« La dernière fois » revient presque toujours."], ["Je sors une demi-heure", 1, "Bien pour casser l'envie. Prévois aussi quoi faire en rentrant."]]},
+   {"q": "Un ami t'envoie « tu passes ? Y a de quoi faire un truc ».", "c": [["J'y vais, je ne consommerai pas", 1, "Risqué. Mieux vaut proposer un autre plan."], ["Je lui dis que j'arrête et je propose de se voir demain autrement", 2, "Clair et sans conflit. Les bons amis comprennent."], ["Je ne réponds pas", 1, "Ça protège, mais te prive du soutien d'un ami. Dis-lui."]]},
+   {"q": "Jour 4 sans : tu dors mal et tu es irritable.", "c": [["Je consomme pour dormir cette nuit", 0, "Tu vas relancer les premiers jours inconfortables. Tiens bon."], ["Je lis, je fais de la respiration et je prévois une routine du soir", 2, "Les nuits s'améliorent souvent en quelques jours à quelques semaines."], ["J'en parle à mon médecin", 2, "Excellent : si les symptômes sont difficiles, c'est une bonne idée."]]}],
+ "relapse": {"heure": ["Je m'arrête là et je jette ce qu'il reste", "Je sors prendre l'air et je respire", "Je note ce qui s'est passé"], "ajuster": ["Je change mon rituel du soir", "J'évite certains amis ou lieux", "Je consulte une CJC ou mon médecin"]},
+ "events": ["Soirée entre amis", "Rentrée du travail", "Week-end seul", "Concert ou festival", "Période de stress", "Vacances"],
+ "messages": ["J'essaie d'arrêter le cannabis. Peux-tu ne pas m'en proposer ces prochaines semaines ?", "Je change mon rituel du soir. Tu peux m'aider à tenir ce week-end ?"],
+ "rules": ["Changer le rituel du soir", "Ne rien garder à la maison"],
+})
+
+KITS["drogues-de-soiree"] = base({
+ "raisons": ["Ma santé", "Mon argent", "Mon sommeil", "Mes relations", "Mon humeur", "Mon énergie", "Mes projets", "Ma confiance en moi", "Ma liberté", "Moins de descentes"],
+ "pros": ["L'énergie", "La confiance en moi", "Appartenir au groupe", "Faire la fête plus longtemps", "Oublier mes soucis", "Me désinhiber"],
+ "cons": ["Je dépense beaucoup", "La descente", "Je dors mal", "Mon humeur baisse après", "Mon cœur s'emballe", "Je m'éloigne de mes proches", "Je perds le contrôle", "J'ai peur de ce que je fais"],
+ "calc": {"q": "Combien dépenses-tu par mois ?", "unit": "€ par mois", "min": 0, "max": 1000, "step": 10, "def": 150, "mult": 12, "out": "€ par an", "div": 0, "divLabel": "", "eq": [500, "week-ends en voyage"], "gain": "économisés chaque année"},
+ "env": ["Supprimer les contacts et conversations", "Prévoir mes soirées à l'avance", "Réduire l'alcool, qui lève les barrières", "Laisser l'argent liquide à la maison", "Prévenir un ami de ma décision", "Éviter les soirées à risque au début"],
+ "triggers": ["Les soirées en club", "Certains amis", "L'alcool", "La fin de semaine", "Le stress", "L'ennui", "Quand j'ai de l'argent sur moi", "Les festivals", "Après une dispute", "Quand je me sens seul"],
+ "actions": ["Appeler un ami", "Sortir marcher", "Respirer lentement", "Boire de l'eau", "Faire du sport", "Danser sans produit", "Rentrer plus tôt", "Écouter de la musique", "Changer de pièce", "Écrire ce que je ressens"],
+ "distract": ["Un ami : « t'as de quoi ? »", "Le vendredi soir", "L'odeur de la soirée", "Un message de ton contact", "Pause toilettes", "Une chanson qui rappelle des soirées"],
+ "myths": [["On a besoin d'un produit pour s'amuser.", False, "La confiance et l'énergie reviennent peu à peu, avec le sommeil et le sport."],
+           ["L'alcool n'a pas d'effet sur l'envie.", False, "L'alcool baisse la vigilance et augmente les envies. Réduire l'alcool aide à tenir."],
+           ["La descente est normale et ne dure que quelques jours.", True, "Fatigue et humeur basse sont fréquentes. Dormir, manger et parler aident."],
+           ["Un dérapage = tout est à refaire.", False, "Un dérapage est une information. On reprend le fil."],
+           ["Planifier sa soirée aide à ne pas craquer.", True, "Heure de départ, boisson, personne de confiance : ça réduit les décisions sous pression."],
+           ["Il vaut mieux consommer seul pour ne pas se faire repérer.", False, "Consommer seul est plus risqué. En cas de rechute, ne reste pas seul et appelle le 15 en cas de malaise."]],
+ "pairs": [["Soirée en club", "Partir à une heure fixée"], ["Un ami propose", "« Non merci, j'arrête »"], ["L'alcool", "Boisson sans alcool"], ["La descente", "Dormir et manger"], ["Le vendredi soir", "Un plan prévu à l'avance"]],
+ "pieges": [["Juste ce soir.", True, "« Juste ce soir » est la phrase qui relance le cycle."],
+            ["Tout le monde le fait.", True, "Beaucoup de gens ne le font pas, et passent de bonnes soirées."],
+            ["Je peux partir plus tôt si ça devient dur.", False, "Oui. Un plan de sortie est un super outil."],
+            ["Je contrôle, une fois ne compte pas.", True, "Le contrôle se perd souvent d'un coup. Mieux vaut ne pas tester."],
+            ["Je peux appeler Drogues info service.", False, "Oui : 0 800 23 13 13, gratuit et anonyme."],
+            ["J'ai besoin de ça pour être drôle.", True, "Ta personnalité est toujours là. La confiance revient avec le temps."],
+            ["Un dérapage n'est pas un échec.", False, "Exact. Reprends le fil sans te punir."],
+            ["C'est le seul moyen de décompresser.", True, "Le sport, la musique, le sommeil et les amis marchent aussi."]],
+ "scenarios": [
+   {"q": "Vendredi soir, en club. Un ami te propose de partager quelque chose.", "c": [["Je dis « non merci, j'arrête » et je prends de l'eau", 2, "Simple et sans justification. Tu protèges ta décision."], ["J'accepte juste pour cette fois", 0, "« Juste cette fois » est le piège classique."], ["Je pars aux toilettes et je réfléchis", 1, "Pause utile, mais prépare ta réponse à l'avance."]]},
+   {"q": "Dimanche, descente : tu es fatigué, triste, et tu penses à reprendre pour te sentir mieux.", "c": [["Je dors, je mange et j'appelle un ami", 2, "Tu laisses la descente passer et tu t'appuies sur quelqu'un."], ["Je reprends un peu pour remonter", 0, "Ça repousse la descente et relance le cycle."], ["Je me dis que je suis nul", 1, "Ce jugement fatigue. Parle-toi comme à un ami."]]},
+   {"q": "Tu as craqué ce week-end. Tu te sens mal.", "c": [["Je me dis que c'est foutu", 0, "Un dérapage n'est pas une rechute. Ne te punis pas."], ["Je note ce qui m'a déclenché et je reprends dès aujourd'hui", 2, "C'est exactement ça. Et si malaise, appelle le 15."], ["Je ne dis rien à personne", 1, "Parler à quelqu'un de confiance aide énormément."]]}],
+ "relapse": {"heure": ["Je ne reste pas seul et je bois de l'eau", "En cas de malaise, j'appelle le 15 ou le 112", "Je note ce qui s'est passé"], "ajuster": ["Je réduis l'alcool en soirée", "Je change de lieux ou d'amis", "Je consulte une CJC ou mon médecin"]},
+ "events": ["Soirée en club", "Festival", "Anniversaire", "Nouvel an", "Dimanche de descente", "Période de stress"],
+ "messages": ["J'arrête les produits en soirée. Peux-tu me garder à l'œil ce week-end ?", "Je sors ce soir sans rien prendre. Peux-tu me soutenir ?"],
+ "rules": ["Ne jamais consommer seul", "Partir à l'heure prévue"],
+})

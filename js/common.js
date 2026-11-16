@@ -5,7 +5,7 @@
   const META = window.LMZ_META || { progs: [], semaines: [], prix: { prog: 9.99, pack: 19.99 }, aides: {}, v: '0' };
   const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   let S; try { S = JSON.parse(localStorage.getItem(LS)) || {}; } catch (_) { S = {}; }
-  ['start', 'done', 'streak', 'best', 'envies', 'notes'].forEach(k => { S[k] = S[k] || {}; }); S.sids = S.sids || [];
+  ['start', 'done', 'streak', 'best', 'envies', 'notes', 'act'].forEach(k => { S[k] = S[k] || {}; }); S.sids = S.sids || [];
   const save = () => { try { localStorage.setItem(LS, JSON.stringify(S)); } catch (_) {} };
   const call = async body => {
     const r = await fetch(FN, { method: 'POST', headers: { 'Content-Type': 'application/json', apikey: KEY, Authorization: 'Bearer ' + KEY }, body: JSON.stringify(body) });
@@ -23,6 +23,8 @@
     screen: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2.5" width="10" height="19" rx="2.6"/><path d="M11 18.5h2"/></svg>',
     eye: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/></svg>',
     dice: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="17" height="17" rx="4"/><circle cx="8.5" cy="8.5" r="1" fill="currentColor"/><circle cx="15.5" cy="8.5" r="1" fill="currentColor"/><circle cx="12" cy="12" r="1" fill="currentColor"/><circle cx="8.5" cy="15.5" r="1" fill="currentColor"/><circle cx="15.5" cy="15.5" r="1" fill="currentColor"/></svg>',
+    moon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a6.8 6.8 0 0 0 10.5 10.5z"/></svg>',
+    city: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21V10l5-2v13M8 21V5l7-2v18M15 21v-9l6 2v7M2 21h20M11 8h1M11 12h1M11 16h1"/></svg>',
     wind: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9h10.5a2.5 2.5 0 1 0-2.5-2.5M3 14h14a2.5 2.5 0 1 1-2.5 2.5M3 19h6"/></svg>'
   };
 
@@ -49,10 +51,10 @@
   /* contenu des jours : fourni par la fonction de paiement, seulement si le paiement est confirmé */
   async function days(slug) {
     S.cache = S.cache || {};
-    if (S.cache[slug]) return S.cache[slug];
+    if (S.cache[slug] && S.cache[slug].kit) return S.cache[slug];
     const d = await call({ action: 'prog_day', prog: slug, sids: S.sids });
-    if (!d || !d.days) throw new Error((d && d.error) || 'acces');
-    S.cache[slug] = d.days; save(); return d.days;
+    if (!d || !d.days || !d.kit) throw new Error((d && d.error) || 'acces');
+    S.cache[slug] = { days: d.days, kit: d.kit }; save(); return S.cache[slug];
   }
 
   /* paiement */
@@ -60,9 +62,9 @@
     const pack = slug === 'pack', p = META.progs.find(x => x.slug === slug), adult = pack || (p && p.adulte);
     const price = euro(pack ? META.prix.pack : META.prix.prog);
     return '<div class="buybox" data-box="' + slug + '">' +
-      '<div class="price"><b>' + price + '</b><span>' + (pack ? 'les 4 programmes, paiement unique' : 'paiement unique, sans abonnement') + '</span></div>' +
+      '<div class="price"><b>' + price + '</b><span>' + (pack ? 'les 6 programmes, paiement unique' : 'paiement unique, sans abonnement') + '</span></div>' +
       (adult ? '<label class="chk"><input type="checkbox" class="c-age"><span>J\'ai 18 ans ou plus.</span></label>' : '') +
-      '<button class="btn pri full" type="button" data-buy="' + slug + '">' + (pack ? 'Débloquer les 4 programmes' : 'Débloquer les 30 jours') + ' · ' + price + '</button>' +
+      '<button class="btn pri full" type="button" data-buy="' + slug + '">' + (pack ? 'Débloquer les 6 programmes' : 'Débloquer les 30 jours') + ' · ' + price + '</button>' +
       '<p class="buymsg" role="alert"></p>' +
       '<p class="mut" style="font-size:13.5px">Paiement sécurisé par Stripe. <a href="/cgv.html">Conditions de vente</a>.</p></div>';
   }

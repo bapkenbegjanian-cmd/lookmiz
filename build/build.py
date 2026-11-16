@@ -4,6 +4,7 @@ Usage : python3 build/build.py  (depuis la racine du dépôt)"""
 import json, os, re, time, html, sys
 sys.path.insert(0, os.path.dirname(__file__))
 import content as C
+import acts as ACTS
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 BASE = 'https://lookmiz.com'
@@ -68,7 +69,8 @@ FOOTER = '''<footer><div class="wrap">
 '''
 def scripts(app=False):
     s = f'<script src="/data/meta.js?v={V}"></script>\n<script src="/js/common.js?v={V}"></script>\n'
-    if app: s += f'<script src="/js/app.js?v={V}"></script>\n'
+    s += f'<script src="/js/art.js?v={V}"></script>\n'
+    if app: s += f'<script src="/js/acts.js?v={V}"></script>\n<script src="/js/app.js?v={V}"></script>\n'
     return s
 
 def help_box(keys):
@@ -85,7 +87,7 @@ meta = {'v': V, 'semaines': SEM, 'prix': C.PRIX, 'aides': C.AIDES,
         'progs': [{'slug': p['slug'], 'nom': p['nom'], 'titre': p['titre'], 'adulte': p['adulte'], 'ico': p['ico'], 'sos': p['sos'], 'aides': p['aides'], 'titres': [d[0] for d in p['jours']]} for p in PROGS]}
 W('data/meta.js', 'window.LMZ_META=' + j(meta) + ';')
 # fonction de paiement + contenu (collée dans Supabase), et sa page de copie
-code = open(os.path.join(ROOT, 'build/paiement.tpl.ts'), encoding='utf-8').read().replace('__DAYS__', j({p['slug']: p['jours'] for p in PROGS}))
+code = open(os.path.join(ROOT, 'build/paiement.tpl.ts'), encoding='utf-8').read().replace('__DAYS__', j({p['slug']: ACTS.package(p) for p in PROGS}))
 W('supabase/paiement.ts', code)
 _pg = open(os.path.join(ROOT, 'supabase/copier-paiement.html'), encoding='utf-8').read()
 _a = _pg.index('translate="no">', _pg.index('<textarea')) + len('translate="no">'); _z = _pg.index('</textarea>')
@@ -100,7 +102,8 @@ FAQ_HOME = [
  ('Et si je rechute ?', "Un dérapage n'est pas un échec. Le programme prévoit un plan de rechute et le bouton « J'ai rechuté » garde ton record et relance ton compteur, sans jugement."),
 ]
 PR = str(C.PRIX['prog']).replace('.', ',')
-cards = ''.join(f'''<a class="card prog rise d{i%3}" href="/programmes/{p['slug']}/"><span class="ico">{ic(p['ico'])}</span><h3>{e(p['nom'])}</h3><p>{e(p['desc'])}</p><div class="foot"><span class="tag">30 jours</span><b>{PR}&nbsp;€</b></div></a>''' for i, p in enumerate(PROGS))
+ACTS_COVER = {'ecrans': 'phone', 'pornographie': 'shield', 'jeux-d-argent': 'coins', 'vape-tabac': 'lungs', 'cannabis': 'moon', 'drogues-de-soiree': 'city'}
+cards = ''.join(f'''<a class="card prog rise d{i%3}" href="/programmes/{p['slug']}/"><div class="cov" data-art="{ACTS_COVER[p['slug']]}"></div><span class="ico">{ic(p['ico'])}</span><h3>{e(p['nom'])}</h3><p>{e(p['desc'])}</p><div class="foot"><span class="tag">30 jours</span><b>{PR}&nbsp;€</b></div></a>''' for i, p in enumerate(PROGS))
 mock = f'''<div class="phone rise d1" aria-hidden="true"><div class="scr">
   <div class="row"><span>Écrans et réseaux</span><span>Jour 7</span></div>
   <div class="ringbox"><svg viewBox="0 0 150 150"><circle class="c bg" cx="75" cy="75" r="64"/><circle class="c fg" cx="75" cy="75" r="64" style="stroke-dashoffset:308"/></svg><div class="in"><b>7/30</b><small>jours faits</small></div></div>
@@ -108,14 +111,16 @@ mock = f'''<div class="phone rise d1" aria-hidden="true"><div class="scr">
   <div class="mini streak"><span class="n">12</span><span><b>jours sans</b><br><span>Record : 12</span></span></div>
   <div class="sosb">{ic('life', 18)} SOS · j'ai une envie</div>
 </div></div>'''
+TILE = [('wave', "Surfer sur l'envie", "Suis ton envie 40 secondes et regarde-la monter, puis retomber."), ('hourglass', 'Tenir 30 secondes', "Maintiens le bouton pendant que les tentations défilent."), ('scale', 'La balance', "Pose ce que ça t'apporte et ce que ça te coûte, et vois de quel côté ça penche."), ('coins', 'La machine à alternatives', "Tourne la machine, garde les idées qui te parlent."), ('compass', 'Mises en situation', "Choisis ta réaction dans des scènes réelles, avec un retour à chaque réponse."), ('cloud', 'Respiration guidée', "Un cercle qui respire avec toi, pour laisser l'envie retomber.")]
+TILES = ''.join(f'<div class="card flat tile"><div class="cov" data-art="{a}"></div><h3>{e(t)}</h3><p>{e(d)}</p></div>' for a, t, d in TILE)
 home_body = f'''{HEADER}<main id="main">
 <section class="hero"><div class="wrap g">
   <div class="tx">
     <span class="kick rise">Programmes de 30 jours</span>
     <h1 class="rise d1">Reprends le contrôle, <em>un jour à la fois.</em></h1>
-    <p class="lead rise d2">Écrans, pornographie, jeux d'argent, vape et tabac. Cinq minutes par jour, un petit exercice, un bouton SOS pour les moments difficiles. Sans jugement.</p>
+    <p class="lead rise d2">Écrans, pornographie, jeux d'argent, vape et tabac, cannabis, drogues de soirée. Chaque jour, un petit jeu ou un outil animé, un exercice concret, et un bouton SOS pour les moments difficiles. Sans jugement.</p>
     <div class="acts rise d2"><a class="btn pri" href="#programmes">Choisir mon programme {ic('arrow')}</a><a class="btn ghost" href="/app/#/sos">Essayer le bouton SOS</a></div>
-    <div class="pts rise d2"><span>{ic('check')} Un seul paiement, pas d'abonnement</span><span>{ic('check')} Ton suivi reste sur ton téléphone</span><span>{ic('check')} 5 minutes par jour</span></div>
+    <div class="pts rise d2"><span>{ic('check')} Un seul paiement, pas d'abonnement</span><span>{ic('check')} Ton suivi reste sur ton téléphone</span><span>{ic('check')} 10 minutes par jour</span></div>
   </div>
   {mock}
 </div></section>
@@ -125,10 +130,15 @@ home_body = f'''{HEADER}<main id="main">
   <div class="grid c2">{cards}</div>
 </div></section>
 
+<section><div class="wrap">
+  <div class="sec-h"><span class="kick">Pas que du texte</span><h2>Chaque jour, une activité animée.</h2><p class="lead">Des mini-jeux et des outils concrets, pas seulement des questions et des réponses.</p></div>
+  <div class="grid c3 tiles">{TILES}</div>
+</div></section>
+
 <section style="background:var(--card);border-block:1px solid var(--line)"><div class="wrap">
   <div class="sec-h"><span class="kick">Comment ça marche</span><h2>Simple, concret, chaque jour.</h2></div>
   <div class="grid c3 steps">
-    <div class="step"><h3>Un petit pas par jour</h3><p>Un court texte pour comprendre, un exercice à faire dans la journée, des notes pour garder une trace. Cinq minutes suffisent.</p></div>
+    <div class="step"><h3>Un petit pas par jour</h3><p>Un court texte pour comprendre, un mini-jeu ou un outil animé, un exercice à faire dans la journée, des notes pour garder une trace. Dix minutes suffisent.</p></div>
     <div class="step"><h3>Le bouton SOS</h3><p>Quand l'envie arrive, dix minutes guidées : une respiration, des consignes simples, un minuteur. L'envie monte, atteint un pic, retombe.</p></div>
     <div class="step"><h3>Ton suivi, en privé</h3><p>Jours sans, envies surmontées, record, notes. Tout reste sur ton téléphone, rien n'est envoyé.</p></div>
   </div>
@@ -148,7 +158,7 @@ home_body = f'''{HEADER}<main id="main">
       <li>{ic('x')}<span>On ne remplace pas un médecin, un psychologue ou un centre d'addictologie.</span></li>
     </ul></div>
   </div>
-  <div style="margin-top:14px">{help_box(['3114', 'tabac', 'jeux', 'drogues'])}</div>
+  <div style="margin-top:14px">{help_box(['3114', 'tabac', 'jeux', 'drogues', 'urgence'])}</div>
 </div></section>
 
 <section id="tarifs" style="background:var(--card);border-block:1px solid var(--line)"><div class="wrap">
@@ -156,9 +166,9 @@ home_body = f'''{HEADER}<main id="main">
   <div class="grid c2">
     <div class="card flat" style="display:grid;gap:16px;align-content:start"><h3>Un programme</h3>
       <div class="price"><b>{str(C.PRIX['prog']).replace('.', ',')}&nbsp;€</b><span>par programme</span></div>
-      <ul class="list"><li>{ic('check')}<span>30 jours guidés, du jour 1 au jour 30</span></li><li>{ic('check')}<span>Bouton SOS, suivi, notes</span></li><li>{ic('check')}<span>Un seul paiement, pas d'abonnement</span></li></ul>
+      <ul class="list"><li>{ic('check')}<span>30 jours guidés, avec une activité animée chaque jour</span></li><li>{ic('check')}<span>Bouton SOS, suivi, notes</span></li><li>{ic('check')}<span>Un seul paiement, pas d'abonnement</span></li></ul>
       <a class="btn ghost" href="#programmes">Choisir un programme</a></div>
-    <div class="card" style="display:grid;gap:16px;align-content:start;border-color:color-mix(in srgb,var(--brand) 50%,var(--line))"><span class="tag">Meilleur prix</span><h3>Les 4 programmes</h3>
+    <div class="card" style="display:grid;gap:16px;align-content:start;border-color:color-mix(in srgb,var(--brand) 50%,var(--line))"><span class="tag">Meilleur prix</span><h3>Les 6 programmes</h3>
       <div data-buybox="pack"></div></div>
   </div>
 </div></section>
@@ -184,29 +194,30 @@ for p in PROGS:
         if i % 7 == 0 and i < 28: dl += f'<div class="week">Semaine {i//7+1} · {e(SEM[i//7])}</div>'
         dl += f'<div><b>{i+1}</b><span>{e(d[0])}</span>{ic("lock", 16)}</div>'
     recog = ''.join(f'<li>{ic("check")}<span>{e(x)}</span></li>' for x in p['pour_qui'])
-    faq = p['faq'] + [('Combien ça coûte ?', f"{str(C.PRIX['prog']).replace('.', ',')} € une seule fois pour les 30 jours, ou {str(C.PRIX['pack']).replace('.', ',')} € pour les 4 programmes. Il n'y a pas d'abonnement.")]
+    faq = p['faq'] + [('Combien ça coûte ?', f"{str(C.PRIX['prog']).replace('.', ',')} € une seule fois pour les 30 jours, ou {str(C.PRIX['pack']).replace('.', ',')} € pour les 6 programmes. Il n'y a pas d'abonnement.")]
     adult = '<p class="mut" style="font-size:14.5px">Ce programme est réservé aux personnes majeures.</p>' if p['adulte'] else ''
     body = f'''{HEADER}<main id="main">
 <section class="hero" style="padding-bottom:50px"><div class="wrap g">
   <div class="tx">
     <a class="crumb" href="/#programmes">{ic('back')} Tous les programmes</a>
+    <div class="cov big" data-art="{ACTS_COVER[s]}"></div>
     <span class="kick rise">{e(p['nom'])} · 30 jours</span>
     <h1 class="rise d1" style="font-size:clamp(36px,7.6vw,60px)">{e(p['titre'])}</h1>
     <p class="lead rise d2">{e(p['accroche'])}</p>
-    <div class="pts rise d2"><span>{ic('check')} 5 minutes par jour</span><span>{ic('check')} Sans jugement</span><span>{ic('check')} Suivi privé</span></div>
+    <div class="pts rise d2"><span>{ic('check')} 10 minutes par jour</span><span>{ic('check')} Sans jugement</span><span>{ic('check')} Suivi privé</span></div>
     {adult}
   </div>
   <div class="card rise d2" id="achat" style="display:grid;gap:16px;align-content:start;scroll-margin-top:80px">
     <span class="tag am">Paiement unique</span><h3>Débloquer les 30 jours</h3>
     <ul class="list"><li>{ic('check')}<span>Les 30 jours guidés</span></li><li>{ic('check')}<span>Bouton SOS, suivi des jours sans, notes</span></li><li>{ic('check')}<span>Un seul paiement, pas d'abonnement</span></li></ul>
     <div data-buybox="{s}"></div>
-    <p class="mut" style="font-size:14px">Ou <a href="/#tarifs" style="text-decoration:underline">les 4 programmes pour {str(C.PRIX['pack']).replace('.', ',')} €</a>.</p>
+    <p class="mut" style="font-size:14px">Ou <a href="/#tarifs" style="text-decoration:underline">les 6 programmes pour {str(C.PRIX['pack']).replace('.', ',')} €</a>.</p>
   </div>
 </div></section>
 
 <section style="padding-top:10px"><div class="wrap split">
   <div><div class="sec-h" style="margin-bottom:22px"><span class="kick">Tu te reconnais ?</span><h2>Ce programme est pour toi si…</h2></div><ul class="list" style="font-size:18px">{recog}</ul></div>
-  <div class="card" style="display:grid;gap:14px"><span class="kick">Dans ton espace</span><h3>Chaque jour, quatre outils.</h3><ul class="list"><li>{ic('check')}<span>Un court texte pour comprendre</span></li><li>{ic('check')}<span>Un exercice concret à faire dans la journée</span></li><li>{ic('check')}<span>Tes notes, qui restent sur ton téléphone</span></li><li>{ic('check')}<span>Le bouton SOS et ton compteur de jours sans</span></li></ul></div>
+  <div class="card" style="display:grid;gap:14px"><span class="kick">Dans ton espace</span><h3>Chaque jour, cinq outils.</h3><ul class="list"><li>{ic('check')}<span>Un court texte pour comprendre</span></li><li>{ic('check')}<span>Un mini-jeu ou un outil animé (respiration, scénarios, balance…)</span></li><li>{ic('check')}<span>Un exercice concret à faire dans la journée</span></li><li>{ic('check')}<span>Tes notes, qui restent sur ton téléphone</span></li><li>{ic('check')}<span>Le bouton SOS et ton compteur de jours sans</span></li></ul></div>
 </div></section>
 
 <section style="background:var(--card);border-block:1px solid var(--line)"><div class="wrap">
@@ -254,7 +265,7 @@ doc('cgv.html', 'Conditions générales de vente', 'Conditions générales de ve
 <p>Dernière mise à jour : {TD("date")}</p>
 <h2>1. Objet</h2><p>Les présentes conditions régissent la vente en ligne des programmes numériques Lookmiz (« les programmes »), par {TD("nom de l'éditeur")} (« le vendeur »), à tout consommateur majeur.</p>
 <h2>2. Nature du service</h2><p>Les programmes sont des contenus numériques d'accompagnement : textes, exercices, outils de suivi. Ce ne sont pas des actes médicaux ni des traitements. Ils ne promettent aucun résultat et ne remplacent pas l'avis d'un professionnel de santé. Le vendeur ne peut pas être tenu responsable d'une absence de résultat.</p>
-<h2>3. Prix</h2><p>Un programme : {str(C.PRIX['prog']).replace('.', ',')} € TTC. Les 4 programmes : {str(C.PRIX['pack']).replace('.', ',')} € TTC. Paiement unique, sans abonnement ni renouvellement. {TD("mention de TVA selon le statut")}</p>
+<h2>3. Prix</h2><p>Un programme : {str(C.PRIX['prog']).replace('.', ',')} € TTC. Les 6 programmes : {str(C.PRIX['pack']).replace('.', ',')} € TTC. Paiement unique, sans abonnement ni renouvellement. {TD("mention de TVA selon le statut")}</p>
 <h2>4. Commande et paiement</h2><p>Le paiement s'effectue par carte bancaire via Stripe. L'accès est ouvert dès la confirmation du paiement. Un lien personnel permettant de retrouver l'accès sur un autre appareil est fourni à l'issue du paiement : le client doit le conserver.</p>
 <h2>5. Droit de rétractation</h2><p>Le client dispose d'un délai de 14 jours à compter de l'achat pour se rétracter, sans avoir à se justifier, en écrivant à {TD("e-mail")}. Le vendeur le rembourse dans un délai de 14 jours à compter de sa demande, par le même moyen de paiement.</p>
 <h2>6. Âge</h2><p>Les programmes sont réservés aux personnes majeures.</p>
