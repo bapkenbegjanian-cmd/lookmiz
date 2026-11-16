@@ -84,21 +84,23 @@ def faq_ld(items):
 meta = {'v': V, 'semaines': SEM, 'prix': C.PRIX, 'aides': C.AIDES,
         'progs': [{'slug': p['slug'], 'nom': p['nom'], 'titre': p['titre'], 'adulte': p['adulte'], 'ico': p['ico'], 'sos': p['sos'], 'aides': p['aides'], 'titres': [d[0] for d in p['jours']]} for p in PROGS]}
 W('data/meta.js', 'window.LMZ_META=' + j(meta) + ';')
-for p in PROGS:
-    s = p['slug']
-    W(f'data/{s}-free.js', f"window.LMZ_DAYS=window.LMZ_DAYS||{{}};window.LMZ_DAYS['{s}']=Object.assign(window.LMZ_DAYS['{s}']||{{}},{{free:{j(p['jours'][:3])}}});")
-    W(f'data/{s}-full.js', f"window.LMZ_DAYS=window.LMZ_DAYS||{{}};window.LMZ_DAYS['{s}']=Object.assign(window.LMZ_DAYS['{s}']||{{}},{{full:{j(p['jours'][3:])}}});")
+# fonction de paiement + contenu (collée dans Supabase), et sa page de copie
+code = open(os.path.join(ROOT, 'build/paiement.tpl.ts'), encoding='utf-8').read().replace('__DAYS__', j({p['slug']: p['jours'] for p in PROGS}))
+W('supabase/paiement.ts', code)
+_pg = open(os.path.join(ROOT, 'supabase/copier-paiement.html'), encoding='utf-8').read()
+_a = _pg.index('translate="no">', _pg.index('<textarea')) + len('translate="no">'); _z = _pg.index('</textarea>')
+W('supabase/copier-paiement.html', _pg[:_a] + html.escape(code) + _pg[_z:])
 
 # ---------------------------------------------------------------- accueil
 FAQ_HOME = [
  ('Est-ce un traitement médical ?', "Non. Ce sont des programmes d'accompagnement, inspirés des thérapies comportementales et de l'entretien motivationnel. Ils ne remplacent ni un médecin ni un psychologue, et ne promettent aucune guérison. Si tu as besoin d'un suivi, des lignes gratuites sont indiquées sur chaque page."),
  ('Mon suivi est-il privé ?', "Oui. Ton compteur, tes notes et ta progression restent sur ton téléphone. Nous ne les recevons pas. Il n'y a pas de compte à créer."),
- ('Comment je paie ? Y a-t-il un abonnement ?', "Un seul paiement par programme, par carte via Stripe. Pas d'abonnement, pas de renouvellement. Les 3 premiers jours de chaque programme sont gratuits."),
+ ('Comment je paie ? Y a-t-il un abonnement ?', "Un seul paiement par programme, par carte via Stripe. Pas d'abonnement, pas de renouvellement."),
  ('Je change de téléphone, je perds tout ?', "Après ton paiement, tu reçois un lien personnel à garder. Il rétablit ton accès sur un autre appareil. Ton suivi, lui, reste sur l'appareil où tu l'as fait."),
  ('Et si je rechute ?', "Un dérapage n'est pas un échec. Le programme prévoit un plan de rechute et le bouton « J'ai rechuté » garde ton record et relance ton compteur, sans jugement."),
 ]
 PR = str(C.PRIX['prog']).replace('.', ',')
-cards = ''.join(f'''<a class="card prog rise d{i%3}" href="/programmes/{p['slug']}/"><span class="ico">{ic(p['ico'])}</span><h3>{e(p['nom'])}</h3><p>{e(p['desc'])}</p><div class="foot"><span class="tag">30 jours · 3 gratuits</span><b>{PR}&nbsp;€</b></div></a>''' for i, p in enumerate(PROGS))
+cards = ''.join(f'''<a class="card prog rise d{i%3}" href="/programmes/{p['slug']}/"><span class="ico">{ic(p['ico'])}</span><h3>{e(p['nom'])}</h3><p>{e(p['desc'])}</p><div class="foot"><span class="tag">30 jours</span><b>{PR}&nbsp;€</b></div></a>''' for i, p in enumerate(PROGS))
 mock = f'''<div class="phone rise d1" aria-hidden="true"><div class="scr">
   <div class="row"><span>Écrans et réseaux</span><span>Jour 7</span></div>
   <div class="ringbox"><svg viewBox="0 0 150 150"><circle class="c bg" cx="75" cy="75" r="64"/><circle class="c fg" cx="75" cy="75" r="64" style="stroke-dashoffset:308"/></svg><div class="in"><b>7/30</b><small>jours faits</small></div></div>
@@ -113,13 +115,13 @@ home_body = f'''{HEADER}<main id="main">
     <h1 class="rise d1">Reprends le contrôle, <em>un jour à la fois.</em></h1>
     <p class="lead rise d2">Écrans, pornographie, jeux d'argent, vape et tabac. Cinq minutes par jour, un petit exercice, un bouton SOS pour les moments difficiles. Sans jugement.</p>
     <div class="acts rise d2"><a class="btn pri" href="#programmes">Choisir mon programme {ic('arrow')}</a><a class="btn ghost" href="/app/#/sos">Essayer le bouton SOS</a></div>
-    <div class="pts rise d2"><span>{ic('check')} 3 premiers jours gratuits</span><span>{ic('check')} Ton suivi reste sur ton téléphone</span><span>{ic('check')} Pas d'abonnement</span></div>
+    <div class="pts rise d2"><span>{ic('check')} Un seul paiement, pas d'abonnement</span><span>{ic('check')} Ton suivi reste sur ton téléphone</span><span>{ic('check')} 5 minutes par jour</span></div>
   </div>
   {mock}
 </div></section>
 
 <section id="programmes" style="padding-top:20px"><div class="wrap">
-  <div class="sec-h"><span class="kick">Les programmes</span><h2>Choisis ce que tu veux changer.</h2><p class="lead">Chaque programme dure 30 jours. Les 3 premiers sont gratuits, pour voir si la méthode te convient.</p></div>
+  <div class="sec-h"><span class="kick">Les programmes</span><h2>Choisis ce que tu veux changer.</h2><p class="lead">Chaque programme dure 30 jours : un petit pas par jour, du premier au dernier.</p></div>
   <div class="grid c2">{cards}</div>
 </div></section>
 
@@ -154,7 +156,7 @@ home_body = f'''{HEADER}<main id="main">
   <div class="grid c2">
     <div class="card flat" style="display:grid;gap:16px;align-content:start"><h3>Un programme</h3>
       <div class="price"><b>{str(C.PRIX['prog']).replace('.', ',')}&nbsp;€</b><span>par programme</span></div>
-      <ul class="list"><li>{ic('check')}<span>30 jours guidés, du jour 1 au jour 30</span></li><li>{ic('check')}<span>Bouton SOS, suivi, notes</span></li><li>{ic('check')}<span>Les 3 premiers jours gratuits pour essayer</span></li></ul>
+      <ul class="list"><li>{ic('check')}<span>30 jours guidés, du jour 1 au jour 30</span></li><li>{ic('check')}<span>Bouton SOS, suivi, notes</span></li><li>{ic('check')}<span>Un seul paiement, pas d'abonnement</span></li></ul>
       <a class="btn ghost" href="#programmes">Choisir un programme</a></div>
     <div class="card" style="display:grid;gap:16px;align-content:start;border-color:color-mix(in srgb,var(--brand) 50%,var(--line))"><span class="tag">Meilleur prix</span><h3>Les 4 programmes</h3>
       <div data-buybox="pack"></div></div>
@@ -180,9 +182,9 @@ for p in PROGS:
     dl = ''
     for i, d in enumerate(p['jours']):
         if i % 7 == 0 and i < 28: dl += f'<div class="week">Semaine {i//7+1} · {e(SEM[i//7])}</div>'
-        dl += f'<div><b>{i+1}</b><span>{e(d[0])}</span>{"<span class=tag>Gratuit</span>" if i < 3 else ic("lock", 16)}</div>'
+        dl += f'<div><b>{i+1}</b><span>{e(d[0])}</span>{ic("lock", 16)}</div>'
     recog = ''.join(f'<li>{ic("check")}<span>{e(x)}</span></li>' for x in p['pour_qui'])
-    faq = p['faq'] + [('Combien ça coûte ?', f"{str(C.PRIX['prog']).replace('.', ',')} € une seule fois pour les 30 jours, ou {str(C.PRIX['pack']).replace('.', ',')} € pour les 4 programmes. Les 3 premiers jours sont gratuits. Il n'y a pas d'abonnement.")]
+    faq = p['faq'] + [('Combien ça coûte ?', f"{str(C.PRIX['prog']).replace('.', ',')} € une seule fois pour les 30 jours, ou {str(C.PRIX['pack']).replace('.', ',')} € pour les 4 programmes. Il n'y a pas d'abonnement.")]
     adult = '<p class="mut" style="font-size:14.5px">Ce programme est réservé aux personnes majeures.</p>' if p['adulte'] else ''
     body = f'''{HEADER}<main id="main">
 <section class="hero" style="padding-bottom:50px"><div class="wrap g">
@@ -195,9 +197,7 @@ for p in PROGS:
     {adult}
   </div>
   <div class="card rise d2" id="achat" style="display:grid;gap:16px;align-content:start;scroll-margin-top:80px">
-    <span class="tag am">3 jours gratuits</span><h3>Commence gratuitement.</h3>
-    <a class="btn pri full" href="/app/#/p/{s}/1">Commencer le jour 1 {ic('arrow')}</a>
-    <hr class="hr"><h3 style="font-size:20px">Débloquer les 30 jours</h3>
+    <span class="tag am">Paiement unique</span><h3>Débloquer les 30 jours</h3>
     <ul class="list"><li>{ic('check')}<span>Les 30 jours guidés</span></li><li>{ic('check')}<span>Bouton SOS, suivi des jours sans, notes</span></li><li>{ic('check')}<span>Un seul paiement, pas d'abonnement</span></li></ul>
     <div data-buybox="{s}"></div>
     <p class="mut" style="font-size:14px">Ou <a href="/#tarifs" style="text-decoration:underline">les 4 programmes pour {str(C.PRIX['pack']).replace('.', ',')} €</a>.</p>
@@ -206,7 +206,7 @@ for p in PROGS:
 
 <section style="padding-top:10px"><div class="wrap split">
   <div><div class="sec-h" style="margin-bottom:22px"><span class="kick">Tu te reconnais ?</span><h2>Ce programme est pour toi si…</h2></div><ul class="list" style="font-size:18px">{recog}</ul></div>
-  <div class="card"><span class="kick">Aperçu gratuit · Jour 1</span><h3 style="margin:10px 0">{e(d1[0])}</h3><p class="mut">{e(d1[1])}</p><div class="ex" style="margin-top:16px"><b>Ton exercice du jour</b><p>{e(d1[2])}</p></div></div>
+  <div class="card" style="display:grid;gap:14px"><span class="kick">Dans ton espace</span><h3>Chaque jour, quatre outils.</h3><ul class="list"><li>{ic('check')}<span>Un court texte pour comprendre</span></li><li>{ic('check')}<span>Un exercice concret à faire dans la journée</span></li><li>{ic('check')}<span>Tes notes, qui restent sur ton téléphone</span></li><li>{ic('check')}<span>Le bouton SOS et ton compteur de jours sans</span></li></ul></div>
 </div></section>
 
 <section style="background:var(--card);border-block:1px solid var(--line)"><div class="wrap">
@@ -256,7 +256,7 @@ doc('cgv.html', 'Conditions générales de vente', 'Conditions générales de ve
 <h2>2. Nature du service</h2><p>Les programmes sont des contenus numériques d'accompagnement : textes, exercices, outils de suivi. Ce ne sont pas des actes médicaux ni des traitements. Ils ne promettent aucun résultat et ne remplacent pas l'avis d'un professionnel de santé. Le vendeur ne peut pas être tenu responsable d'une absence de résultat.</p>
 <h2>3. Prix</h2><p>Un programme : {str(C.PRIX['prog']).replace('.', ',')} € TTC. Les 4 programmes : {str(C.PRIX['pack']).replace('.', ',')} € TTC. Paiement unique, sans abonnement ni renouvellement. {TD("mention de TVA selon le statut")}</p>
 <h2>4. Commande et paiement</h2><p>Le paiement s'effectue par carte bancaire via Stripe. L'accès est ouvert dès la confirmation du paiement. Un lien personnel permettant de retrouver l'accès sur un autre appareil est fourni à l'issue du paiement : le client doit le conserver.</p>
-<h2>5. Accès immédiat et droit de rétractation</h2><p>Les programmes sont des contenus numériques fournis sans support matériel. Avant le paiement, le client demande expressément l'accès immédiat et reconnaît qu'il perd son droit de rétractation dès le début de l'exécution du contrat (article L221-28 du Code de la consommation). Les 3 premiers jours de chaque programme sont gratuits afin de permettre au client de les découvrir avant d'acheter.</p>
+<h2>5. Droit de rétractation</h2><p>Le client dispose d'un délai de 14 jours à compter de l'achat pour se rétracter, sans avoir à se justifier, en écrivant à {TD("e-mail")}. Le vendeur le rembourse dans un délai de 14 jours à compter de sa demande, par le même moyen de paiement.</p>
 <h2>6. Âge</h2><p>Les programmes sont réservés aux personnes majeures.</p>
 <h2>7. Données</h2><p>Voir la <a href="/confidentialite.html">politique de confidentialité</a>.</p>
 <h2>8. Réclamations et médiation</h2><p>Pour toute réclamation : {TD("e-mail")}. À défaut d'accord, le client peut recourir gratuitement à un médiateur de la consommation : {TD("nom et coordonnées du médiateur")}.</p>

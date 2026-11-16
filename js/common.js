@@ -46,16 +46,13 @@
     return ACC;
   }
 
-  /* contenu des jours : les 3 premiers sont publics, les autres ne se chargent qu'avec l'accès */
-  const loaded = {};
-  const load = src => loaded[src] || (loaded[src] = new Promise((res, rej) => {
-    const s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = () => rej(new Error(src)); document.head.appendChild(s);
-  }));
-  window.LMZ_DAYS = window.LMZ_DAYS || {};
-  async function days(slug, full) {
-    await load('/data/' + slug + '-free.js?v=' + META.v);
-    if (full) await load('/data/' + slug + '-full.js?v=' + META.v);
-    const d = window.LMZ_DAYS[slug]; return full ? d.free.concat(d.full) : d.free;
+  /* contenu des jours : fourni par la fonction de paiement, seulement si le paiement est confirmé */
+  async function days(slug) {
+    S.cache = S.cache || {};
+    if (S.cache[slug]) return S.cache[slug];
+    const d = await call({ action: 'prog_day', prog: slug, sids: S.sids });
+    if (!d || !d.days) throw new Error((d && d.error) || 'acces');
+    S.cache[slug] = d.days; save(); return d.days;
   }
 
   /* paiement */
@@ -65,19 +62,17 @@
     return '<div class="buybox" data-box="' + slug + '">' +
       '<div class="price"><b>' + price + '</b><span>' + (pack ? 'les 4 programmes, paiement unique' : 'paiement unique, sans abonnement') + '</span></div>' +
       (adult ? '<label class="chk"><input type="checkbox" class="c-age"><span>J\'ai 18 ans ou plus.</span></label>' : '') +
-      '<label class="chk"><input type="checkbox" class="c-ret"><span>Je demande l\'accès immédiat au contenu numérique et je reconnais perdre mon droit de rétractation dès le début de l\'exécution.</span></label>' +
       '<button class="btn pri full" type="button" data-buy="' + slug + '">' + (pack ? 'Débloquer les 4 programmes' : 'Débloquer les 30 jours') + ' · ' + price + '</button>' +
       '<p class="buymsg" role="alert"></p>' +
       '<p class="mut" style="font-size:13.5px">Paiement sécurisé par Stripe. <a href="/cgv.html">Conditions de vente</a>.</p></div>';
   }
   async function buy(slug, box) {
-    const msg = box.querySelector('.buymsg'), ret = box.querySelector('.c-ret'), age = box.querySelector('.c-age'), btn = box.querySelector('[data-buy]');
+    const msg = box.querySelector('.buymsg'), age = box.querySelector('.c-age'), btn = box.querySelector('[data-buy]');
     msg.textContent = '';
     if (age && !age.checked) { msg.textContent = 'Ce contenu est réservé aux personnes majeures.'; return; }
-    if (!ret.checked) { msg.textContent = 'Coche la case pour confirmer l\'accès immédiat.'; return; }
     btn.disabled = true; btn.dataset.t = btn.textContent; btn.textContent = 'Ouverture du paiement…';
     try {
-      const d = await call({ action: 'prog_checkout', prog: slug, consent: true });
+      const d = await call({ action: 'prog_checkout', prog: slug });
       if (!d.url) throw new Error(d.error || 'erreur');
       location.href = d.url;
     } catch (_) { msg.textContent = 'Le paiement n\'a pas pu s\'ouvrir. Réessaie dans un instant.'; btn.disabled = false; btn.textContent = btn.dataset.t; }
@@ -90,5 +85,5 @@
   const top = document.querySelector('.top');
   if (top) { const f = () => top.classList.toggle('on', scrollY > 6); addEventListener('scroll', f, { passive: true }); f(); }
 
-  window.LMZ = { S, save, esc, call, access, days, buyHTML, euro, streakInfo, META, IC, load };
+  window.LMZ = { S, save, esc, call, access, days, buyHTML, euro, streakInfo, META, IC };
 })();

@@ -3,7 +3,7 @@
   'use strict';
   const L = window.LMZ, S = L.S, esc = L.esc, META = L.META, IC = L.IC, root = document.getElementById('app');
   const prog = slug => META.progs.find(p => p.slug === slug);
-  const free = 3, TOTAL = 30;
+  const TOTAL = 30;
   let ACCESS = new Set(), verified = !S.sids.length, banner = '';
   const has = slug => ACCESS.has(slug);
   const dnum = slug => (S.done[slug] || []).length;
@@ -17,8 +17,8 @@
     const cards = META.progs.map(p => {
       const n = dnum(p.slug), st = L.streakInfo(p.slug), started = !!S.start[p.slug] || n > 0;
       return '<a class="card pcard" href="#/p/' + p.slug + '"><div class="t"><span class="ico">' + IC[p.ico] + '</span><div><h3>' + esc(p.nom) + '</h3><span class="mut" style="font-size:14.5px">' +
-        (started ? 'Jour ' + Math.min(TOTAL, n + 1) + ' sur ' + TOTAL : 'Pas encore commencé · 3 jours gratuits') + '</span></div></div>' +
-        (started ? '<div class="bar2"><i style="width:' + Math.round(n / TOTAL * 100) + '%"></i></div><div class="row2"><span>' + n + ' jour' + (n > 1 ? 's' : '') + ' terminé' + (n > 1 ? 's' : '') + '</span>' + (st ? '<b style="color:var(--amber)">' + st.d + ' j sans</b>' : '<span></span>') + '</div>' : '') + '</a>';
+        (has(p.slug) ? (started ? 'Jour ' + Math.min(TOTAL, n + 1) + ' sur ' + TOTAL : 'Prêt à commencer') : 'Programme de 30 jours · ' + L.euro(META.prix.prog)) + '</span></div></div>' +
+        (has(p.slug) && started ? '<div class="bar2"><i style="width:' + Math.round(n / TOTAL * 100) + '%"></i></div><div class="row2"><span>' + n + ' jour' + (n > 1 ? 's' : '') + ' terminé' + (n > 1 ? 's' : '') + '</span>' + (st ? '<b style="color:var(--amber)">' + st.d + ' j sans</b>' : '<span></span>') + '</div>' : '') + '</a>';
     }).join('');
     const acc = S.sids.length
       ? '<div class="card flat" style="display:grid;gap:10px"><h3>Mon accès</h3><p class="mut" style="font-size:15px">Garde ce lien pour retrouver ton accès sur un autre téléphone.</p><input class="note" style="min-height:0;height:46px;padding:0 14px" readonly id="lk" value="' + esc(link()) + '"><button class="btn ghost sm" id="cp" type="button" style="width:max-content">Copier le lien</button></div>'
@@ -40,6 +40,15 @@
   function programme(slug) {
     const p = prog(slug), n = dnum(slug), st = L.streakInfo(slug), acc = has(slug), nextDay = Math.min(TOTAL, n + 1);
     let html = '<div class="app wrap"><a class="crumb" href="#/">' + IC.back + ' Mon espace</a><div><span class="kick">' + esc(p.nom) + '</span><h1>' + esc(p.titre) + '</h1></div>';
+    if (!acc) {
+      html += (verified ? '<div class="card" style="display:grid;gap:14px"><h3>Débloquer les 30 jours</h3><p class="mut">Un seul paiement, pas d\'abonnement. Tu accèdes tout de suite aux 30 jours, au compteur et aux notes.</p><div data-x="buy"></div></div>' : '<p class="mut">Vérification de ton accès…</p>') +
+        '<a class="bigsos" href="#/sos/' + slug + '">' + IC.life + '<div><b>SOS : j\'ai une envie</b><span>10 minutes guidées, gratuit</span></div></a>' +
+        '<div class="card dlist" style="padding:6px 18px 10px">' + p.titres.map((t, i) => (i % 7 === 0 && i < 28 ? '<div class="wk">Semaine ' + (i / 7 + 1) + ' · ' + esc(META.semaines[i / 7]) + '</div>' : '') +
+          '<div class="drow"><span class="no">' + (i + 1) + '</span><span>' + esc(t) + '</span>' + IC.lock + '</div>').join('') + '</div></div>';
+      root.innerHTML = html;
+      const b0 = root.querySelector('[data-x="buy"]'); if (b0) b0.outerHTML = L.buyHTML(slug);
+      return;
+    }
     html += '<div class="card streak-c">' + (st
       ? '<span class="kick">Jours sans</span><div class="n">' + st.d + '<small>jour' + (st.d > 1 ? 's' : '') + (st.d < 30 ? ' · ' + st.h + ' h' : '') + '</small></div><div class="stats"><div><b>' + (S.envies[slug] || 0) + '</b><span>envies surmontées</span></div><div><b>' + n + '</b><span>jours faits</span></div><div><b>' + Math.max(st.d, S.best[slug] || 0) + '</b><span>record</span></div></div><button class="btn ghost sm" id="rech" type="button" style="width:max-content">J\'ai rechuté</button><div id="rc"></div>'
       : '<span class="kick">Compteur de jours sans</span><p class="mut">Lance ton compteur le jour où tu commences à tenir. Il reste sur ton téléphone.</p><button class="btn pri" id="go" type="button">Lancer mon compteur</button>') + '</div>';
@@ -47,14 +56,11 @@
     html += '<div class="actrow"><a class="btn pri" href="#/p/' + slug + '/' + nextDay + '">' + (n ? 'Continuer : jour ' + nextDay : 'Commencer le jour 1') + IC.arrow + '</a></div>';
     html += '<div class="card dlist" style="padding:6px 18px 10px">';
     p.titres.forEach((t, i) => {
-      const d = i + 1, done = (S.done[slug] || []).includes(d), locked = d > free && !acc;
+      const d = i + 1, done = (S.done[slug] || []).includes(d);
       if (i % 7 === 0 && i < 28) html += '<div class="wk">Semaine ' + (i / 7 + 1) + ' · ' + esc(META.semaines[i / 7]) + '</div>';
-      html += '<a class="drow' + (done ? ' done' : '') + (d === nextDay && !done ? ' next' : '') + '" href="#/p/' + slug + '/' + d + '"><span class="no">' + (done ? IC.check.replace('<svg', '<svg width="16" height="16"') : d) + '</span><span>' + esc(t) + (d <= free ? '<small>Gratuit</small>' : '') + '</span>' + (locked ? IC.lock : IC.arrow) + '</a>';
+      html += '<a class="drow' + (done ? ' done' : '') + (d === nextDay && !done ? ' next' : '') + '" href="#/p/' + slug + '/' + d + '"><span class="no">' + (done ? IC.check.replace('<svg', '<svg width="16" height="16"') : d) + '</span><span>' + esc(t) + '</span>' + IC.arrow + '</a>';
     });
-    html += '</div>';
-    if (!acc && verified) html += '<div class="card"><h3>Débloquer les jours 4 à 30</h3><p class="mut" style="margin:8px 0 16px">Les 3 premiers jours sont gratuits. Le reste est réservé.</p><div data-x="buy"></div></div>';
-    root.innerHTML = html + '</div>';
-    const b = root.querySelector('[data-x="buy"]'); if (b) b.innerHTML = L.buyHTML(slug);
+    root.innerHTML = html + '</div></div>';
     const go = document.getElementById('go'); if (go) go.onclick = () => { S.streak[slug] = Date.now(); L.save(); programme(slug); };
     const r = document.getElementById('rech'); if (r) r.onclick = () => {
       document.getElementById('rc').innerHTML = '<div class="confirm"><b>Ce n\'est pas un échec, c\'est une information.</b><span class="mut">Ton record est gardé. Tu repars de zéro, avec ce que tu as appris. Qu\'est-ce qui a déclenché l\'envie ? Note-le dans ton prochain jour.</span><div class="acts"><button class="btn pri sm" id="ok" type="button">Relancer mon compteur</button><button class="btn ghost sm" id="no" type="button">Annuler</button></div></div>';
@@ -67,15 +73,15 @@
   async function day(slug, n) {
     const p = prog(slug); if (!p || n < 1 || n > TOTAL) return home();
     if (!S.start[slug]) { S.start[slug] = new Date().toISOString().slice(0, 10); } S.last = slug; L.save();
-    const needs = n > free;
+    const needs = true;
     if (needs && !verified) { root.innerHTML = '<div class="app wrap"><p class="mut">Vérification de ton accès…</p></div>'; return; }
     const head = '<a class="crumb" href="#/p/' + slug + '">' + IC.back + ' ' + esc(p.nom) + '</a>';
     if (needs && !has(slug)) {
-      root.innerHTML = '<div class="app wrap">' + head + '<div class="card lock"><span class="ico">' + IC.lock + '</span><span class="kick">Semaine ' + (week(n) + 1) + ' · Jour ' + n + '</span><h2 style="font-size:30px">' + esc(p.titres[n - 1]) + '</h2><p class="mut" style="max-width:44ch">Les 3 premiers jours sont gratuits. Pour continuer, débloque les 30 jours. Un paiement, pas d\'abonnement.</p><div data-x="buy"></div></div></div>';
+      root.innerHTML = '<div class="app wrap">' + head + '<div class="card lock"><span class="ico">' + IC.lock + '</span><span class="kick">Semaine ' + (week(n) + 1) + ' · Jour ' + n + '</span><h2 style="font-size:30px">' + esc(p.titres[n - 1]) + '</h2><p class="mut" style="max-width:44ch">Ce programme est réservé. Débloque les 30 jours : un seul paiement, pas d\'abonnement.</p><div data-x="buy"></div></div></div>';
       root.querySelector('[data-x="buy"]').outerHTML = L.buyHTML(slug); return;
     }
     root.innerHTML = '<div class="app wrap">' + head + '<p class="mut">Chargement…</p></div>';
-    let list; try { list = await L.days(slug, needs); } catch (_) { root.innerHTML = '<div class="app wrap">' + head + '<p>Impossible de charger ce jour. Vérifie ta connexion et réessaie.</p></div>'; return; }
+    let list; try { list = await L.days(slug); } catch (_) { root.innerHTML = '<div class="app wrap">' + head + '<p>Impossible de charger ce jour. Vérifie ta connexion et réessaie.</p></div>'; return; }
     const d = list[n - 1], done = (S.done[slug] || []).includes(n), key = slug + ':' + n;
     root.innerHTML = '<div class="app wrap day">' + head + '<div><span class="kick">Semaine ' + (week(n) + 1) + ' · ' + esc(META.semaines[week(n)]) + ' · Jour ' + n + ' sur ' + TOTAL + '</span><h1>' + esc(d[0]) + '</h1></div>' +
       '<p class="tx">' + esc(d[1]) + '</p><div class="ex"><b>Ton exercice du jour</b><p>' + esc(d[2]) + '</p></div>' +
