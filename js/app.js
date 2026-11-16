@@ -17,18 +17,14 @@
   /* ---------- accueil de l'espace ---------- */
   function home() {
     const cards = META.progs.map(p => {
-      const n = dnum(p.slug), st = L.streakInfo(p.slug), started = !!S.start[p.slug] || n > 0;
-      return '<a class="card pcard" href="#/p/' + p.slug + '"><div class="cov">' + (window.LMZ_ART ? window.LMZ_ART.cover(p.slug) : '') + '</div><div class="t"><span class="ico">' + IC[p.ico] + '</span><div><h3>' + esc(p.nom) + '</h3><span class="mut" style="font-size:14.5px">' +
-        (has(p.slug) ? (started ? 'Jour ' + Math.min(TOTAL, n + 1) + ' sur ' + TOTAL : 'Prêt à commencer') : 'Programme de 30 jours · ' + L.euro(META.prix.prog)) + '</span></div></div>' +
-        (has(p.slug) && started ? '<div class="bar2"><i style="width:' + Math.round(n / TOTAL * 100) + '%"></i></div><div class="row2"><span>' + n + ' jour' + (n > 1 ? 's' : '') + ' terminé' + (n > 1 ? 's' : '') + '</span>' + (st ? '<b style="color:var(--amber)">' + st.d + ' j sans</b>' : '<span></span>') + '</div>' : '') + '</a>';
+      const n = dnum(p.slug), started = n > 0 || !!S.start[p.slug];
+      return '<a class="card pcard" href="#/p/' + p.slug + '"><div class="cov">' + (window.LMZ_ART ? window.LMZ_ART.cover(p.slug) : '') + '</div><div class="pc"><h3>' + esc(p.nom) + '</h3>' +
+        (started ? '<div class="bar2"><i style="width:' + Math.round(n / TOTAL * 100) + '%"></i></div><span class="mut" style="font-size:14px">Jour ' + Math.min(TOTAL, n + 1) + ' sur ' + TOTAL + '</span>' : '<span class="mut" style="font-size:14px">30 jours</span>') + '</div></a>';
     }).join('');
     const acc = META.open ? '' : S.sids.length
       ? '<div class="card flat" style="display:grid;gap:10px"><h3>Mon accès</h3><p class="mut" style="font-size:15px">Garde ce lien pour retrouver ton accès sur un autre téléphone.</p><input class="note" style="min-height:0;height:46px;padding:0 14px" readonly id="lk" value="' + esc(link()) + '"><button class="btn ghost sm" id="cp" type="button" style="width:max-content">Copier le lien</button></div>'
       : '<div class="card flat" style="display:grid;gap:10px"><h3>J\'ai déjà acheté</h3><p class="mut" style="font-size:15px">Colle le lien reçu après ton paiement pour retrouver ton accès.</p><input class="note" style="min-height:0;height:46px;padding:0 14px" id="rs" placeholder="https://lookmiz.com/app/?achat=1&sid=…"><button class="btn ghost sm" id="rb" type="button" style="width:max-content">Retrouver mon accès</button><p class="buymsg" id="rm"></p></div>';
-    root.innerHTML = '<div class="app wrap">' + banner + '<div><span class="kick">Mon espace</span><h1>Un jour à la fois.</h1></div>' +
-      '<a class="bigsos" href="#/sos">' + IC.life + '<div><b>SOS : j\'ai une envie</b><span>10 minutes guidées pour la laisser passer</span></div></a>' +
-      '<div class="grid c2">' + cards + '</div>' + acc +
-      '<div class="notice help"><h3>Besoin d\'aide maintenant ?</h3><div class="num"><a href="tel:3114">3114</a><span>Prévention du suicide, 24h/24, gratuit</span></div></div></div>';
+    root.innerHTML = '<div class="app wrap">' + banner + '<div class="grid c2 pgrid">' + cards + '</div>' + acc + '</div>';
     const cp = document.getElementById('cp'); if (cp) cp.onclick = async () => { const i = document.getElementById('lk'); try { await navigator.clipboard.writeText(i.value); cp.textContent = 'Copié'; } catch (_) { i.select(); } };
     const rb = document.getElementById('rb'); if (rb) rb.onclick = async () => {
       const m = (document.getElementById('rs').value.match(/cs_[A-Za-z0-9_]+/) || [])[0], msg = document.getElementById('rm');
@@ -41,33 +37,24 @@
   /* ---------- un programme ---------- */
   function programme(slug) {
     const p = prog(slug), n = dnum(slug), st = L.streakInfo(slug), acc = has(slug), nextDay = Math.min(TOTAL, n + 1);
-    let html = '<div class="app wrap"><a class="crumb" href="#/">' + IC.back + ' Mon espace</a><div class="banner">' + (window.LMZ_ART ? window.LMZ_ART.cover(slug) : '') + '</div><div><span class="kick">' + esc(p.nom) + '</span><h1>' + esc(p.titre) + '</h1></div>';
+    let html = '<div class="app wrap"><a class="crumb" href="#/">' + IC.back + ' Retour</a><div class="banner">' + (window.LMZ_ART ? window.LMZ_ART.cover(slug) : '') + '</div><h1>' + esc(p.nom) + '</h1>';
     if (!acc) {
-      html += (verified ? '<div class="card" style="display:grid;gap:14px"><h3>Débloquer les 30 jours</h3><p class="mut">Un seul paiement, pas d\'abonnement. Tu accèdes tout de suite aux 30 jours, au compteur et aux notes.</p><div data-x="buy"></div></div>' : '<p class="mut">Vérification de ton accès…</p>') +
-        '<a class="bigsos" href="#/sos/' + slug + '">' + IC.life + '<div><b>SOS : j\'ai une envie</b><span>10 minutes guidées, gratuit</span></div></a>' +
-        '<div class="card dlist" style="padding:6px 18px 10px">' + p.titres.map((t, i) => (i % 7 === 0 && i < 28 ? '<div class="wk">Semaine ' + (i / 7 + 1) + ' · ' + esc(META.semaines[i / 7]) + '</div>' : '') +
-          '<div class="drow"><span class="no">' + (i + 1) + '</span><span>' + esc(t) + '</span>' + IC.lock + '</div>').join('') + '</div></div>';
+      html += (verified ? '<div class="card" style="display:grid;gap:14px"><h3>Débloquer les 30 jours</h3><div data-x="buy"></div></div>' : '<p class="mut">Vérification de ton accès…</p>') + '</div>';
       root.innerHTML = html;
       const b0 = root.querySelector('[data-x="buy"]'); if (b0) b0.outerHTML = L.buyHTML(slug);
       return;
     }
+    html += '<div class="bar2"><i style="width:' + Math.round(n / TOTAL * 100) + '%"></i></div>';
+    html += '<a class="btn pri full xl" href="#/p/' + slug + '/' + nextDay + '">' + (n ? 'Continuer : jour ' + nextDay : 'Commencer le jour 1') + IC.arrow + '</a>';
     html += '<div class="card streak-c">' + (st
-      ? '<span class="kick">Jours sans</span><div class="n">' + st.d + '<small>jour' + (st.d > 1 ? 's' : '') + (st.d < 30 ? ' · ' + st.h + ' h' : '') + '</small></div><div class="stats"><div><b>' + (S.envies[slug] || 0) + '</b><span>envies surmontées</span></div><div><b>' + n + '</b><span>jours faits</span></div><div><b>' + Math.max(st.d, S.best[slug] || 0) + '</b><span>record</span></div></div><button class="btn ghost sm" id="rech" type="button" style="width:max-content">J\'ai rechuté</button><div id="rc"></div>'
-      : '<span class="kick">Compteur de jours sans</span><p class="mut">Lance ton compteur le jour où tu commences à tenir. Il reste sur ton téléphone.</p><button class="btn pri" id="go" type="button">Lancer mon compteur</button>') + '</div>';
-    html += '<a class="bigsos" href="#/sos/' + slug + '">' + IC.life + '<div><b>SOS : j\'ai une envie</b><span>10 minutes guidées</span></div></a>';
-    html += '<div class="actrow"><a class="btn pri" href="#/p/' + slug + '/' + nextDay + '">' + (n ? 'Continuer : jour ' + nextDay : 'Commencer le jour 1') + IC.arrow + '</a></div>';
-    html += '<div class="card dlist" style="padding:6px 18px 10px">';
-    p.titres.forEach((t, i) => {
-      const d = i + 1, done = (S.done[slug] || []).includes(d);
-      if (i % 7 === 0 && i < 28) html += '<div class="wk">Semaine ' + (i / 7 + 1) + ' · ' + esc(META.semaines[i / 7]) + '</div>';
-      html += '<a class="drow' + (done ? ' done' : '') + (d === nextDay && !done ? ' next' : '') + '" href="#/p/' + slug + '/' + d + '"><span class="no">' + (done ? IC.check.replace('<svg', '<svg width="16" height="16"') : d) + '</span><span>' + esc(t) + '</span>' + IC.arrow + '</a>';
-    });
-    root.innerHTML = html + '</div></div>';
+      ? '<div class="n">' + st.d + '<small>jour' + (st.d > 1 ? 's' : '') + ' sans</small></div><button class="btn ghost sm" id="rech" type="button" style="width:max-content">J\'ai rechuté</button><div id="rc"></div>'
+      : '<button class="btn ghost" id="go" type="button">Lancer mon compteur de jours sans</button>') + '</div></div>';
+    root.innerHTML = html;
     const go = document.getElementById('go'); if (go) go.onclick = () => { S.streak[slug] = Date.now(); L.save(); programme(slug); };
     const r = document.getElementById('rech'); if (r) r.onclick = () => {
-      document.getElementById('rc').innerHTML = '<div class="confirm"><b>Ce n\'est pas un échec, c\'est une information.</b><span class="mut">Ton record est gardé. Tu repars de zéro, avec ce que tu as appris. Qu\'est-ce qui a déclenché l\'envie ? Note-le dans ton prochain jour.</span><div class="acts"><button class="btn pri sm" id="ok" type="button">Relancer mon compteur</button><button class="btn ghost sm" id="no" type="button">Annuler</button></div></div>';
+      document.getElementById('rc').innerHTML = '<div class="confirm"><b>Ce n\'est pas un échec, c\'est une information.</b><span class="mut">Ton record est gardé. Tu repars de zéro.</span><div class="acts"><button class="btn pri sm" id="ok" type="button">Relancer mon compteur</button><button class="btn ghost sm" id="no" type="button">Annuler</button></div></div>';
       document.getElementById('no').onclick = () => { document.getElementById('rc').innerHTML = ''; };
-      document.getElementById('ok').onclick = () => { const s = L.streakInfo(slug); S.best[slug] = Math.max(S.best[slug] || 0, s ? s.d : 0); S.streak[slug] = Date.now(); L.save(); programme(slug); };
+      document.getElementById('ok').onclick = () => { const s2 = L.streakInfo(slug); S.best[slug] = Math.max(S.best[slug] || 0, s2 ? s2.d : 0); S.streak[slug] = Date.now(); L.save(); programme(slug); };
     };
   }
 
@@ -86,22 +73,21 @@
     let pack; try { pack = await L.days(slug); } catch (_) { root.innerHTML = '<div class="app wrap">' + head + '<p>Impossible de charger ce jour. Vérifie ta connexion et réessaie.</p></div>'; return; }
     const d = pack.days[n - 1], done = (S.done[slug] || []).includes(n), key = slug + ':' + n, type = d[3], prm = d[4] || {}, A = window.LMZ_ACTS, ART = window.LMZ_ART;
     S.act[slug] = S.act[slug] || {}; const st0 = S.act[slug][n] || {};
-    root.innerHTML = '<div class="app wrap day">' + head + '<div class="banner">' + (ART ? ART.forType(type) : '') + '<div class="bn"><span class="kick">Semaine ' + (week(n) + 1) + ' · ' + esc(META.semaines[week(n)]) + '</span><b>Jour ' + n + ' sur ' + TOTAL + '</b></div></div><div><h1>' + esc(d[0]) + '</h1></div>' +
+    const after = '<div class="ex"><b>Dans ta journée</b><p>' + esc(d[2]) + '</p></div>' +
+      '<button class="btn pri full" id="dn" type="button">' + (n < TOTAL ? (done ? 'Jour suivant' : 'Terminé, jour suivant') : 'Terminer le programme') + IC.arrow + '</button>' +
+      '<details class="notes"><summary>Ajouter une note</summary><textarea id="nt" class="note" placeholder="Écris ici… (reste sur ton téléphone)">' + esc(S.notes[key] || '') + '</textarea></details>';
+    root.innerHTML = '<div class="app wrap day">' + head + '<div><span class="kick">Jour ' + n + ' sur ' + TOTAL + '</span><h1>' + esc(d[0]) + '</h1></div>' +
       '<p class="tx">' + esc(d[1]) + '</p>' +
-      '<section class="act" aria-label="Activité du jour"><div class="act-h"><span class="kick">Activité du jour</span><span class="pill' + (st0.fin ? ' on' : '') + '" id="pl">' + (st0.fin ? 'Terminée' : 'À faire') + '</span></div><h2>' + esc(prm.t || (A && A.TITLES[type]) || 'Activité') + '</h2><div id="actbox"></div></section>' +
-      '<div class="ex"><b>Dans ta journée</b><p>' + esc(d[2]) + '</p></div>' +
-      '<div style="display:grid;gap:8px"><label for="nt" class="mut" style="font-size:14.5px">Tes notes. Elles restent sur ton téléphone.</label><textarea id="nt" class="note" placeholder="Écris ici…">' + esc(S.notes[key] || '') + '</textarea></div>' +
-      '<div class="acts"><button class="btn ' + (done ? 'ghost' : 'pri') + '" id="dn" type="button">' + (done ? 'Fait ' : 'Marquer comme fait') + (done ? IC.check.replace('<svg', '<svg width="18" height="18"') : '') + '</button>' +
-      (n < TOTAL ? '<a class="btn ghost" href="#/p/' + slug + '/' + (n + 1) + '">Jour suivant' + IC.arrow + '</a>' : '') + '</div>' +
-      '<div class="nav2">' + (n > 1 ? '<a class="crumb" href="#/p/' + slug + '/' + (n - 1) + '">' + IC.back + ' Jour ' + (n - 1) + '</a>' : '<span></span>') + '<a class="crumb" href="#/sos/' + slug + '">SOS ' + IC.life.replace('<svg', '<svg width="16" height="16"') + '</a></div></div>';
+      '<section class="act" aria-label="Activité du jour"><h2>' + esc(prm.t || (A && A.TITLES[type]) || 'Activité') + '</h2><div id="actbox"></div></section>' +
+      '<div id="after" class="after"' + (st0.fin ? '' : ' hidden') + '>' + after + '</div>' +
+      (n > 1 ? '<div class="nav2"><a class="crumb" href="#/p/' + slug + '/' + (n - 1) + '">' + IC.back + ' Jour ' + (n - 1) + '</a></div>' : '') + '</div>';
+    const reveal = () => { const el = document.getElementById('after'); if (el && el.hidden) { el.hidden = false; el.classList.add('in'); setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'center' }), 350); } };
     if (A) A.mount(document.getElementById('actbox'), type, { kit: pack.kit, p: prm, slug, n, L, prog: p,
-      get: () => S.act[slug][n], set: v => { S.act[slug][n] = v; L.save(); },
-      done: () => { const pl = document.getElementById('pl'); if (pl) { pl.textContent = 'Terminée'; pl.classList.add('on'); } } });
+      get: () => S.act[slug][n], set: v => { S.act[slug][n] = v; L.save(); }, done: reveal });
     let t; document.getElementById('nt').oninput = e => { clearTimeout(t); t = setTimeout(() => { S.notes[key] = e.target.value; L.save(); }, 400); };
     document.getElementById('dn').onclick = () => {
-      const a = S.done[slug] = S.done[slug] || [], i = a.indexOf(n);
-      if (i < 0) { a.push(n); } else { a.splice(i, 1); } L.save();
-      if (i < 0 && n < TOTAL) location.hash = '#/p/' + slug + '/' + (n + 1); else day(slug, n);
+      const a = S.done[slug] = S.done[slug] || []; if (!a.includes(n)) a.push(n); L.save();
+      location.hash = n < TOTAL ? '#/p/' + slug + '/' + (n + 1) : '#/p/' + slug;
     };
     scrollTo(0, 0);
   }

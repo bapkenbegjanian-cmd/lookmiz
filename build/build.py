@@ -109,7 +109,7 @@ FAQ_HOME = [
 FAQ_HOME = [q for q in FAQ_HOME if not OPEN or not q[0].startswith(('Comment je paie', 'Je change de téléphone'))]
 PR = str(C.PRIX['prog']).replace('.', ',')
 ACTS_COVER = {'ecrans': 'phone', 'pornographie': 'shield', 'jeux-d-argent': 'coins', 'vape-tabac': 'lungs', 'cannabis': 'moon', 'drogues-de-soiree': 'city'}
-cards = ''.join(f'''<a class="card prog rise d{i%3}" href="/programmes/{p['slug']}/"><div class="cov"><img src="/img/{PHOTO[p['slug']]}.jpg" alt="" loading="lazy" width="1000" height="500"></div><h3>{e(p['nom'])}</h3><p>{e(p['desc'])}</p><div class="foot"><span class="tag">30 jours</span>{'<b class="go">Voir ' + ic('arrow') + '</b>' if OPEN else '<b>' + PR + '&nbsp;€</b>'}</div></a>''' for i, p in enumerate(PROGS))
+cards = ''.join(f'''<a class="card prog rise d{i%3}" href="{'/app/#/p/' + p['slug'] if OPEN else '/programmes/' + p['slug'] + '/'}"><div class="cov"><img src="/img/{PHOTO[p['slug']]}.jpg" alt="" loading="lazy" width="1000" height="500"></div><div class="pc"><h3>{e(p['nom'])}</h3><span class="go">30 jours {ic('arrow')}</span></div></a>''' for i, p in enumerate(PROGS))
 mock = ''
 TILE = [('wave', "Surfer sur l'envie", "Suis ton envie 40 secondes et regarde-la monter, puis retomber."), ('hourglass', 'Tenir 30 secondes', "Maintiens le bouton pendant que les tentations défilent."), ('scale', 'La balance', "Pose ce que ça t'apporte et ce que ça te coûte, et vois de quel côté ça penche."), ('coins', 'La machine à alternatives', "Tourne la machine, garde les idées qui te parlent."), ('compass', 'Mises en situation', "Choisis ta réaction dans des scènes réelles, avec un retour à chaque réponse."), ('cloud', 'Respiration guidée', "Un cercle qui respire avec toi, pour laisser l'envie retomber.")]
 TILES = ''.join(f'<div class="card flat tile"><h3>{e(t)}</h3><p>{e(d)}</p></div>' for a, t, d in TILE)
@@ -125,64 +125,14 @@ TARIFS = f'''<section id="tarifs" style="background:var(--card);border-block:1px
   </div>
 </div></section>'''
 home_body = f'''{HEADER}<main id="main">
-<section class="hero"><div class="wrap g">
-  <div class="tx">
-    <span class="kick rise">Programmes de 30 jours</span>
-    <h1 class="rise d1">Reprends le contrôle, <em>un jour à la fois.</em></h1>
-    <p class="lead rise d2">Écrans, pornographie, jeux d'argent, vape et tabac, cannabis, drogues de soirée. Chaque jour, un petit jeu ou un outil animé, un exercice concret, et un bouton SOS pour les moments difficiles. Sans jugement.</p>
-    <div class="acts rise d2"><a class="btn pri" href="#programmes">Choisir mon programme {ic('arrow')}</a><a class="btn ghost" href="/app/#/sos">Essayer le bouton SOS</a></div>
-    <div class="pts rise d2">{'' if OPEN else '<span>' + ic('check') + " Un seul paiement, pas d'abonnement</span>"}<span>{ic('check')} Ton suivi reste sur ton téléphone</span><span>{ic('check')} 10 minutes par jour</span></div>
-  </div>
-  {mock}
-</div></section>
-
-<section id="programmes" style="padding-top:20px"><div class="wrap">
-  <div class="sec-h"><span class="kick">Les programmes</span><h2>Choisis ce que tu veux changer.</h2><p class="lead">Chaque programme dure 30 jours : un petit pas par jour, du premier au dernier.</p></div>
-  <div class="grid c2">{cards}</div>
-</div></section>
-
-<section><div class="wrap">
-  <div class="sec-h"><span class="kick">Pas que du texte</span><h2>Chaque jour, une activité animée.</h2><p class="lead">Des mini-jeux et des outils concrets, pas seulement des questions et des réponses.</p></div>
-  <div class="grid c3 tiles">{TILES}</div>
-</div></section>
-
-<section style="background:var(--card);border-block:1px solid var(--line)"><div class="wrap">
-  <div class="sec-h"><span class="kick">Comment ça marche</span><h2>Simple, concret, chaque jour.</h2></div>
-  <div class="grid c3 steps">
-    <div class="step"><h3>Un petit pas par jour</h3><p>Un court texte pour comprendre, un mini-jeu ou un outil animé, un exercice à faire dans la journée, des notes pour garder une trace. Dix minutes suffisent.</p></div>
-    <div class="step"><h3>Le bouton SOS</h3><p>Quand l'envie arrive, dix minutes guidées : une respiration, des consignes simples, un minuteur. L'envie monte, atteint un pic, retombe.</p></div>
-    <div class="step"><h3>Ton suivi, en privé</h3><p>Jours sans, envies surmontées, record, notes. Tout reste sur ton téléphone, rien n'est envoyé.</p></div>
-  </div>
-</div></section>
-
-<section><div class="wrap">
-  <div class="sec-h"><span class="kick">En toute honnêteté</span><h2>Ce que Lookmiz fait, et ce qu'il ne fait pas.</h2></div>
-  <div class="grid c2">
-    <div class="notice do"><h3>Ce qu'on fait</h3><ul>
-      <li>{ic('check')}<span>Une méthode en 30 jours, inspirée des thérapies comportementales et de l'entretien motivationnel.</span></li>
-      <li>{ic('check')}<span>Des outils concrets : plan « si… alors… », gestion des envies, plan de rechute.</span></li>
-      <li>{ic('check')}<span>Un ton sans jugement, sans honte, sans leçon de morale.</span></li>
-    </ul></div>
-    <div class="notice no"><h3>Ce qu'on ne fait pas</h3><ul>
-      <li>{ic('x')}<span>Ce n'est pas un traitement et ce n'est pas un avis médical.</span></li>
-      <li>{ic('x')}<span>Aucune promesse de résultat : chacun avance à son rythme.</span></li>
-      <li>{ic('x')}<span>On ne remplace pas un médecin, un psychologue ou un centre d'addictologie.</span></li>
-    </ul></div>
-  </div>
-  <div style="margin-top:14px">{help_box(['3114', 'tabac', 'jeux', 'drogues', 'urgence'])}</div>
-</div></section>
-
-{'' if OPEN else TARIFS}
-
-<section><div class="wrap" style="max-width:820px">
-  <div class="sec-h"><span class="kick">Questions fréquentes</span><h2>Tu te demandes peut-être…</h2></div>
-  {faq_html(FAQ_HOME)}
+<section class="start"><div class="wrap">
+  <h1 class="rise">Que veux-tu changer ?</h1>
+  <div class="grid c2 pgrid">{cards}</div>
 </div></section>
 </main>
 {FOOTER}{scripts()}</body></html>'''
 ld_home = {'@context': 'https://schema.org', '@graph': [
-    {'@type': 'WebSite', 'name': 'Lookmiz', 'url': BASE + '/'},
-    faq_ld(FAQ_HOME)]}
+    {'@type': 'WebSite', 'name': 'Lookmiz', 'url': BASE + '/'}]}
 W('index.html', head('Lookmiz : programmes de 30 jours pour reprendre le contrôle', "Écrans, pornographie, jeux d'argent, vape et tabac : des programmes de 30 jours, un petit pas par jour, un bouton SOS pour les envies. Sans jugement.", '/', jsonld=ld_home,
     extra="<script>if(/[?&](c|paye)=/.test(location.search))location.replace('/cartes/'+location.search+location.hash)</script>\n") + home_body)
 
@@ -209,41 +159,20 @@ for p in PROGS:
     faq = p['faq'] + ([] if OPEN else [('Combien ça coûte ?', f"{str(C.PRIX['prog']).replace('.', ',')} € une seule fois pour les 30 jours, ou {str(C.PRIX['pack']).replace('.', ',')} € pour les 6 programmes. Il n'y a pas d'abonnement.")])
     adult = ''
     body = f'''{HEADER}<main id="main">
-<section class="hero" style="padding-bottom:50px"><div class="wrap g">
-  <div class="tx">
-    <a class="crumb" href="/#programmes">{ic('back')} Tous les programmes</a>
-    <div class="cov big"><img src="/img/{PHOTO[s]}.jpg" alt="" width="1000" height="500"></div>
-    <span class="kick rise">{e(p['nom'])} · 30 jours</span>
-    <h1 class="rise d1" style="font-size:clamp(36px,7.6vw,60px)">{e(p['titre'])}</h1>
-    <p class="lead rise d2">{e(p['accroche'])}</p>
-    <div class="pts rise d2"><span>{ic('check')} 10 minutes par jour</span><span>{ic('check')} Sans jugement</span><span>{ic('check')} Suivi privé</span></div>
-    {adult}
-  </div>
-  {OPEN_CARD if OPEN else PAID_CARD}
-</div></section>
-
-<section style="padding-top:10px"><div class="wrap split">
-  <div><div class="sec-h" style="margin-bottom:22px"><span class="kick">Tu te reconnais ?</span><h2>Ce programme est pour toi si…</h2></div><ul class="list" style="font-size:18px">{recog}</ul></div>
-  <div class="card" style="display:grid;gap:14px"><span class="kick">Dans ton espace</span><h3>Chaque jour, cinq outils.</h3><ul class="list"><li>{ic('check')}<span>Un court texte pour comprendre</span></li><li>{ic('check')}<span>Un mini-jeu ou un outil animé (respiration, scénarios, balance…)</span></li><li>{ic('check')}<span>Un exercice concret à faire dans la journée</span></li><li>{ic('check')}<span>Tes notes, qui restent sur ton téléphone</span></li><li>{ic('check')}<span>Le bouton SOS et ton compteur de jours sans</span></li></ul></div>
-</div></section>
-
-<section style="background:var(--card);border-block:1px solid var(--line)"><div class="wrap">
-  <div class="sec-h"><span class="kick">Le parcours</span><h2>Quatre semaines, un fil conducteur.</h2></div>
-  <div class="grid c2 steps" style="counter-reset:none">{weeks}</div>
-</div></section>
-
-<section><div class="wrap" style="max-width:820px;display:grid;gap:28px">
-  <div class="notice"><h3>À savoir</h3><p class="mut">Ce programme est un accompagnement, pas un traitement médical, et il ne promet aucun résultat. Il ne remplace pas l'avis d'un professionnel de santé. Si tu as besoin d'un suivi, parles-en à ton médecin.</p></div>
+<section class="start"><div class="wrap" style="max-width:760px;display:grid;gap:20px">
+  <a class="crumb" href="/">{ic('back')} Retour</a>
+  <div class="cov big"><img src="/img/{PHOTO[s]}.jpg" alt="" width="1000" height="500"></div>
+  <h1 class="rise" style="font-size:clamp(32px,7vw,52px)">{e(p['titre'])}</h1>
+  <p class="lead">{e(p['accroche'])}</p>
+  {('<a class="btn pri full xl" href="/app/#/p/' + s + '/1">Commencer le jour 1 ' + ic('arrow') + '</a>') if OPEN else PAID_CARD}
   {help_box(p['aides'])}
-  <div><div class="sec-h" style="margin-bottom:10px"><span class="kick">Questions fréquentes</span><h2>Avant de commencer</h2></div>{faq_html(faq)}</div>
-  <div class="acts"><a class="btn pri" href="#achat">Commencer {ic('arrow')}</a><a class="btn ghost" href="/">Voir les autres programmes</a></div>
 </div></section>
 </main>
 {FOOTER}{scripts()}</body></html>'''
     ld = {'@context': 'https://schema.org', '@graph': [
         {'@type': 'Course', 'name': p['titre'] + ' : programme de 30 jours', 'description': p['desc'], 'provider': {'@type': 'Organization', 'name': 'Lookmiz', 'url': BASE + '/'}, 'url': f'{BASE}/programmes/{s}/', 'inLanguage': 'fr',
          'offers': {'@type': 'Offer', 'price': str(C.PRIX['prog']), 'priceCurrency': 'EUR', 'availability': 'https://schema.org/InStock'}},
-        faq_ld(faq)]}
+        ]}
     W(f'programmes/{s}/index.html', head(p['seo'] + ' | Lookmiz', p['desc'], f'/programmes/{s}/', jsonld=ld) + body)
 
 # ---------------------------------------------------------------- espace
