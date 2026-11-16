@@ -331,3 +331,26 @@ textarea.note.tall { min-height: 220px; }
 
 .orbwrap { position: relative; } .olb { position: absolute; inset: 0; display: grid; place-items: center; font: 650 24px var(--head); color: var(--brand-ink); pointer-events: none; }
 .crumb { justify-self: start; }
+
+/* ===== thème foncé par défaut ===== */
+:root, :root[data-theme="light"] {
+  --bg: #080e0d; --card: #101a18; --ink: #eaf2ef; --mut: #9db1ac; --line: #1f2e2b; --soft: #12231f;
+  --brand: #4fbfa5; --brand-ink: #05211b; --brand-2: #3aa88f;
+  --amber: #e7b04a; --amber-soft: #2a2210; --sos: #f07a68; --sos-ink: #260d08; --warn-soft: #2b1814; --warn: #f1a595;
+  --sh: 0 1px 2px rgba(0,0,0,.4), 0 14px 32px -16px rgba(0,0,0,.65); color-scheme: dark; }
+.hero { background: radial-gradient(60% 50% at 85% 0%, color-mix(in srgb, var(--brand) 16%, transparent), transparent), radial-gradient(40% 40% at 0% 100%, color-mix(in srgb, var(--amber) 10%, transparent), transparent); }
+
+/* ===== photos ===== */
+.cov { background: var(--card); } .cov img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .6s; }
+.prog:hover .cov img { transform: scale(1.04); }
+.cov::after { content: ""; display: block; }
+.mosaic { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; max-width: 480px; margin: 0 auto; }
+.mosaic img { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; border-radius: 20px; display: block; border: 1px solid var(--line); box-shadow: var(--sh); }
+.mosaic img:nth-child(even) { transform: translateY(28px); }
+.mosaic { padding-bottom: 28px; }
+.prog .go { display: inline-flex; align-items: center; gap: 6px; color: var(--brand); } .prog .go svg { width: 16px; height: 16px; }
+.tile { padding: 18px; } .tile h3 { font-size: 19px; }
+.prog .foot { padding-top: 2px; }
+.banner img { width: 100%; height: 100%; object-fit: cover; display: block; } .banner .bn { background: color-mix(in srgb, var(--card) 80%, transparent); }
+.hero .g { grid-template-columns: minmax(0, 1fr) !important; } .hero .tx { max-width: 760px; } .hero { padding-bottom: 24px !important; }
+.act, .a-in { grid-template-columns: minmax(0, 1fr); } .act > *, .a-in > * { min-width: 0; }

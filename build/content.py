@@ -5,6 +5,7 @@
 
 SEMAINES = ['Comprendre et mesurer', 'Déclencheurs et envies', 'Remplacer et reconstruire', 'Tenir dans la durée']
 
+OPEN = True   # True : accès libre (aperçu), le paiement est désactivé. False : paiement Stripe.
 PRIX = {'prog': 9.99, 'pack': 24.99}
 
 AIDES = {

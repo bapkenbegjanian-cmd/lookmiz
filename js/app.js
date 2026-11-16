@@ -4,14 +4,15 @@
   const L = window.LMZ, S = L.S, esc = L.esc, META = L.META, IC = L.IC, root = document.getElementById('app');
   const prog = slug => META.progs.find(p => p.slug === slug);
   const TOTAL = 30;
-  let ACCESS = new Set(), verified = !S.sids.length, banner = '';
+  let ACCESS = META.open ? new Set(META.progs.map(p => p.slug)) : new Set(), verified = !S.sids.length, banner = '';
   const has = slug => ACCESS.has(slug);
   const dnum = slug => (S.done[slug] || []).length;
   const week = n => Math.min(3, Math.floor((n - 1) / 7));
   const link = () => (S.sids.length ? location.origin + '/app/?achat=1&sid=' + S.sids[S.sids.length - 1] : '');
 
-  function why(slug) { const a = (S.act[slug] || {})[1]; return a && a.sel && a.sel.length ? '<div class="whybox"><span class="kick">Ton pourquoi</span><p>' + a.sel.map(esc).join(' · ') + '</p></div>' : ''; }
-  function sosAide(p) { const a = (p && p.aides || []).map(k => META.aides[k]).filter(Boolean)[0]; return a ? '<p>Besoin de parler ? <a href="' + a[2] + '">' + esc(a[0]) + '</a> · ' + esc(a[1]) + '</p>' : ''; }
+  function why(slug) { const a = (S.act[slug || S.last] || {})[1]; return a && a.sel && a.sel.length ? '<div class="whybox"><span class="kick">Ton pourquoi</span><p>' + a.sel.map(esc).join(' · ') + '</p></div>' : ''; }
+  const GEN = ['Pose ce que tu as en main et arrête ce que tu étais en train de faire.', 'Où sens-tu l\'envie dans ton corps ? Nomme-la, sans la combattre.', 'Bois un verre d\'eau, lentement.', 'Change de pièce ou sors prendre l\'air.', 'L\'envie monte, atteint un pic, puis retombe. Tu es en train de la laisser passer.', 'Qu\'est-ce que tu cherches vraiment en ce moment : te détendre, t\'occuper, ne pas être seul ?', 'Souviens-toi de ton pourquoi. Relis-le.', 'Envoie un message à quelqu\'un, même juste « salut ».'];
+  function sosAide(p) { const a = (p ? p.aides || [] : ['3114']).map(k => META.aides[k]).filter(Boolean)[0]; return a ? '<p>Besoin de parler ? <a href="' + a[2] + '">' + esc(a[0]) + '</a> · ' + esc(a[1]) + '</p>' : ''; }
 
   /* ---------- accueil de l'espace ---------- */
   function home() {
@@ -21,7 +22,7 @@
         (has(p.slug) ? (started ? 'Jour ' + Math.min(TOTAL, n + 1) + ' sur ' + TOTAL : 'Prêt à commencer') : 'Programme de 30 jours · ' + L.euro(META.prix.prog)) + '</span></div></div>' +
         (has(p.slug) && started ? '<div class="bar2"><i style="width:' + Math.round(n / TOTAL * 100) + '%"></i></div><div class="row2"><span>' + n + ' jour' + (n > 1 ? 's' : '') + ' terminé' + (n > 1 ? 's' : '') + '</span>' + (st ? '<b style="color:var(--amber)">' + st.d + ' j sans</b>' : '<span></span>') + '</div>' : '') + '</a>';
     }).join('');
-    const acc = S.sids.length
+    const acc = META.open ? '' : S.sids.length
       ? '<div class="card flat" style="display:grid;gap:10px"><h3>Mon accès</h3><p class="mut" style="font-size:15px">Garde ce lien pour retrouver ton accès sur un autre téléphone.</p><input class="note" style="min-height:0;height:46px;padding:0 14px" readonly id="lk" value="' + esc(link()) + '"><button class="btn ghost sm" id="cp" type="button" style="width:max-content">Copier le lien</button></div>'
       : '<div class="card flat" style="display:grid;gap:10px"><h3>J\'ai déjà acheté</h3><p class="mut" style="font-size:15px">Colle le lien reçu après ton paiement pour retrouver ton accès.</p><input class="note" style="min-height:0;height:46px;padding:0 14px" id="rs" placeholder="https://lookmiz.com/app/?achat=1&sid=…"><button class="btn ghost sm" id="rb" type="button" style="width:max-content">Retrouver mon accès</button><p class="buymsg" id="rm"></p></div>';
     root.innerHTML = '<div class="app wrap">' + banner + '<div><span class="kick">Mon espace</span><h1>Un jour à la fois.</h1></div>' +
@@ -109,20 +110,18 @@
   let sosT = null;
   function closeSos() { clearInterval(sosT); sosT = null; const o = document.getElementById('sosov'); if (o) o.remove(); document.body.style.overflow = ''; }
   function sos(slugIn) {
-    let slug = prog(slugIn) ? slugIn : (prog(S.last) ? S.last : META.progs[0].slug);
+    let slug = prog(slugIn) ? slugIn : (prog(S.last) ? S.last : '');
     home(); closeSos();
     const ov = document.createElement('div'); ov.id = 'sosov'; ov.className = 'sosov'; ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-modal', 'true'); ov.setAttribute('aria-label', 'Bouton SOS'); document.body.appendChild(ov); document.body.style.overflow = 'hidden';
     const x = '<button class="sosx" type="button" aria-label="Fermer" id="sx">' + IC.x + '</button>';
     const intro = () => {
       const p = prog(slug);
       ov.innerHTML = x + '<div class="sosin"><span class="kick">Pause</span><h2>L\'envie va passer.</h2><p class="lead">Tu n\'as pas à lutter. On la laisse monter, atteindre son pic et retomber, ensemble, pendant 10 minutes.</p>' +
-        '<label class="mut" style="font-size:14.5px">Pour : <select class="sel" id="ss">' + META.progs.map(q => '<option value="' + q.slug + '"' + (q.slug === slug ? ' selected' : '') + '>' + esc(q.nom) + '</option>').join('') + '</select></label>' +
         '<button class="btn pri" id="st" type="button" style="min-width:240px">Commencer</button><div class="sosfoot">' + sosAide(p) + '</div></div>';
-      document.getElementById('ss').onchange = e => { slug = e.target.value; intro(); };
       document.getElementById('st').onclick = run; document.getElementById('sx').onclick = () => { closeSos(); location.hash = '#/'; };
     };
     const run = () => {
-      const p = prog(slug), t0 = Date.now(), DUR = 600000, tips = p.sos; let last = -1;
+      const p = prog(slug), t0 = Date.now(), DUR = 600000, tips = p ? p.sos : GEN; let last = -1;
       ov.innerHTML = x + '<div class="sosin"><span class="kick">Envie en cours</span><div class="breath"><i></i><b id="bw">Inspire</b></div><div class="clock" id="ck">10:00</div><p class="prompt" id="pr"></p>' +
         '<button class="btn ghost" id="fn" type="button">L\'envie est passée</button><div class="sosfoot">' + sosAide(p) + '</div></div>';
       document.getElementById('sx').onclick = () => { closeSos(); location.hash = '#/'; };
@@ -137,8 +136,8 @@
     };
     const fin = () => {
       clearInterval(sosT); sosT = null;
-      S.envies[slug] = (S.envies[slug] || 0) + 1; L.save(); const p = prog(slug);
-      ov.innerHTML = x + '<div class="sosin"><span class="kick">Bravo</span><h2>Tu l\'as laissée passer.</h2><p class="lead">Une envie de plus surmontée. Tu en es à <b style="color:var(--ink)">' + S.envies[slug] + '</b> sur ce programme. Chaque envie qui passe rend la suivante plus facile.</p>' +
+      const ek = slug || 'general'; S.envies[ek] = (S.envies[ek] || 0) + 1; L.save(); const p = prog(slug);
+      ov.innerHTML = x + '<div class="sosin"><span class="kick">Bravo</span><h2>Tu l\'as laissée passer.</h2><p class="lead">Une envie de plus surmontée. Tu en es à <b style="color:var(--ink)">' + S.envies[ek] + '</b>. Chaque envie qui passe rend la suivante plus facile.</p>' +
         '<div class="acts" style="justify-content:center"><button class="btn pri" id="bk" type="button">Retour à mon espace</button><button class="btn ghost" id="rp" type="button">Encore 10 minutes</button></div>' +
         why(slug) + '<p class="mut" style="font-size:14.5px;max-width:42ch">Et si tu as craqué, ce n\'est pas la fin : reprends demain, sans te punir.</p><div class="sosfoot">' + sosAide(p) + '</div></div>';
       document.getElementById('sx').onclick = document.getElementById('bk').onclick = () => { closeSos(); location.hash = '#/'; };

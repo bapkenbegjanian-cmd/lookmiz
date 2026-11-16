@@ -31,6 +31,7 @@
   /* accès : les sessions de paiement sont vérifiées auprès de Stripe */
   let ACC = null;
   function access(force) {
+    if (META.open) return Promise.resolve(new Set(META.progs.map(p => p.slug)));
     if (ACC && !force) return ACC;
     ACC = (async () => {
       const got = new Set(); let net = true;
@@ -51,6 +52,7 @@
   /* contenu des jours : fourni par la fonction de paiement, seulement si le paiement est confirmé */
   async function days(slug) {
     S.cache = S.cache || {};
+    if (META.open) { const r = await fetch('/data/p/' + slug + '.json?v=' + META.v); if (!r.ok) throw new Error('chargement'); return r.json(); }
     if (S.cache[slug] && S.cache[slug].kit) return S.cache[slug];
     const d = await call({ action: 'prog_day', prog: slug, sids: S.sids });
     if (!d || !d.days || !d.kit) throw new Error((d && d.error) || 'acces');
@@ -59,19 +61,18 @@
 
   /* paiement */
   function buyHTML(slug) {
+    if (META.open) return '';
     const pack = slug === 'pack', p = META.progs.find(x => x.slug === slug), adult = pack || (p && p.adulte);
     const price = euro(pack ? META.prix.pack : META.prix.prog);
     return '<div class="buybox" data-box="' + slug + '">' +
       '<div class="price"><b>' + price + '</b><span>' + (pack ? 'les 6 programmes, paiement unique' : 'paiement unique, sans abonnement') + '</span></div>' +
-      (adult ? '<label class="chk"><input type="checkbox" class="c-age"><span>J\'ai 18 ans ou plus.</span></label>' : '') +
       '<button class="btn pri full" type="button" data-buy="' + slug + '">' + (pack ? 'Débloquer les 6 programmes' : 'Débloquer les 30 jours') + ' · ' + price + '</button>' +
       '<p class="buymsg" role="alert"></p>' +
       '<p class="mut" style="font-size:13.5px">Paiement sécurisé par Stripe. <a href="/cgv.html">Conditions de vente</a>.</p></div>';
   }
   async function buy(slug, box) {
-    const msg = box.querySelector('.buymsg'), age = box.querySelector('.c-age'), btn = box.querySelector('[data-buy]');
+    const msg = box.querySelector('.buymsg'), btn = box.querySelector('[data-buy]');
     msg.textContent = '';
-    if (age && !age.checked) { msg.textContent = 'Ce contenu est réservé aux personnes majeures.'; return; }
     btn.disabled = true; btn.dataset.t = btn.textContent; btn.textContent = 'Ouverture du paiement…';
     try {
       const d = await call({ action: 'prog_checkout', prog: slug });

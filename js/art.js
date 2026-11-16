@@ -48,7 +48,8 @@
 
   function art(name, extra) { const f = S[name] || S.compass; return wrap(f(), TONE[name] || 'b'); }
   const forType = t => art(FOR[t] || 'compass');
-  const cover = slug => art(COVER[slug] || 'compass');
+  const PH = { ecrans: 'ecrans', pornographie: 'porno', 'jeux-d-argent': 'jeux', 'vape-tabac': 'tabac', cannabis: 'cannabis', 'drogues-de-soiree': 'soiree' };
+  const cover = slug => PH[slug] ? '<img src="/img/' + PH[slug] + '.jpg" alt="" loading="lazy" width="1000" height="500">' : art('compass');
   window.LMZ_ART = { art, forType, cover, scenes: Object.keys(S) };
   const fill = () => document.querySelectorAll('[data-art]').forEach(el => { if (!el.firstChild) el.innerHTML = art(el.dataset.art); });
   document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', fill) : fill();
